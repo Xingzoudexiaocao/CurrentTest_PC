@@ -4,37 +4,52 @@
 #include <sstream>
 #include <QDebug>
 #include "mainwindow.h"
+#include <QFontDatabase>
+#include <QCoreApplication>
 
 using namespace std;
 
 static const int DataInterval = 1;
 
-RealTime::RealTime(QWidget *parent, ComData *comD) : QWidget(parent)
+RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(parent)
 {
     qDebug() << "RealTime构造函数。";
     m_ComData = comD;
-    m_UsbHid = new USB_HID(comD);
+    m_UsbHid = hid;
 
-    setFixedSize(990, 850);
+    setFixedSize(1090, 850);
 ////    setMinimumSize(200,200);
 //    setWindowTitle("Simple Realtime Chart");
 
     // The frame on the left side
     QFrame *frame = new QFrame(this);
-    frame->setGeometry(4, 4, 150, 820);
+    frame->setGeometry(4, 4, 250, 820);
+//    frame->setStyleSheet("background-color:white");
     frame->setFrameShape(QFrame::StyledPanel);
 
+    QFont    font ( "微软雅黑",  20,   75);
     // Run push button
     connectUSB = new QPushButton(QIcon(":/play.png"), "连接设备", frame);
     connectUSB->setGeometry(4, 8, 142, 40);
-    connectUSB->setStyleSheet("QPushButton { text-align:left; padding:5px; font-size:24px;}");
+    connectUSB->setStyleSheet("QPushButton {font-family:arial; text-align:left; padding:5px; font-size:24px;}");
+    connectUSB->setFont(font);
     connect(connectUSB, SIGNAL(clicked(bool)), SLOT(onConnectUSB()));
     // Run push button
     disconnectUSB = new QPushButton(QIcon(":/pause.png"), "关闭设备", frame);
-    disconnectUSB->setGeometry(4, 48, 142, 40);
-    disconnectUSB->setStyleSheet("QPushButton { text-align:left; padding:5px; font-size:24px;}");
+    disconnectUSB->setGeometry(4, 60, 142, 40);
+    disconnectUSB->setStyleSheet("QPushButton {font-family:arial; text-align:left; padding:5px; font-size:24px;}");
     disconnectUSB->setEnabled(false);
+    disconnectUSB->setFont(font);
     connect(disconnectUSB, SIGNAL(clicked(bool)), SLOT(onDisConnectUSB()));
+
+//    QPushButton *bbb = new QPushButton(QIcon(":/play.png"),"", frame);
+//    bbb->setGeometry(150, 8, 100, 100);
+    QPixmap pixmap(":/logo.png");
+    QLabel *label = new QLabel(frame);
+    label->setGeometry(150, 8, 95, 95);
+//    label->setStyleSheet("background-color:black");
+    label->setPixmap(pixmap.scaled(label->size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+
 
 //    // Pointer push button
 //    QPushButton *pointerPB = new QPushButton(QIcon(":/pointer.png"), "Pointer", frame);
@@ -80,81 +95,129 @@ RealTime::RealTime(QWidget *parent, ComData *comD) : QWidget(parent)
 
 
     // The frame on the left side
+    QString fontName = loadFontFamilyFromTTF(":/DSDigital.ttf");    // digifaw ":/DSDigital.ttf" "C:/Windows/Fonts/Terminal.fon"
+    QFont    font_VAW ( fontName,  10,   75);     // "Microsoft YaHei"
     QFrame *frame_3 = new QFrame(frame);
-    frame_3->setGeometry(0, 100, 150, 200);
+    frame_3->setGeometry(0, 120, 250, 240);
     frame_3->setFrameShape(QFrame::NoFrame);
-
-    QLabel *nowValue = new QLabel(frame_3);
-    nowValue->setGeometry(0, 0, 150, 40);
-    nowValue->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:24px;}");
-    nowValue->setText("瞬时测量值：");
-    // Beta Value display
-    QLabel *now_V = new QLabel(frame_3);
-    now_V->setGeometry(0, 40, 150, 40);
-    now_V->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:20px;}");
-    now_V->setText("电压：");
+    // 显示瞬时电压/电流/功率
     m_ValueB = new QLabel(frame_3);
-    m_ValueB->setStyleSheet("QLabel { text-align:left; padding:0px; font-size:20px;}");
-    m_ValueB->setGeometry(60, 40, 150 - 60, 40);
+    m_ValueB->setStyleSheet("QLabel { text-align:center; padding:10px; font-size:56px; color:green; background-color:white;}");
+    m_ValueB->setGeometry(2, 0, 200, 80);
+    m_ValueB->setFont(font_VAW);
+    m_ValueB->setAlignment(Qt::AlignHCenter);
     m_ValueB->setFrameShape(QFrame::NoFrame);
-    // Gamma Value display
-    QLabel *now_A = new QLabel(frame_3);
-    now_A->setGeometry(0, 80, 150, 40);
-    now_A->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:20px;}");
-    now_A->setText("电流：");
+    QLabel *unitV = new QLabel(frame_3);
+    unitV->setGeometry(6 + 190, 0, 50, 80);
+    unitV->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:30px; color:green; background-color:white;}");
+    unitV->setText("V");
+
     m_ValueC = new QLabel(frame_3);
-    m_ValueC->setStyleSheet("QLabel { text-align:left; padding:0px; font-size:20px;}");
-    m_ValueC->setGeometry(60, 80, 150 - 60, 40);
+    m_ValueC->setStyleSheet("QLabel { text-align:center; padding:10px; font-size:56px; color:blue; background-color:white;}");
+    m_ValueC->setGeometry(2, 80, 200, 80);
+    m_ValueC->setFont(font_VAW);
+    m_ValueC->setAlignment(Qt::AlignHCenter);
     m_ValueC->setFrameShape(QFrame::NoFrame);
-    // 瞬时功率
-    QLabel *now_W = new QLabel(frame_3);
-    now_W->setGeometry(0, 120, 150, 40);
-    now_W->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:20px;}");
-    now_W->setText("功率：");
-    QLabel *now_W_Value = new QLabel(frame_3);
-    now_W_Value->setStyleSheet("QLabel { text-align:left; padding:0px; font-size:20px;}");
-    now_W_Value->setGeometry(60, 120, 150 - 60, 40);
-    now_W_Value->setFrameShape(QFrame::NoFrame);
-    now_W_Value->setText(" - ");
+    m_unitA = new QLabel(frame_3);
+    m_unitA->setGeometry(6 + 190, 80, 50, 80);
+    m_unitA->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:30px; color:blue; background-color:white;}");
+    m_unitA->setText("mA");
+
+    m_Power = new QLabel(frame_3);
+    m_Power->setStyleSheet("QLabel { text-align:left; padding:10px; font-size:56px; color:red; background-color:white;}");
+    m_Power->setGeometry(2, 160, 200, 80);
+    m_Power->setFont(font_VAW);
+    m_Power->setAlignment(Qt::AlignHCenter);
+    m_Power->setFrameShape(QFrame::NoFrame);
+    QLabel *unitW = new QLabel(frame_3);
+    unitW->setGeometry(6 + 190, 160, 50, 80);
+    unitW->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:30px; color:red; background-color:white;}");
+    unitW->setText("W");
 
     // The frame on the left side
     QFrame *frame_4 = new QFrame(frame);
-    frame_4->setGeometry(0, 300, 150, 200);
+    frame_4->setGeometry(0, 380, 250, 240);
     frame_4->setFrameShape(QFrame::NoFrame);
     QLabel *avgValue = new QLabel(frame_4);
-    avgValue->setGeometry(0, 0, 150, 40);
-    avgValue->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:24px;}");
+    avgValue->setGeometry(0, 0, 250, 40);
+    avgValue->setStyleSheet("QLabel {font-family:arial; text-align:left; padding:2px; font-size:30px;}");
     avgValue->setText("平均测量值：");
     // Beta Value display
     QLabel *avg_V = new QLabel(frame_4);
-    avg_V->setGeometry(0, 40, 150, 40);
-    avg_V->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:20px;}");
+    avg_V->setGeometry(0, 40, 250, 40);
+    avg_V->setStyleSheet("QLabel {font-family:arial; text-align:left; padding:2px; font-size:24px;}");
     avg_V->setText("电压：");
-    QLabel *buf1_QL = new QLabel(frame_4);
-    buf1_QL->setStyleSheet("QLabel { text-align:left; padding:0px; font-size:20px;}");
-    buf1_QL->setGeometry(60, 40, 150 - 60, 40);
+    buf1_QL = new QLabel(frame_4);
+    buf1_QL->setStyleSheet("QLabel {font-family:arial; text-align:left; padding:0px; font-size:24px;}");
+    buf1_QL->setGeometry(80, 40, 250 - 80, 40);
     buf1_QL->setFrameShape(QFrame::NoFrame);
-    buf1_QL->setText(" - ");
     // Gamma Value display
     QLabel *avg_A = new QLabel(frame_4);
-    avg_A->setGeometry(0, 80, 150, 40);
-    avg_A->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:20px;}");
+    avg_A->setGeometry(0, 80, 250, 40);
+    avg_A->setStyleSheet("QLabel {font-family:arial; text-align:left; padding:2px; font-size:24px;}");
     avg_A->setText("电流：");
-    QLabel *buf2_QL = new QLabel(frame_4);
-    buf2_QL->setStyleSheet("QLabel { text-align:left; padding:0px; font-size:20px;}");
-    buf2_QL->setGeometry(60, 80, 150 - 60, 40);
+    buf2_QL = new QLabel(frame_4);
+    buf2_QL->setStyleSheet("QLabel {font-family:arial; text-align:left; padding:0px; font-size:24px;}");
+    buf2_QL->setGeometry(80, 80, 250 - 80, 40);
     buf2_QL->setFrameShape(QFrame::NoFrame);
-    buf2_QL->setText(" - ");
-    // 瞬时功率
+    // 平均功率
     QLabel *avg_W = new QLabel(frame_4);
-    avg_W->setGeometry(0, 120, 150, 40);
-    avg_W->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:20px;}");
+    avg_W->setGeometry(0, 120, 250, 40);
+    avg_W->setStyleSheet("QLabel {font-family:arial; text-align:left; padding:2px; font-size:24px;}");
     avg_W->setText("功率：");
-    QLabel *buf3_QL = new QLabel(frame_4);
-    buf3_QL->setStyleSheet("QLabel { text-align:left; padding:0px; font-size:20px;}");
-    buf3_QL->setGeometry(60, 120, 150 - 60, 40);
+    buf3_QL = new QLabel(frame_4);
+    buf3_QL->setStyleSheet("QLabel {font-family:arial; text-align:left; padding:0px; font-size:24px;}");
+    buf3_QL->setGeometry(80, 120, 250 - 80, 40);
     buf3_QL->setFrameShape(QFrame::NoFrame);
-    buf3_QL->setText(" - ");
+
+    QFrame *frame_5 = new QFrame(frame);
+    frame_5->setGeometry(0, 560, 250, 280);
+    frame_5->setFrameShape(QFrame::NoFrame);
+    QLabel *USBConfig = new QLabel(frame_5);
+    USBConfig->setGeometry(0, 0, 250, 40);
+    USBConfig->setStyleSheet("QLabel {font-family:arial; text-align:left; padding:2px; font-size:30px;}");
+    USBConfig->setText("设备信息：");
+    QLabel *usb_M = new QLabel(frame_5);
+    usb_M->setGeometry(0, 40, 250, 40);
+    usb_M->setStyleSheet("QLabel {font-family:arial; text-align:left; padding:2px; font-size:19px;}");
+    usb_M->setText("厂商:");    // Manufactured
+    usb_str1 = new QLabel(frame_5);
+    usb_str1->setStyleSheet("QLabel {font-family:arial; text-align:left; padding:0px; font-size:16px;}");
+    usb_str1->setGeometry(50, 40, 250 - 50, 40);
+    usb_str1->setFrameShape(QFrame::NoFrame);
+    usb_str1->setText("-");
+    QLabel *usb_P = new QLabel(frame_5);
+    usb_P->setGeometry(0, 80, 250, 40);
+    usb_P->setStyleSheet("QLabel {font-family:arial; text-align:left; padding:2px; font-size:19px;}");
+    usb_P->setText("产品:");     // Product
+    usb_str2 = new QLabel(frame_5);
+    usb_str2->setStyleSheet("QLabel {font-family:arial; text-align:left; padding:0px; font-size:16px;}");
+    usb_str2->setGeometry(50, 80, 250 - 50, 40);
+    usb_str2->setFrameShape(QFrame::NoFrame);
+    usb_str2->setText("-");
+    QLabel *usb_S = new QLabel(frame_5);
+    usb_S->setGeometry(0, 120, 250, 40);
+    usb_S->setStyleSheet("QLabel {font-family:arial; text-align:left; padding:2px; font-size:19px;}");
+    usb_S->setText("序列号:");    // SerialNumber
+    usb_str3 = new QLabel(frame_5);
+    usb_str3->setStyleSheet("QLabel {font-family:arial; text-align:left; padding:0px; font-size:16px;}");
+    usb_str3->setGeometry(70, 120, 250 - 70, 40);
+    usb_str3->setFrameShape(QFrame::NoFrame);
+    usb_str3->setText("-");
+    // 显示温度
+    m_Temp = new QLabel(frame_5);
+    m_Temp->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:20px;}");
+    m_Temp->setGeometry(0, 160, 250, 40);
+    m_Temp->setFrameShape(QFrame::NoFrame);
+    m_Temp->setFont(font);
+    m_Temp->setText("设备内部温度:-");
+
+    QDateTime lastTime = QDateTime::currentDateTime();
+    QLabel *linkUs = new QLabel(frame_5);
+    linkUs->setGeometry(40, 220, 250, 40);
+    linkUs->setStyleSheet("QLabel {font-family:castellar; text-align:left; padding:2px; font-size:20px;}");
+    linkUs->setText("<a href=\"http://www.baidu.com\">© " + QString::number(lastTime.date().year()) + " 关于我们");
+    connect(linkUs,SIGNAL(linkActivated (QString)),this,SLOT(linkUs(QString)));   // const QString&
 
 //    // Run push button
 //    QPushButton *sendUSB = new QPushButton("发送", frame);
@@ -169,7 +232,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD) : QWidget(parent)
 
     // The frame on the left side
     QFrame *frame_2 = new QFrame(this);
-    frame_2->setGeometry(162, 4, 810, 820);
+    frame_2->setGeometry(262, 4, 810, 820);
     frame_2->setFrameShape(QFrame::StyledPanel);
 
     // Chart Viewer
@@ -225,7 +288,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD) : QWidget(parent)
     connect(dataRateTimer_2, SIGNAL(timeout()), SLOT(CreateData()));
 
     m_UsbReceiveThread = new USB_Receive_Thread(this, m_UsbHid, m_ComData);    // 新建线程
-    connect(m_UsbReceiveThread,SIGNAL(get_USB_Data(unsigned char *, unsigned char )),this, SLOT(m_get_USB_Data(unsigned char *, unsigned char )));
+    connect(m_UsbReceiveThread,SIGNAL(get_USB_Data()),this, SLOT(m_get_USB_Data()));
     connect(m_UsbReceiveThread,SIGNAL(end_Thread()),this, SLOT(thread_finished()));
     // Set up the chart update timer
     m_ChartUpdateTimer = new QTimer(this);
@@ -246,7 +309,7 @@ RealTime::~RealTime()
     delete m_ChartViewer->getChart();
     delete m_ChartViewer_2->getChart();
 
-    delete m_UsbHid;
+//    delete m_UsbHid;
 //    if(m_ComData != nullptr)
 //    {
 //        delete m_ComData;
@@ -322,10 +385,9 @@ void RealTime::getData()
     //
     // We provide some visual feedback to the latest numbers generated, so you can see the
     // data being generated.
-    //
-
-    m_ValueB->setText(QString::number(m_ComData->d_dataSeriesV[m_ComData->d_currentIndex - 1], 'f', 2));
-    m_ValueC->setText(QString::number(m_ComData->d_dataSeriesA[m_ComData->d_currentIndex - 1], 'f', 2));
+    // 显示电流/电压/功率
+    showVAW(m_ComData->d_dataSeriesV[m_ComData->d_currentIndex - 1], m_ComData->d_dataSeriesA[m_ComData->d_currentIndex - 1]);
+//    m_ValueC->setText("888.888");
 }
 
 ////
@@ -335,7 +397,6 @@ void RealTime::getData()
 //{
 //    m_ChartUpdateTimer->start(text.toInt());
 //}
-
 //
 // Update the chart. Instead of drawing the chart directly, we call updateViewPort, which
 // will trigger a ViewPortChanged signal. We update the chart in the signal handler
@@ -744,10 +805,14 @@ void RealTime::drawChart(QChartViewer *viewer, int index)
     // and blue (0000ff)
     layer->setXData(viewPortTimeStamps);
 //    layer->addDataSet(viewPortDataSeriesA, 0xff0000, "Alpha");
-    if(index == 0)
+    if(index == 0) {
         layer->addDataSet(viewPortDataSeriesB, 0x00cc00, "Voltage");
-    else if(index == 1)
+        c->yAxis()->setMinTickInc(0.1);
+    }
+    else if(index == 1) {
         layer->addDataSet(viewPortDataSeriesC, 0x0000ff, "Current");
+        c->yAxis()->setMinTickInc(0.01);
+    }
 
     //================================================================================
     // Configure axis scale and labelling
@@ -760,6 +825,10 @@ void RealTime::drawChart(QChartViewer *viewer, int index)
     // For the automatic axis labels, set the minimum spacing to 75/30 pixels for the x/y axis.
     c->xAxis()->setTickDensity(75);
     c->yAxis()->setTickDensity(30);
+//    c->yAxis()->setLinearScale(0, 1000, 100, 10);
+//    c->yAxis()->setTickLength(8, 4);
+//    c->yAxis()->setLength(1);
+//    c->yAxis()->setAutoScale();
 
     //
     // In this demo, the time range can be from many hours to a few seconds. We can need to define
@@ -923,6 +992,10 @@ void RealTime::onConnectUSB()
         m_UsbReceiveThread->start();   // 启动线程
         m_ChartUpdateTimer->start();    // 启动更新表格
         dataRateTimer->start(DataInterval); // 启动获取数据
+        m_ComData->ClearData();         // 清之前的数据
+        usb_str1->setText(m_UsbHid->str_Manufactured);
+        usb_str2->setText(m_UsbHid->str_Product);
+        usb_str3->setText(m_UsbHid->str_SerialNumber);
     }
     else
     {
@@ -937,6 +1010,9 @@ void RealTime::onDisConnectUSB()
 //    m_UsbReceiveThread->wait();
     m_ChartUpdateTimer->stop();     // 关闭更新表格
     dataRateTimer->stop();      // 关闭获取数据
+    usb_str1->setText("-");
+    usb_str2->setText("-");
+    usb_str3->setText("-");
 }
 
 void RealTime::thread_finished()
@@ -999,7 +1075,7 @@ void RealTime::onReadUSB()
 
 void RealTime:: CreateData()
 {
-//    return;
+    return;
     if(m_UsbHid->dev_handle == nullptr)
     {
 //        qDebug() << "USB设备未打开！";
@@ -1033,17 +1109,47 @@ void RealTime:: CreateData()
 
 }
 
-void RealTime::m_get_USB_Data(unsigned char *buf, unsigned char len)
+void RealTime::m_get_USB_Data()
 {
-
+    unsigned char buf[32];
+    memcpy(buf, m_ComData->ST_Rec.rec, 32);
     unsigned char *getHeader = new unsigned char[4]{};
     memcpy(getHeader, buf, m_ComData->headerLength);
+    if(buf[28] != 0x59 || buf[29] != 0x3E || buf[30] != 0xBD)
+    {
+        return;     // 数据尾码不对，返回
+    }
+    emit send_Level_Num(buf[27]);
     if(0 == memcmp(getHeader, m_ComData->headerC, m_ComData->headerLength))
     {
       d_And_c dataB;
       d_And_c dataC;
-      memcpy(&dataB, buf + 4, sizeof(double));
-      memcpy(&dataC, buf + 12, sizeof(double));
+//      memcpy(&dataB, buf + 4, sizeof(double));
+//      memcpy(&dataC, buf + 12, sizeof(double));
+      // 赋值
+      unsigned int buf_Vol = 0;
+      unsigned int buf_Temp = 0;
+      buf_Vol |= buf[8]; buf_Vol = buf_Vol << 8;
+      buf_Vol |= buf[9];
+      buf_Temp |= buf[10]; buf_Temp = buf_Temp << 8;
+      buf_Temp |= buf[11];
+      dataB.d = (double)buf_Vol / 4095 * 3 * 2.5;
+      double temperature = (1.43 - ((double)buf_Temp / 4095 * 3)) / 4.3 + 25;
+      m_Temp->setText("设备内部温度:" + QString::number(temperature, 'f', 1) + "℃");
+      unsigned int buf_Cur = 0;
+      unsigned int max_Cur = 0x7FFFFF;
+      double adVol = 0;     // 转换后ad采样的电压值
+      buf_Cur |= buf[7]; buf_Cur = buf_Cur << 8;
+      buf_Cur |= buf[6]; buf_Cur = buf_Cur << 8;
+      buf_Cur |= buf[5];
+      adVol = (double)buf_Cur / (double)max_Cur * 2500;     // 获取ad采样的电压值，mv为单位
+      switch (buf[27]) {
+        case 1: dataC.d = adVol / 14 / 100000; break;
+        case 2: dataC.d = adVol / 14 / 1000; break;
+        case 3: dataC.d = adVol / 14 / 1.003 / 10; break;   // 1.003 为修正mos管电压
+        case 4: dataC.d = adVol / 14 / 0.1; break;
+        default: dataC.d = 0; break;
+      }
       // 更新数据到表格数据
       // The current time
       QDateTime now = QDateTime::currentDateTime();
@@ -1068,10 +1174,76 @@ void RealTime::m_get_USB_Data(unsigned char *buf, unsigned char len)
           ComData::shiftData_D(m_ComData->d_timeStamps, m_ComData->DataSize, currentTime);
       }
       qDebug() << "--单次接收的数据：dataB = " << dataB.d << ", dataC =" << dataC.d  << " Time = " << QDateTime::currentDateTime();
-      m_ValueB->setText(QString::number(m_ComData->d_dataSeriesV[m_ComData->d_currentIndex - 1], 'f', 2));
-      m_ValueC->setText(QString::number(m_ComData->d_dataSeriesA[m_ComData->d_currentIndex - 1], 'f', 2));
+      showVAW(m_ComData->d_dataSeriesV[m_ComData->d_currentIndex - 1], m_ComData->d_dataSeriesA[m_ComData->d_currentIndex - 1]);
     }
     else {
-        qDebug() << "接收数据的头码不对";
+
+        if(buf[0] == 0xaa && buf[1] == 0xbb && buf[2] == 0xcc && buf[3] == 0xdd)
+        {
+            if(buf[4] == 0x01 && buf[5] == 0x01)
+            {
+//                qDebug() << "电流太小，超量程";
+//                m_ValueB->setText(" - ");
+//                m_ValueC->setText(" - ");
+            }
+            else if(buf[4] == 0x02 && buf[5] == 0x02)
+            {
+//                m_ValueB->setText("电压过大，超量程！");
+//                m_ValueC->setText("电流过大，超量程！");
+            }
+        }
+
     }
+}
+
+void RealTime::showVAW(double v, double mA)
+{
+    // 计算平均值
+    double sum_V = 0; double sum_A = 0;
+    for (unsigned int i = 0; i < m_ComData->d_currentIndex; i++) {
+        sum_V += m_ComData->d_dataSeriesV[i];
+        sum_A += m_ComData->d_dataSeriesA[i];
+    }
+    m_ComData->d_Avg_V = sum_V / m_ComData->d_currentIndex;
+    m_ComData->d_Avg_A = sum_A / m_ComData->d_currentIndex;
+    // 更新显示
+    m_ValueB->setText(QString::number(v, 'f', 3));
+    if(mA < 1) {
+        m_ValueC->setText(QString::number(mA * 1000, 'f', 3));
+        m_unitA->setText("uA");
+    } else {
+        m_ValueC->setText(QString::number(mA, 'f', 2));
+        m_unitA->setText("mA");
+    }
+    double bufPower = v * mA / 1000;
+    m_Power->setText(QString::number(bufPower, 'f', 3));
+    // 更新平均值显示
+    buf1_QL->setText(QString::number(m_ComData->d_Avg_V, 'f', 3) + "V");
+    if(m_ComData->d_Avg_A < 1) {
+        buf2_QL->setText(QString::number(m_ComData->d_Avg_A * 1000, 'f', 3) + "uA");
+    } else {
+        buf2_QL->setText(QString::number(m_ComData->d_Avg_A, 'f', 3) + "mA");
+    }
+    double bufPower_2 = m_ComData->d_Avg_V * m_ComData->d_Avg_A / 1000;
+    buf3_QL->setText(QString::number(bufPower_2, 'f', 3) + "W");
+}
+
+void RealTime::linkUs(QString str)
+{
+    qDebug() << "联系我们" << str;
+}
+
+QString RealTime::loadFontFamilyFromTTF(QString str)
+{
+    static QString font;
+    static bool loaded = false;
+    if(!loaded)
+    {
+        loaded = true;
+        int loadedFontID = QFontDatabase::addApplicationFont(str);
+        QStringList loadedFontFamilies = QFontDatabase::applicationFontFamilies(loadedFontID);
+        if(!loadedFontFamilies.empty())
+            font = loadedFontFamilies.at(0);
+    }
+    return font;
 }

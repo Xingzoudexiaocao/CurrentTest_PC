@@ -6,5 +6,8 @@
         <file>zoomin.png</file>
         <file>zoomout.png</file>
         <file>pointer.png</file>
+        <file>logo.png</file>
+        <file>DSDigital.ttf</file>
+        <file>digifaw.ttf</file>
     </qresource>
 </RCC>

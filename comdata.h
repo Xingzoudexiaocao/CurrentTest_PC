@@ -10,6 +10,12 @@
 #pragma execution_character_set("utf-8")
 #endif
 
+
+typedef struct ST_REC_STRUCT
+{
+    unsigned char rec[32];
+} ST_REC_STRUCT;
+
 union d_And_c
 {
     double d;
@@ -34,6 +40,7 @@ public:
         memmove(data, data + 1, sizeof(*data) * (len - 1));
         data[len - 1] = newValue;
     }
+    void ClearData(void);
 
 public:
     hid_device *myHandle;   // USB_HID
@@ -48,7 +55,11 @@ public:
     double *d_dataSeriesV;	// The values for the data series A
     double *d_dataSeriesA;	// The values for the data series B
 
+    double d_Avg_V;
+    double d_Avg_A;
+
     unsigned long long d_currentIndex;
+    ST_REC_STRUCT ST_Rec;       // 接收数据缓存
 
 private:
 

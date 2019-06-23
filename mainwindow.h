@@ -9,6 +9,7 @@
 #include <QTextCodec>
 
 #include "comdata.h"
+#include "debugwatch.h"
 
 #ifdef _MSC_VER
 #pragma execution_character_set("utf-8")
@@ -23,7 +24,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = nullptr, ComData *comD = nullptr);
+    explicit MainWindow(QWidget *parent = nullptr, ComData *comD = nullptr, USB_HID *hid = nullptr);
     ~MainWindow();
 
 private Q_SLOTS:
@@ -38,8 +39,16 @@ private:
     Ui::MainWindow *ui;
     QSerialPort serial;
     ComData *m_ComData;
+    USB_HID *m_UsbHid;
+    DebugWatch *m_Debug;        // 调试监控窗口
     char RecBuffer[1024];
     unsigned long long RecIndex;
+
+
+protected:
+    virtual void keyPressEvent(QKeyEvent *ev);      // 键盘事件
+    virtual void keyReleaseEvent(QKeyEvent *ev);
+
 };
 
 #endif // MAINWINDOW_H

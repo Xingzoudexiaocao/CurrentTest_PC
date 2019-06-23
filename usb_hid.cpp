@@ -44,7 +44,7 @@ bool USB_HID::ConnectUSB()
         qDebug()<<"Get Device Error"<<endl;   //there was an error
     }
 
-    dev_handle = libusb_open_device_with_vid_pid(ctx, 0x0483, 0x5750); //open mouse
+    dev_handle = libusb_open_device_with_vid_pid(ctx, 0x63B2, 0xA753); //open mouse 0x0483 0x5750
     if(dev_handle == nullptr)
     {
         qDebug()<<"Cannot open device"<<endl;
@@ -56,6 +56,7 @@ bool USB_HID::ConnectUSB()
     {
         libusb_device *dev_device = libusb_get_device(dev_handle);
         libusb_config_descriptor *config;
+        libusb_device_descriptor desc;
         if(libusb_get_config_descriptor(dev_device, 0, &config) == 0)
         {
 
@@ -68,7 +69,37 @@ bool USB_HID::ConnectUSB()
             qDebug()<<"iConfiguration = "<< config->iConfiguration;
             qDebug()<<"bmAttributes = "<< config->bmAttributes;
             qDebug()<<"MaxPower = "<< config->MaxPower;
+            qDebug()<<"extra_length = "<< config->extra_length;
         }
+        if (libusb_get_device_descriptor(dev_device, &desc) == 0)
+        {
+            qDebug("Device Descriptors: ");
+            qDebug("Vendor ID : 0x%x",desc.idVendor);
+            qDebug("Product ID : 0x%x",desc.idProduct);
+            qDebug("Serial Number : %x",desc.iSerialNumber);
+            qDebug("Size of Device Descriptor : %d",desc.bLength);
+            qDebug("Type of Descriptor : %d",desc.bDescriptorType);
+            qDebug("USB Specification Release Number : 0x%x",desc.bcdUSB);
+            qDebug("Device Release Number : %d",desc.bcdDevice);
+            qDebug("Device Class : 0x%x",desc.bDeviceClass);
+            qDebug("Device Sub-Class : %d",desc.bDeviceSubClass);
+            qDebug("Device Protocol : %d",desc.bDeviceProtocol);
+            qDebug("Max. Packet Size : %d",desc.bMaxPacketSize0);
+            qDebug("No. of Configuraions : %d",desc.bNumConfigurations);
+        }
+        if (libusb_get_string_descriptor_ascii(dev_handle, desc.iManufacturer, (unsigned char*) str_Manufactured, sizeof(str_Manufactured)) >= 0)
+        {
+            qDebug("Manufactured : %s",str_Manufactured);
+        }
+        if(libusb_get_string_descriptor_ascii(dev_handle, desc.iProduct, (unsigned char*) str_Product, sizeof(str_Product)) >= 0)
+        {
+            qDebug("Product : %s",str_Product);
+        }
+        if(libusb_get_string_descriptor_ascii(dev_handle, desc.iSerialNumber, (unsigned char*) str_SerialNumber, sizeof(str_SerialNumber)) >= 0)
+        {
+            qDebug("SerialNumber : %s",str_SerialNumber);
+        }
+
         qDebug()<<"Device Opened"<<endl;
         libusb_free_device_list(devs, 1);                     //free the list, unref the devices in it
 
@@ -106,7 +137,8 @@ bool USB_HID::ConnectUSB()
 //            qDebug()<<"Cannot Release Interface"<<endl;
 //            return false;
 //        }
-//        qDebug()<<"Released Interface"<<endl;
+//        qDebug()<<"Released Interface"<<endl;   
+
 
         return true;
     }

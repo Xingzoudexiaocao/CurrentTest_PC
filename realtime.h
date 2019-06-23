@@ -13,6 +13,8 @@
 #include <QTextCodec>
 #include <QScrollBar>
 #include <QFileDialog>
+#include <QPixmap>
+#include <QFont>
 #include "comdata.h"
 #include "usb_hid.h"
 #include "usb_receive_thread.h"
@@ -21,8 +23,10 @@ class RealTime : public QWidget
 {
     Q_OBJECT
 public:
-    explicit RealTime(QWidget *parent = nullptr, ComData *comD = nullptr);
+    explicit RealTime(QWidget *parent = nullptr, ComData *comD = nullptr,  USB_HID *hid = nullptr);
     ~RealTime();
+signals:
+    void send_Level_Num(int);
 
 private:
     // The initial full range is set to 60 seconds of data.
@@ -35,6 +39,15 @@ private:
 
     QLabel *m_ValueB;                   // Label to display the realtime value B
     QLabel *m_ValueC;                   // Label to display the realtime value C
+    QLabel *m_Power;
+    QLabel *m_unitA;    // 电流单位
+    QLabel *buf1_QL;    // 平均值显示
+    QLabel *buf2_QL;
+    QLabel *buf3_QL;
+    QLabel *usb_str1;
+    QLabel *usb_str2;
+    QLabel *usb_str3;
+    QLabel *m_Temp;
 
     QChartViewer *m_ChartViewer;        // QChartViewer control
     QChartViewer *m_ChartViewer_2;        // QChartViewer control
@@ -56,6 +69,8 @@ private:
 
 private slots:
 //    void onUpdatePeriodChanged(QString);// The chart update timer interval has changed.
+    QString loadFontFamilyFromTTF(QString);
+    void linkUs(QString);
     void getData();                     // Get new data values
     void updateChart();                 // Update the chart.
     void drawChart();                   // Draw the chart.
@@ -75,9 +90,11 @@ private slots:
     void onSendUSB();    // 发送数据方法
     void onReadUSB();    // 接收数据方法
     void CreateData();
+    void showVAW(double v, double mA);
 public slots:
-    void m_get_USB_Data(unsigned char *buf, unsigned char len);
+    void m_get_USB_Data();
     void thread_finished();
+
 };
 
 #endif // REALTIME_H

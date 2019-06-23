@@ -2,28 +2,41 @@
 #include "ui_mainwindow.h"
 #include "realtime.h"
 #include "QDebug"
+#include <QKeyEvent>
 
-MainWindow::MainWindow(QWidget *parent, ComData *comD) :
+MainWindow::MainWindow(QWidget *parent, ComData *comD, USB_HID *hid) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
     qDebug() << "MainWindow构造函数。";
     m_ComData = comD;
+    m_UsbHid = hid;
+    m_Debug = nullptr;
 //    QTextCodec *codec = QTextCodec::codecForName("GBK");//情况1
 //    QTextCodec *codec = QTextCodec::codecForName("UTF-8");//情况2
 //    QTextCodec::setCodecForTr(codec);
 //    QTextCodec::setCodecForLocale(codec);
 //    QTextCodec::setCodecForCStrings(codec);
 
-    setFixedSize(1000, 860);
+    setFixedSize(1100, 860);
+    this->grabKeyboard();       // 捕获键盘输入
 
-    RealTime *demo = new RealTime(this, m_ComData);
-    demo->setStyleSheet("* {font-family:arial;font-size:15px}");
+    RealTime *demo = new RealTime(this, m_ComData, m_UsbHid);
+//    demo->setStyleSheet("* {font-family:arial;font-size:15px}");
     demo->setGeometry(8, 20, 990, 850);
     demo->show();
-
-
+#ifdef  DEBUG_PROCESS
+        if(m_Debug == nullptr)
+        {
+            m_Debug = new DebugWatch(nullptr, m_ComData, m_UsbHid);
+    //        demo->setStyleSheet("* {font-family:arial;font-size:15px}");
+    //        demo->setWindowFlags(Qt::WindowStaysOnTopHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint); // 置顶，最小化，关闭
+            m_Debug->setGeometry(0, 0, 400, 400);
+            m_Debug->show();
+            connect(demo,SIGNAL(send_Level_Num(int)),m_Debug, SLOT(receive_Level_Num(int)));
+        }
+#endif
 //    QObject::connect(ui->pushButton,SIGNAL(clicked()), this, SLOT(on_ClearData_clicked()));
 //    QObject::connect(ui->pushButton_2,SIGNAL(clicked()), this, SLOT(on_SendData_clicked()));
 //    QObject::connect(ui->pushButton_3,SIGNAL(clicked()), this, SLOT(on_SearchCom_clicked()));
@@ -68,6 +81,24 @@ MainWindow::~MainWindow()
     qDebug() << "MainWindow析构函数。";
     delete ui;
     delete m_ComData;
+    delete m_UsbHid;
+}
+
+void MainWindow::keyPressEvent(QKeyEvent *ev)
+{
+    if(ev->modifiers() == Qt::ControlModifier && ev->key() == Qt::Key_P) {
+        qDebug() << "Ctrl+p 按键按下。";
+        return;
+    }
+    QWidget::keyPressEvent(ev);
+}
+void MainWindow::keyReleaseEvent(QKeyEvent *ev)
+{
+    if(ev->modifiers() == Qt::ControlModifier && ev->key() == Qt::Key_P) {
+        qDebug() << "Ctrl+p 按键松开。";
+        return;
+    }
+    QWidget::keyReleaseEvent(ev);
 }
 
 

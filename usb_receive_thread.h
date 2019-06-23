@@ -15,7 +15,7 @@ public:
     explicit USB_Receive_Thread(QObject *parent = nullptr, USB_HID *hid = nullptr, ComData *comD = nullptr);
 
 signals:
-    void get_USB_Data(unsigned char *buf, unsigned char len);
+    void get_USB_Data();
     void end_Thread();
 
 protected:

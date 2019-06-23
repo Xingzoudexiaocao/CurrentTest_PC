@@ -13,20 +13,20 @@ void USB_Receive_Thread::run()
     qDebug("接收线程run: %d", this->currentThreadId());
     int res = -1;
     int numBytes = -1;
-    unsigned char buffer[32];
-    memset(buffer, 0, 32);
+//    unsigned char buffer[32];
+    memset(m_ComData->ST_Rec.rec, 0, 32);
 
     while (1) {
 //        if(isStop)
 //            break;
         if(!isStop) {
             /* Wait up to 5 seconds for a message to arrive on endpoint 0x81. */
-            res = libusb_interrupt_transfer(m_UsbHid->dev_handle, 0x81, buffer, 32, &numBytes, 100);
+            res = libusb_interrupt_transfer(m_UsbHid->dev_handle, 0x81, m_ComData->ST_Rec.rec, 32, &numBytes, 100);
             if (0 == res)
             {
               if (numBytes == 32)
               {
-                  emit get_USB_Data(buffer, 32);    // 发送接收信号
+                  emit get_USB_Data();    // 发送接收信号
                   qDebug("Received %d bytes, 成功.\n", numBytes);
               }
               else
@@ -36,7 +36,7 @@ void USB_Receive_Thread::run()
             }
             else
             {
-                qDebug("Error receiving message.\n");
+//                qDebug("Error receiving message.\n");
             }
             res = -1;   // 置位
             numBytes = -1;

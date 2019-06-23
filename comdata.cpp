@@ -9,7 +9,7 @@ ComData::ComData()
     myHandle = nullptr;
     lastTime = QDateTime::currentDateTime();
     d_currentIndex = 0;     // 默认为1，这样会显示波形图
-    DataSize = 10000;
+    DataSize = 360000;  // 保存1小时数据
     // 头码 167, 89, 62, 189 = (0xA7, 0x59, 0x3E, 0xBD)
     headerC = new unsigned char[4]{0xA7, 0x59, 0x3E, 0xBD};
     headerLength = 4;
@@ -23,6 +23,9 @@ ComData::ComData()
         *(d_dataSeriesV + i) = 0;
         *(d_dataSeriesA + i) = 0;
     }
+    // 初始化平均值
+    d_Avg_V = 0;
+    d_Avg_A = 0;
 }
 
 ComData::~ComData()
@@ -31,4 +34,18 @@ ComData::~ComData()
     delete [] d_dataSeriesV;
     delete [] d_dataSeriesA;
     qDebug() << "ComData析构，回收内存空间。" ;
+}
+
+void ComData::ClearData(void)
+{
+    for (unsigned long long i = 0; i < DataSize; i++) {
+        *(d_timeStamps + i) = 0;
+        *(d_dataSeriesV + i) = 0;
+        *(d_dataSeriesA + i) = 0;
+    }
+    // 初始化平均值
+    d_Avg_V = 0;
+    d_Avg_A = 0;
+    d_currentIndex = 0;     // 默认为1，这样会显示波形图
+    lastTime = QDateTime::currentDateTime();
 }

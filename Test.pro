@@ -29,6 +29,7 @@ CONFIG += c++11
 
 SOURCES += \
         comdata.cpp \
+        debugwatch.cpp \
         main.cpp \
         mainwindow.cpp \
         qchartviewer.cpp \
@@ -39,6 +40,7 @@ SOURCES += \
 
 HEADERS += \
         comdata.h \
+        debugwatch.h \
         mainwindow.h \
         qchartviewer.h \
         realtime.h \
