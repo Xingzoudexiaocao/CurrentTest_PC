@@ -9,6 +9,8 @@ DebugWatch::DebugWatch(QWidget *parent, ComData *comD, USB_HID *hid) : QMainWind
     m_ComData = comD;
     m_UsbHid = hid;
 
+    setWindowFlags(Qt::WindowStaysOnTopHint | Qt::WindowCloseButtonHint); // 置顶，最小化，关闭
+
     // 测试档位
     QComboBox *updatePeriod = new QComboBox(this);
     updatePeriod->setGeometry(6, 20, 150, 40);
@@ -43,6 +45,11 @@ DebugWatch::~DebugWatch()
 {
     qDebug() << "DebugWatch析构函数。";
 
+}
+
+void DebugWatch::closeEvent ( QCloseEvent * e )
+{
+    this->setAttribute(Qt::WA_DeleteOnClose);
 }
 
 void DebugWatch::onLedOnOffChanged(int index)

@@ -6,6 +6,8 @@
 #include "mainwindow.h"
 #include <QFontDatabase>
 #include <QCoreApplication>
+#include <QApplication>
+#include <QDesktopWidget>
 
 using namespace std;
 
@@ -16,6 +18,8 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     qDebug() << "RealTime构造函数。";
     m_ComData = comD;
     m_UsbHid = hid;
+    m_About = nullptr;
+    cntDisplay = 0;
 
     setFixedSize(1090, 850);
 ////    setMinimumSize(200,200);
@@ -102,14 +106,14 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     frame_3->setFrameShape(QFrame::NoFrame);
     // 显示瞬时电压/电流/功率
     m_ValueB = new QLabel(frame_3);
-    m_ValueB->setStyleSheet("QLabel { text-align:center; padding:10px; font-size:56px; color:green; background-color:white;}");
+    m_ValueB->setStyleSheet("QLabel { text-align:center; padding:10px; font-size:56px; color:#00cc00; background-color:white;}");
     m_ValueB->setGeometry(2, 0, 200, 80);
     m_ValueB->setFont(font_VAW);
     m_ValueB->setAlignment(Qt::AlignHCenter);
     m_ValueB->setFrameShape(QFrame::NoFrame);
     QLabel *unitV = new QLabel(frame_3);
     unitV->setGeometry(6 + 190, 0, 50, 80);
-    unitV->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:30px; color:green; background-color:white;}");
+    unitV->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:30px; color:#00cc00; background-color:white;}");
     unitV->setText("V");
 
     m_ValueC = new QLabel(frame_3);
@@ -295,6 +299,27 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     connect(m_ChartUpdateTimer, SIGNAL(timeout()), SLOT(updateChart()));
     updateChart();      // 初始化显示表格
 
+
+    QLabel *volTitle = new QLabel(this);
+    volTitle->setGeometry(550, 18, 300, 30);
+    volTitle->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:30px; background-color:white;}");
+    volTitle->setText("电压测量波形图");
+    volTitle->setFont(font);
+    QLabel *curTitle = new QLabel(this);
+    curTitle->setGeometry(550, 420, 300, 30);
+    curTitle->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:30px; background-color:white;}");
+    curTitle->setText("电流测量波形图");
+    curTitle->setFont(font);
+    QLabel *volShow = new QLabel(this);
+    volShow->setGeometry(360, 48, 60, 20);
+    volShow->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:20px; color:#00cc00; background-color:white;}");
+    volShow->setText("电压:");
+    volShow->setFont(font);
+    QLabel *curShow = new QLabel(this);
+    curShow->setGeometry(360, 450, 60, 20);
+    curShow->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:20px; color:blue; background-color:white;}");
+    curShow->setText("电流:");
+    curShow->setFont(font);
 
     // Can start now
 //    updatePeriod->setCurrentIndex(0);
@@ -538,12 +563,12 @@ void RealTime::drawChart_2()
 //
 void RealTime::onMouseMovePlotArea(QMouseEvent *)
 {
-    trackLineLabel((XYChart *)m_ChartViewer->getChart(), m_ChartViewer->getPlotAreaMouseX());
+    trackLineLabel((XYChart *)m_ChartViewer->getChart(), m_ChartViewer->getPlotAreaMouseX(), 0);
     m_ChartViewer->updateDisplay();
 }
 void RealTime::onMouseMovePlotArea_2(QMouseEvent *)
 {
-    trackLineLabel((XYChart *)m_ChartViewer_2->getChart(), m_ChartViewer_2->getPlotAreaMouseX());
+    trackLineLabel((XYChart *)m_ChartViewer_2->getChart(), m_ChartViewer_2->getPlotAreaMouseX(), 1);
     m_ChartViewer_2->updateDisplay();
 }
 
@@ -760,10 +785,10 @@ void RealTime::drawChart(QChartViewer *viewer, int index)
     c->setClipping();
 
     // Add a title to the chart using 18pt Arial font
-    if(index == 0)
-        c->addTitle("Voltage with Zoom/Scroll and Track Line", "arial.ttf", 18);
-    else if (index == 1)
-        c->addTitle("Current with Zoom/Scroll and Track Line", "arial.ttf", 18);
+//    if(index == 0)
+//        c->addTitle("Voltage with Zoom/Scroll and Track Line", "arial.ttf", 18);
+//    else if (index == 1)
+//        c->addTitle("Current with Zoom/Scroll and Track Line", "arial.ttf", 18);
 
     // Add a legend box at (55, 25) using horizontal layout. Use 10pt Arial Bold as font. Set the
     // background and border color to transparent and use line style legend key.
@@ -782,9 +807,9 @@ void RealTime::drawChart(QChartViewer *viewer, int index)
 
     // Add axis title using 12pt Arial Bold Italic font
     if(index == 0)
-        c->yAxis()->setTitle("Voltage (I/mV)", "arialbd.ttf", 12);
+        c->yAxis()->setTitle("Voltage (I/V)", "arialbd.ttf", 12);
     else if (index == 1)
-        c->yAxis()->setTitle("Current (I/uA)", "arialbd.ttf", 12);
+        c->yAxis()->setTitle("Current (I/mA)", "arialbd.ttf", 12);
 
 
     //================================================================================
@@ -804,13 +829,26 @@ void RealTime::drawChart(QChartViewer *viewer, int index)
     // Now we add the 3 data series to a line layer, using the color red (ff0000), green (00cc00)
     // and blue (0000ff)
     layer->setXData(viewPortTimeStamps);
-//    layer->addDataSet(viewPortDataSeriesA, 0xff0000, "Alpha");
+    char buffer[1024];
     if(index == 0) {
-        layer->addDataSet(viewPortDataSeriesB, 0x00cc00, "Voltage");
+        if(m_ComData->d_currentIndex > 0) {
+            sprintf(buffer, "             <*bgColor=ffffff*> <*color=00cc00*> <*size=14px*> %.3f V", m_ComData->d_dataSeriesV[m_ComData->d_currentIndex - 1]);
+//        layer->addDataSet(DoubleArray(m_ComData->d_dataSeriesV, m_ComData->d_currentIndex), 0x00cc00, buffer);
+        }
+        layer->addDataSet(viewPortDataSeriesB, 0x00cc00, buffer);
         c->yAxis()->setMinTickInc(0.1);
     }
     else if(index == 1) {
-        layer->addDataSet(viewPortDataSeriesC, 0x0000ff, "Current");
+        if(m_ComData->d_currentIndex > 0) {
+            double d = m_ComData->d_dataSeriesA[m_ComData->d_currentIndex - 1];
+            if(d < 1) {
+                sprintf(buffer, "             <*bgColor=ffffff*> <*color=0000ff*> <*size=14px*> %.3f uA", d * 1000);
+            } else {
+                sprintf(buffer, "             <*bgColor=ffffff*> <*color=0000ff*> <*size=14px*> %.2f mA", d);
+            }
+    //        layer->addDataSet(DoubleArray(m_ComData->d_dataSeriesA, m_ComData->d_currentIndex), 0x00ff, buffer);
+        }
+        layer->addDataSet(viewPortDataSeriesC, 0x0000ff, buffer);
         c->yAxis()->setMinTickInc(0.01);
     }
 
@@ -862,7 +900,7 @@ void RealTime::drawChart(QChartViewer *viewer, int index)
     if (!viewer->isInMouseMoveEvent())
     {
         trackLineLabel(c, (0 == viewer->getChart()) ? c->getPlotArea()->getRightX() :
-            viewer->getPlotAreaMouseX());
+            viewer->getPlotAreaMouseX(), index);
     }
 
     // Set the chart image to the QChartViewer
@@ -873,7 +911,7 @@ void RealTime::drawChart(QChartViewer *viewer, int index)
 //
 // Draw the track line with data point labels
 //
-void RealTime::trackLineLabel(XYChart *c, int mouseX)
+void RealTime::trackLineLabel(XYChart *c, int mouseX, int index)
 {
     // Clear the current dynamic layer and get the DrawArea object to draw on it.
     DrawArea *d = c->initDynamicLayer();
@@ -925,8 +963,21 @@ void RealTime::trackLineLabel(XYChart *c, int mouseX)
                 d->circle(xCoor, yCoor, 4, 4, color, color);
 
                 ostringstream label;
-                label << "<*font,bgColor=" << hex << color << "*> "
-                    << c->formatValue(dataSet->getValue(xIndex), "{value|P4}") << " <*font*>";
+                if(index == 0) {
+                    label << "<*font,bgColor=" << hex << color << "*> "
+                        << c->formatValue(dataSet->getValue(xIndex), "{value|P4}") << "V" << " <*font*>";
+                } else if(index == 1) {
+                    double bufD = dataSet->getValue(xIndex);
+                    if(bufD < 1) {
+                        label << "<*font,bgColor=" << hex << color << "*> "
+                            << c->formatValue(bufD * 1000, "{value|P4}") << "uA" << " <*font*>";
+                    } else {
+                        label << "<*font,bgColor=" << hex << color << "*> "
+                            << c->formatValue(bufD, "{value|P4}") << "mA" << " <*font*>";
+                    }
+                }
+
+
                 t = d->text(label.str().c_str(), "arialbd.ttf", 10);
 
                 // Draw the label on the right side of the dot if the mouse is on the left side the
@@ -1120,8 +1171,17 @@ void RealTime::m_get_USB_Data()
         return;     // 数据尾码不对，返回
     }
     emit send_Level_Num(buf[27]);
+    if(buf[27] == 0 || buf[27] > 4)
+    {
+        return;     // 档位不正确
+    }
     if(0 == memcmp(getHeader, m_ComData->headerC, m_ComData->headerLength))
     {
+        unsigned int sum = buf[5] + buf[6] + buf[7] + 0x9B;
+        if(buf[4] != (sum & 0xFF))
+        {
+            return;     // 校验和不正确
+        }
       d_And_c dataB;
       d_And_c dataC;
 //      memcpy(&dataB, buf + 4, sizeof(double));
@@ -1206,17 +1266,25 @@ void RealTime::showVAW(double v, double mA)
     }
     m_ComData->d_Avg_V = sum_V / m_ComData->d_currentIndex;
     m_ComData->d_Avg_A = sum_A / m_ComData->d_currentIndex;
-    // 更新显示
-    m_ValueB->setText(QString::number(v, 'f', 3));
-    if(mA < 1) {
-        m_ValueC->setText(QString::number(mA * 1000, 'f', 3));
-        m_unitA->setText("uA");
-    } else {
-        m_ValueC->setText(QString::number(mA, 'f', 2));
-        m_unitA->setText("mA");
+    cntDisplay++;
+    if(cntDisplay >= 10)
+    {
+        cntDisplay = 0;     // 没10个数据更新一次显示，大约100ms
+        // 更新显示
+        m_ValueB->setText(QString::number(v, 'f', 3));
+        if(mA < 1) {
+            m_ValueC->setText(QString::number(mA * 1000, 'f', 3));
+            m_unitA->setText("uA");
+        } else if(mA >= 1 && mA < 1000) {
+            m_ValueC->setText(QString::number(mA, 'f', 3));
+            m_unitA->setText("mA");
+        } else if(mA >= 1000) {
+            m_ValueC->setText(QString::number(mA, 'f', 2));
+            m_unitA->setText("mA");
+        }
+        double bufPower = v * mA / 1000;
+        m_Power->setText(QString::number(bufPower, 'f', 3));
     }
-    double bufPower = v * mA / 1000;
-    m_Power->setText(QString::number(bufPower, 'f', 3));
     // 更新平均值显示
     buf1_QL->setText(QString::number(m_ComData->d_Avg_V, 'f', 3) + "V");
     if(m_ComData->d_Avg_A < 1) {
@@ -1230,7 +1298,25 @@ void RealTime::showVAW(double v, double mA)
 
 void RealTime::linkUs(QString str)
 {
-    qDebug() << "联系我们" << str;
+//    qDebug() << "联系我们" << str;
+    if(m_About == nullptr)
+    {
+        QDesktopWidget* desktopWidget = QApplication::desktop();
+        QRect clientRect = desktopWidget->availableGeometry();
+
+        m_About = new About(nullptr);
+//        demo->setStyleSheet("* {font-family:arial;font-size:15px}");
+//        demo->setWindowFlags(Qt::WindowStaysOnTopHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint); // 置顶，最小化，关闭
+        m_About->setGeometry(clientRect.size().width() / 2 - 300,clientRect.size().height() / 2 - 120, 600, 240);
+        m_About->show();
+        connect(m_About,SIGNAL(destroyed()),this, SLOT(aboutClose()));
+    }
+}
+
+void RealTime::aboutClose(void)
+{
+//    qDebug() << "About关闭。";
+    m_About = nullptr;
 }
 
 QString RealTime::loadFontFamilyFromTTF(QString str)

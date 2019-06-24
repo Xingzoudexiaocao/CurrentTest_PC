@@ -22,6 +22,9 @@ union d_And_c
     char c[8];
 };
 
+static QString compangyName = "一起努力";
+static QString productName = "精密电流测量仪";
+
 class ComData
 {
 public:

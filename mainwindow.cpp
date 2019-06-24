@@ -1,6 +1,5 @@
 ﻿#include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "realtime.h"
 #include "QDebug"
 #include <QKeyEvent>
 
@@ -20,9 +19,10 @@ MainWindow::MainWindow(QWidget *parent, ComData *comD, USB_HID *hid) :
 //    QTextCodec::setCodecForCStrings(codec);
 
     setFixedSize(1100, 860);
+    setWindowTitle(productName);
     this->grabKeyboard();       // 捕获键盘输入
 
-    RealTime *demo = new RealTime(this, m_ComData, m_UsbHid);
+    demo = new RealTime(this, m_ComData, m_UsbHid);
 //    demo->setStyleSheet("* {font-family:arial;font-size:15px}");
     demo->setGeometry(8, 20, 990, 850);
     demo->show();
@@ -35,6 +35,7 @@ MainWindow::MainWindow(QWidget *parent, ComData *comD, USB_HID *hid) :
             m_Debug->setGeometry(0, 0, 400, 400);
             m_Debug->show();
             connect(demo,SIGNAL(send_Level_Num(int)),m_Debug, SLOT(receive_Level_Num(int)));
+            connect(m_Debug,SIGNAL(destroyed()),this, SLOT(colseDebug()));
         }
 #endif
 //    QObject::connect(ui->pushButton,SIGNAL(clicked()), this, SLOT(on_ClearData_clicked()));
@@ -84,10 +85,28 @@ MainWindow::~MainWindow()
     delete m_UsbHid;
 }
 
+void MainWindow::colseDebug()
+{
+//    qDebug() << "Debug关闭。";
+    m_Debug = nullptr;
+}
+
 void MainWindow::keyPressEvent(QKeyEvent *ev)
 {
     if(ev->modifiers() == Qt::ControlModifier && ev->key() == Qt::Key_P) {
         qDebug() << "Ctrl+p 按键按下。";
+#ifdef  DEBUG_PROCESS
+        if(m_Debug == nullptr)
+        {
+            m_Debug = new DebugWatch(nullptr, m_ComData, m_UsbHid);
+    //        demo->setStyleSheet("* {font-family:arial;font-size:15px}");
+    //        demo->setWindowFlags(Qt::WindowStaysOnTopHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint); // 置顶，最小化，关闭
+            m_Debug->setGeometry(0, 0, 400, 400);
+            m_Debug->show();
+            connect(demo,SIGNAL(send_Level_Num(int)),m_Debug, SLOT(receive_Level_Num(int)));
+            connect(m_Debug,SIGNAL(destroyed()),this, SLOT(colseDebug()));
+        }
+#endif
         return;
     }
     QWidget::keyPressEvent(ev);

@@ -18,6 +18,7 @@
 #include "comdata.h"
 #include "usb_hid.h"
 #include "usb_receive_thread.h"
+#include "about.h"
 
 class RealTime : public QWidget
 {
@@ -49,6 +50,9 @@ private:
     QLabel *usb_str3;
     QLabel *m_Temp;
 
+    About *m_About;
+    int cntDisplay;
+
     QChartViewer *m_ChartViewer;        // QChartViewer control
     QChartViewer *m_ChartViewer_2;        // QChartViewer control
     QTimer *dataRateTimer;
@@ -64,7 +68,7 @@ private:
     USB_Receive_Thread *m_UsbReceiveThread;
 
     void drawChart(QChartViewer *viewer, int index);           // Draw chart
-    void trackLineLabel(XYChart *c, int mouseX);    // Draw track cursor
+    void trackLineLabel(XYChart *c, int mouseX, int index);    // Draw track cursor
     void updateControls(QChartViewer *viewer, QScrollBar *bar);      // Update other controls as viewport changes
 
 private slots:
@@ -94,6 +98,7 @@ private slots:
 public slots:
     void m_get_USB_Data();
     void thread_finished();
+    void aboutClose(void);
 
 };
 

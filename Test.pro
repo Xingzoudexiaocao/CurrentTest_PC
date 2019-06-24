@@ -28,6 +28,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
+        about.cpp \
         comdata.cpp \
         debugwatch.cpp \
         main.cpp \
@@ -39,6 +40,8 @@ SOURCES += \
         usb_send_thread.cpp
 
 HEADERS += \
+        about.h \
+        about.h \
         comdata.h \
         debugwatch.h \
         mainwindow.h \

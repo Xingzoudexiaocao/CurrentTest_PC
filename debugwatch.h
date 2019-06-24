@@ -26,6 +26,7 @@ private slots:
     void onBtnFSC();
 
 private:
+    void closeEvent ( QCloseEvent*);
     ComData *m_ComData;
     USB_HID *m_UsbHid;
 

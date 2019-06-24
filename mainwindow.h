@@ -8,6 +8,7 @@
 #include <QtSerialPort/QSerialPortInfo>    //提供系统中存在的串口的信息
 #include <QTextCodec>
 
+#include "realtime.h"
 #include "comdata.h"
 #include "debugwatch.h"
 
@@ -26,7 +27,8 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = nullptr, ComData *comD = nullptr, USB_HID *hid = nullptr);
     ~MainWindow();
-
+public Q_SLOTS:
+    void colseDebug();
 private Q_SLOTS:
     void serialPort_readyRead();
     void on_OpenCom_clicked();
@@ -40,6 +42,7 @@ private:
     QSerialPort serial;
     ComData *m_ComData;
     USB_HID *m_UsbHid;
+    RealTime *demo;
     DebugWatch *m_Debug;        // 调试监控窗口
     char RecBuffer[1024];
     unsigned long long RecIndex;
