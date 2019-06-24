@@ -96,7 +96,7 @@ private slots:
     void CreateData();
     void showVAW(double v, double mA);
 public slots:
-    void m_get_USB_Data();
+    void m_get_USB_Data(ST_REC_STRUCT *);
     void thread_finished();
     void aboutClose(void);
 

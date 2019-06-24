@@ -292,7 +292,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     connect(dataRateTimer_2, SIGNAL(timeout()), SLOT(CreateData()));
 
     m_UsbReceiveThread = new USB_Receive_Thread(this, m_UsbHid, m_ComData);    // 新建线程
-    connect(m_UsbReceiveThread,SIGNAL(get_USB_Data()),this, SLOT(m_get_USB_Data()));
+    connect(m_UsbReceiveThread,SIGNAL(get_USB_Data(ST_REC_STRUCT *)),this, SLOT(m_get_USB_Data(ST_REC_STRUCT *)));
     connect(m_UsbReceiveThread,SIGNAL(end_Thread()),this, SLOT(thread_finished()));
     // Set up the chart update timer
     m_ChartUpdateTimer = new QTimer(this);
@@ -1160,10 +1160,10 @@ void RealTime:: CreateData()
 
 }
 
-void RealTime::m_get_USB_Data()
+void RealTime::m_get_USB_Data(ST_REC_STRUCT *bufData)
 {
     unsigned char buf[32];
-    memcpy(buf, m_ComData->ST_Rec.rec, 32);
+    memcpy(buf, bufData, 32);
     unsigned char *getHeader = new unsigned char[4]{};
     memcpy(getHeader, buf, m_ComData->headerLength);
     if(buf[28] != 0x59 || buf[29] != 0x3E || buf[30] != 0xBD)
@@ -1218,19 +1218,22 @@ void RealTime::m_get_USB_Data()
       double currentTime = Chart::chartTime2(now.toTime_t())
                            + now.time().msec() / 10 * 0.01;
       // After obtaining the new values, we need to update the data arrays.
+      double tmp_V = round(dataB.d * 1000) / 1000;          // 对数据进行最小精度的四舍五入
+      double tmp_A = round(dataC.d * 1000000) / 1000000;
       if (m_ComData->d_currentIndex < m_ComData->DataSize)
       {
           // Store the new values in the current index position, and increment the index.
-          m_ComData->d_dataSeriesV[m_ComData->d_currentIndex] = dataB.d;
-          m_ComData->d_dataSeriesA[m_ComData->d_currentIndex] = dataC.d;
+          m_ComData->d_dataSeriesV[m_ComData->d_currentIndex] = tmp_V;
+          m_ComData->d_dataSeriesA[m_ComData->d_currentIndex] = tmp_A;
           m_ComData->d_timeStamps[m_ComData->d_currentIndex] = currentTime;
           ++m_ComData->d_currentIndex;
+
       }
       else
       {
           // The data arrays are full. Shift the arrays and store the values at the end.
-          ComData::shiftData_D(m_ComData->d_dataSeriesV, m_ComData->DataSize, dataB.d);
-          ComData::shiftData_D(m_ComData->d_dataSeriesA, m_ComData->DataSize, dataC.d);
+          ComData::shiftData_D(m_ComData->d_dataSeriesV, m_ComData->DataSize, tmp_V);
+          ComData::shiftData_D(m_ComData->d_dataSeriesA, m_ComData->DataSize, tmp_A);
           ComData::shiftData_D(m_ComData->d_timeStamps, m_ComData->DataSize, currentTime);
       }
       qDebug() << "--单次接收的数据：dataB = " << dataB.d << ", dataC =" << dataC.d  << " Time = " << QDateTime::currentDateTime();

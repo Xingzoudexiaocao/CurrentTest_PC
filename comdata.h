@@ -62,7 +62,6 @@ public:
     double d_Avg_A;
 
     unsigned long long d_currentIndex;
-    ST_REC_STRUCT ST_Rec;       // 接收数据缓存
 
 private:
 
