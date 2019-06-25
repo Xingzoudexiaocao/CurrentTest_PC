@@ -10,6 +10,7 @@
 #pragma execution_character_set("utf-8")
 #endif
 
+//#define isDebuf           // 是否调试模式
 
 typedef struct ST_REC_STRUCT
 {

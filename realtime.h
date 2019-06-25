@@ -49,6 +49,8 @@ private:
     QLabel *usb_str2;
     QLabel *usb_str3;
     QLabel *m_Temp;
+    QLabel *m_Tips;
+    QLabel *m_Error;
 
     About *m_About;
     int cntDisplay;

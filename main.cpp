@@ -5,6 +5,7 @@
 #include "comdata.h"
 
 using namespace std;
+// windeployqt --qmldir  C:\Users\ThinkPad\Documents\Test Test.exe
 
 int main(int argc, char *argv[])
 {
@@ -36,8 +37,8 @@ int main(int argc, char *argv[])
 //        demo.setGeometry(400, 20, 360, 350);
 //        demo.show();
 
-    qDebug() << "int型数据大小：" << sizeof (int) ;
-    qDebug() << "double型数据大小：" << sizeof (double) ;
+//    qDebug() << "int型数据大小：" << sizeof (int) ;
+//    qDebug() << "double型数据大小：" << sizeof (double) ;
 
 
 

@@ -216,6 +216,17 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     m_Temp->setFont(font);
     m_Temp->setText("设备内部温度:-");
 
+    m_Tips = new QLabel(frame_5);
+    m_Tips->setStyleSheet("QLabel { text-align:left; padding:2px; color:red; font-size:18px;}");
+    m_Tips->setGeometry(0, 200, 250, 20);
+    m_Tips->setFrameShape(QFrame::NoFrame);
+//    m_Tips->setText("电流过大:");
+    m_Error = new QLabel(frame_5);
+    m_Error->setStyleSheet("QLabel { text-align:left; padding:2px; color:red; font-size:18px;}");
+    m_Error->setGeometry(0, 220, 250, 20);
+    m_Error->setFrameShape(QFrame::NoFrame);
+//    m_Error->setText("错误代码:");
+
     QDateTime lastTime = QDateTime::currentDateTime();
     QLabel *linkUs = new QLabel(frame_5);
     linkUs->setGeometry(40, 220, 250, 40);
@@ -298,6 +309,8 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     m_ChartUpdateTimer = new QTimer(this);
     connect(m_ChartUpdateTimer, SIGNAL(timeout()), SLOT(updateChart()));
     updateChart();      // 初始化显示表格
+//    drawChart(m_ChartViewer, 0);
+//    drawChart(m_ChartViewer_2, 1);
 
 
     QLabel *volTitle = new QLabel(this);
@@ -313,12 +326,12 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     QLabel *volShow = new QLabel(this);
     volShow->setGeometry(360, 48, 60, 20);
     volShow->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:20px; color:#00cc00; background-color:white;}");
-    volShow->setText("电压:");
+    volShow->setText("电压：");
     volShow->setFont(font);
     QLabel *curShow = new QLabel(this);
     curShow->setGeometry(360, 450, 60, 20);
     curShow->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:20px; color:blue; background-color:white;}");
-    curShow->setText("电流:");
+    curShow->setText("电流：");
     curShow->setFont(font);
 
     // Can start now
@@ -1047,6 +1060,8 @@ void RealTime::onConnectUSB()
         usb_str1->setText(m_UsbHid->str_Manufactured);
         usb_str2->setText(m_UsbHid->str_Product);
         usb_str3->setText(m_UsbHid->str_SerialNumber);
+        m_Tips->setText("");
+        m_Error->setText("");
     }
     else
     {
@@ -1207,7 +1222,7 @@ void RealTime::m_get_USB_Data(ST_REC_STRUCT *bufData)
         case 1: dataC.d = adVol / 14 / 100000; break;
         case 2: dataC.d = adVol / 14 / 1000; break;
         case 3: dataC.d = adVol / 14 / 1.003 / 10; break;   // 1.003 为修正mos管电压
-        case 4: dataC.d = adVol / 14 / 0.1; break;
+        case 4: dataC.d = adVol / 14 / (0.1 + 0.03181358); break;
         default: dataC.d = 0; break;
       }
       // 更新数据到表格数据
@@ -1238,24 +1253,31 @@ void RealTime::m_get_USB_Data(ST_REC_STRUCT *bufData)
       }
       qDebug() << "--单次接收的数据：dataB = " << dataB.d << ", dataC =" << dataC.d  << " Time = " << QDateTime::currentDateTime();
       showVAW(m_ComData->d_dataSeriesV[m_ComData->d_currentIndex - 1], m_ComData->d_dataSeriesA[m_ComData->d_currentIndex - 1]);
+      // 处理电流过大/过小的情况
+      if(buf[25] == 0x01 && buf[26] == 0x01)
+      {
+          m_Tips->setText("提示：输入电流太小！");
+      }
+      else if(buf[25] == 0x02 && buf[26] == 0x02)
+      {
+          m_Tips->setText("提示：输入电流过大！");
+      } else {
+          m_Tips->setText("");
+      }
     }
     else {
-
+        // 处理错误代码
         if(buf[0] == 0xaa && buf[1] == 0xbb && buf[2] == 0xcc && buf[3] == 0xdd)
         {
-            if(buf[4] == 0x01 && buf[5] == 0x01)
+            unsigned int buf_Cur = 0;
+            buf_Cur |= buf[7]; buf_Cur = buf_Cur << 8;
+            buf_Cur |= buf[6]; buf_Cur = buf_Cur << 8;
+            buf_Cur |= buf[5]; buf_Cur = buf_Cur << 8; buf_Cur |= buf[4];
+            if(buf_Cur >= 0x80000000)
             {
-//                qDebug() << "电流太小，超量程";
-//                m_ValueB->setText(" - ");
-//                m_ValueC->setText(" - ");
-            }
-            else if(buf[4] == 0x02 && buf[5] == 0x02)
-            {
-//                m_ValueB->setText("电压过大，超量程！");
-//                m_ValueC->setText("电流过大，超量程！");
+                m_Error->setText("错误代码：" + QString::number(buf_Cur - 0x80000000));
             }
         }
-
     }
 }
 

@@ -26,7 +26,7 @@ MainWindow::MainWindow(QWidget *parent, ComData *comD, USB_HID *hid) :
 //    demo->setStyleSheet("* {font-family:arial;font-size:15px}");
     demo->setGeometry(8, 20, 990, 850);
     demo->show();
-#ifdef  DEBUG_PROCESS
+#ifdef  isDebuf
         if(m_Debug == nullptr)
         {
             m_Debug = new DebugWatch(nullptr, m_ComData, m_UsbHid);
@@ -95,7 +95,7 @@ void MainWindow::keyPressEvent(QKeyEvent *ev)
 {
     if(ev->modifiers() == Qt::ControlModifier && ev->key() == Qt::Key_P) {
         qDebug() << "Ctrl+p 按键按下。";
-#ifdef  DEBUG_PROCESS
+#ifdef  isDebuf
         if(m_Debug == nullptr)
         {
             m_Debug = new DebugWatch(nullptr, m_ComData, m_UsbHid);
