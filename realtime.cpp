@@ -11,7 +11,7 @@
 
 using namespace std;
 
-static const int DataInterval = 1;
+static const int DataInterval = 10;
 
 RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(parent)
 {
@@ -21,30 +21,35 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     m_About = nullptr;
     cntDisplay = 0;
 
-    setFixedSize(1090, 850);
+    setGeometry(8, 20, 1090, 877);
+//    setFixedSize(1090, 850);
 ////    setMinimumSize(200,200);
 //    setWindowTitle("Simple Realtime Chart");
 
     // The frame on the left side
     QFrame *frame = new QFrame(this);
-    frame->setGeometry(4, 4, 250, 820);
+    frame->setGeometry(4, 4, 250, 847);
 //    frame->setStyleSheet("background-color:white");
     frame->setFrameShape(QFrame::StyledPanel);
 
-    QFont    font ( "微软雅黑",  20,   75);
+    QString bnt_qss1 = "QPushButton {font-family:arial; text-align:left; padding:5px;}\
+            QPushButton:Enabled {background-color: #0066CC; color:white;}\
+            QPushButton:Disabled {background-color: #606060; color:#CCCCCC;}";
+    QFont    font ( "微软雅黑",  12,   75);
+    QFont    font_2 ( "微软雅黑",  8,   50);
     // Run push button
     connectUSB = new QPushButton(QIcon(":/play.png"), "连接设备", frame);
     connectUSB->setGeometry(4, 8, 142, 40);
-    connectUSB->setStyleSheet("QPushButton {font-family:arial; text-align:left; padding:5px; font-size:24px;}");
+    connectUSB->setStyleSheet(bnt_qss1);
     connectUSB->setFont(font);
-    connect(connectUSB, SIGNAL(clicked(bool)), SLOT(onConnectUSB()));
+    connect(connectUSB, &QAbstractButton::clicked, this, &RealTime::onConnectUSB);
     // Run push button
     disconnectUSB = new QPushButton(QIcon(":/pause.png"), "关闭设备", frame);
     disconnectUSB->setGeometry(4, 60, 142, 40);
-    disconnectUSB->setStyleSheet("QPushButton {font-family:arial; text-align:left; padding:5px; font-size:24px;}");
+    disconnectUSB->setStyleSheet(bnt_qss1);
     disconnectUSB->setEnabled(false);
     disconnectUSB->setFont(font);
-    connect(disconnectUSB, SIGNAL(clicked(bool)), SLOT(onDisConnectUSB()));
+    connect(disconnectUSB, &QAbstractButton::clicked, this, &RealTime::onDisConnectUSB);
 
 //    QPushButton *bbb = new QPushButton(QIcon(":/play.png"),"", frame);
 //    bbb->setGeometry(150, 8, 100, 100);
@@ -229,7 +234,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
 
     QDateTime lastTime = QDateTime::currentDateTime();
     QLabel *linkUs = new QLabel(frame_5);
-    linkUs->setGeometry(40, 220, 250, 40);
+    linkUs->setGeometry(40, 250, 250, 40);
     linkUs->setStyleSheet("QLabel {font-family:castellar; text-align:left; padding:2px; font-size:20px;}");
     linkUs->setText("<a href=\"http://www.baidu.com\">© " + QString::number(lastTime.date().year()) + " 关于我们");
     connect(linkUs,SIGNAL(linkActivated (QString)),this,SLOT(linkUs(QString)));   // const QString&
@@ -246,9 +251,26 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
 //    connect(readUSB, SIGNAL(clicked(bool)), SLOT(onReadUSB()));
 
     // The frame on the left side
-    QFrame *frame_2 = new QFrame(this);
-    frame_2->setGeometry(262, 4, 810, 820);
+    QFrame *frame_2 = new QFrame();     // 波形显示界面
+    frame_2->setGeometry(0, 0, 815, 847);
     frame_2->setFrameShape(QFrame::StyledPanel);
+    QFrame *frame_2_ext = new QFrame();     // 数据显示界面
+    frame_2_ext->setGeometry(0, 0, 815, 847);
+//    frame_2_ext->setBackgroundRole(QPalette::shadow());
+    frame_2_ext->setFrameShape(QFrame::StyledPanel);
+
+    tabWidget = new QTabWidget(this);
+    tabWidget->setGeometry(262, 4, 815, 847);
+    tabWidget->addTab(frame_2, "波形显示");
+    tabWidget->addTab(frame_2_ext, "数据显示");
+    QString tabBarStyle = "QTabWidget::tab-bar{ alignment:left;}\
+            QTabBar::tab{background-color: rgb(96, 96, 96); /*灰色*/ color:white; width:150px; min-height:10px; border: 1px; padding:5px;}\
+            QTabBar::tab:selected{ border-color: white; background-color: #0066CC; /*浅蓝色*/ color:white;font-weight:bold;}\
+            QTabBar::tab:!selected { margin-top: 5px;}";
+    tabWidget->setStyleSheet(tabBarStyle);
+
+//    QHBoxLayout *layout = new QHBoxLayout(this);
+//    layout->addWidget(tabWidget);
 
     // Chart Viewer
     m_ChartViewer = new QChartViewer(frame_2);
@@ -293,46 +315,113 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     // Set up the data acquisition mechanism. In this demo, we just use a timer to get a
     // sample every 250ms.
     dataRateTimer = new QTimer(this);
-    dataRateTimer->start(DataInterval);
+//    dataRateTimer->start(DataInterval);
     connect(dataRateTimer, SIGNAL(timeout()), SLOT(getData()));
 
-    // Set up the data acquisition mechanism. In this demo, we just use a timer to get a
-    // sample every 1ms.
-    QTimer *dataRateTimer_2 = new QTimer(this);
-    dataRateTimer_2->start(DataInterval);
-    connect(dataRateTimer_2, SIGNAL(timeout()), SLOT(CreateData()));
+//    // Set up the data acquisition mechanism. In this demo, we just use a timer to get a
+//    // sample every 1ms.
+//    QTimer *dataRateTimer_2 = new QTimer(this);
+//    dataRateTimer_2->start(DataInterval);
+//    connect(dataRateTimer_2, SIGNAL(timeout()), SLOT(CreateData()));
 
     m_UsbReceiveThread = new USB_Receive_Thread(this, m_UsbHid, m_ComData);    // 新建线程
-    connect(m_UsbReceiveThread,SIGNAL(get_USB_Data(ST_REC_STRUCT *)),this, SLOT(m_get_USB_Data(ST_REC_STRUCT *)));
+    connect(m_UsbReceiveThread,SIGNAL(get_USB_Data(QDateTime, double, unsigned char, unsigned char)),this, SLOT(m_get_USB_Data(QDateTime, double, unsigned char, unsigned char)));
     connect(m_UsbReceiveThread,SIGNAL(end_Thread()),this, SLOT(thread_finished()));
     // Set up the chart update timer
     m_ChartUpdateTimer = new QTimer(this);
     connect(m_ChartUpdateTimer, SIGNAL(timeout()), SLOT(updateChart()));
+    m_TableUpdateTimer = new QTimer(this);
+    connect(m_TableUpdateTimer, SIGNAL(timeout()), SLOT(updateTable()));
     updateChart();      // 初始化显示表格
+    updateTable();      // 初始化显示详细数据
 //    drawChart(m_ChartViewer, 0);
 //    drawChart(m_ChartViewer_2, 1);
 
-
-    QLabel *volTitle = new QLabel(this);
-    volTitle->setGeometry(550, 18, 300, 30);
+    QLabel *volTitle = new QLabel(frame_2);
+    volTitle->setGeometry(550 - 262, 18 - 4, 300, 30);
     volTitle->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:30px; background-color:white;}");
     volTitle->setText("电压测量波形图");
     volTitle->setFont(font);
-    QLabel *curTitle = new QLabel(this);
-    curTitle->setGeometry(550, 420, 300, 30);
+    QLabel *curTitle = new QLabel(frame_2);
+    curTitle->setGeometry(550 - 262, 420 - 4, 300, 30);
     curTitle->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:30px; background-color:white;}");
     curTitle->setText("电流测量波形图");
     curTitle->setFont(font);
-    QLabel *volShow = new QLabel(this);
-    volShow->setGeometry(360, 48, 60, 20);
+    QLabel *volShow = new QLabel(frame_2);
+    volShow->setGeometry(360 - 262, 48 - 4, 60, 20);
     volShow->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:20px; color:#00cc00; background-color:white;}");
     volShow->setText("电压：");
     volShow->setFont(font);
-    QLabel *curShow = new QLabel(this);
-    curShow->setGeometry(360, 450, 60, 20);
+    QLabel *curShow = new QLabel(frame_2);
+    curShow->setGeometry(360 - 262, 450 - 4, 60, 20);
     curShow->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:20px; color:blue; background-color:white;}");
     curShow->setText("电流：");
     curShow->setFont(font);
+
+//    // 编辑数据显示界面
+//    QString dataQss = "QTableWidget {color:black;/*前景色：文字颜色*/ /*gridline-color:red;*//*表格中的网格线条颜色*/ background:white; alternate-background-color:rgb(211, 211, 211); border:1px solid gray;  /*边框线的宽度、颜色*/ }\
+//        QHeaderView::section {background-color: rgb(4, 116, 191);  /*蓝色*/  color: white; padding-left: 4px; font-weight:bold; border:1px solid gray;}\
+//        QTableWidget::item{max-height:30px; text-align: center;}";
+//    dataShow = new QTableWidget(frame_2_ext);
+//    dataShow->setGeometry(2, 2, 805, 805);  // 847
+//    dataShow->setStyleSheet(dataQss);
+//    dataShow->setColumnCount(4);
+//    dataShow->setColumnWidth(0,235);dataShow->setColumnWidth(1,160);dataShow->setColumnWidth(2,160);dataShow->setColumnWidth(3,160);
+//    /* 设置 tableWidget */
+//    dataShow->setHorizontalHeaderLabels(QStringList()<< "时间" << "电压" << "电流" << "功率");
+//    dataShow->setEditTriggers(QAbstractItemView::NoEditTriggers); //设置表格无法编辑
+//    dataShow->setAlternatingRowColors(true);  //设置交替颜色，需要在函数属性中设置:
+//    QHeaderView* rowHeaderView = dataShow->verticalHeader();
+//    rowHeaderView->setMinimumWidth(50);     // 默认行号最小宽度
+////    rowHeaderView->setHidden(true);     // 隐藏默认行号
+//    dataShow->setSelectionBehavior(QAbstractItemView::SelectRows);   // 选中行
+////    dataShow->setSelectionMode(QAbstractItemView::ExtendedSelection);  // 可以选中多个
+//    dataShow->setRowCount(0);   // 初始化显示0行
+//    dataShow->clearContents();//只清除工作区，不清除表头
+    //  QTableView {color:black;/*前景色：文字颜色*/ /*gridline-color:red;*//*表格中的网格线条颜色*/ background:white; alternate-background-color:rgb(211, 211, 211); border:1px solid gray;  /*边框线的宽度、颜色*/ }
+    QString dataQss = "QHeaderView {color: black;font: bold 10pt;background-color: rgb(255, 255, 255); border:1px solid gray;}\
+        QHeaderView::section {background-color: rgb(4, 116, 191);  /*蓝色*/  color: white; padding-left: 4px; font-weight:bold; border:1px solid gray;}\
+        QTableView::section {background-color: rgb(4, 116, 191);  /*蓝色*/  color: white; padding-left: 4px; font-weight:bold; border:1px solid gray;}\
+        QTableView::item{max-height:30px; text-align: center;}";
+    dataView  = new QTableView(frame_2_ext);
+    dataView->setGeometry(2, 2, 815, 805);  // 847
+    QHeaderView *HeaderV = dataView->verticalHeader();
+    HeaderV->hide();    //默认显示行头，如果你觉得不美观的话，我们可以将隐藏
+    dataView->setEditTriggers(QAbstractItemView::NoEditTriggers);       //设置表格的单元为只读属性，即不能编辑
+    dataView->setSelectionBehavior(QAbstractItemView::SelectRows);      //设置选中时为整行选中
+    dataView->setAlternatingRowColors(true);  //设置交替颜色，需要在函数属性中设置:
+    dataView->setStyleSheet(dataQss);
+    dataModel = new QStandardItemModel(frame_2_ext);
+    /*设置列字段名*/
+    dataModel->setColumnCount(5);
+    dataModel->setHeaderData(0,Qt::Horizontal, "序号");
+    dataModel->setHeaderData(1,Qt::Horizontal, "日期时间");
+    dataModel->setHeaderData(2,Qt::Horizontal, "电压");
+    dataModel->setHeaderData(3,Qt::Horizontal, "电流");
+    dataModel->setHeaderData(4,Qt::Horizontal, "功率");
+    updateTableView();
+
+    QFrame *frameTop = new QFrame(this);
+    frameTop->setGeometry(800, 4, 275, 30);
+//    frame->setStyleSheet("background-color:white");
+    frameTop->setFrameShape(QFrame::NoFrame);
+    play = new QPushButton(QIcon(":/play.png"), "继续", frameTop);
+    play->setGeometry(0, 4, 80, 30);
+    play->setStyleSheet(bnt_qss1);
+    play->setFont(font_2);
+    play->setVisible(false);
+    connect(play, &QAbstractButton::clicked, this, &RealTime::onBtnPlay);
+    pause = new QPushButton(QIcon(":/pause.png"), "暂停", frameTop);
+    pause->setGeometry(80, 4, 80, 30);
+    pause->setStyleSheet(bnt_qss1);
+    pause->setFont(font_2);
+    pause->setVisible(false);
+    connect(pause, &QAbstractButton::clicked, this, &RealTime::onBtnPause);
+    download = new QPushButton(QIcon(":/save.png"), "导出", frameTop);
+    download->setGeometry(195, 4, 80, 30);
+    download->setStyleSheet(bnt_qss1);
+    download->setFont(font_2);
+    connect(download, &QAbstractButton::clicked, this, &RealTime::onBtnDownload);
 
     // Can start now
 //    updatePeriod->setCurrentIndex(0);
@@ -347,6 +436,7 @@ RealTime::~RealTime()
     delete m_ChartViewer->getChart();
     delete m_ChartViewer_2->getChart();
 
+//    delete m_About;
 //    delete m_UsbHid;
 //    if(m_ComData != nullptr)
 //    {
@@ -448,6 +538,11 @@ void RealTime::updateChart()
     m_ChartViewer_2->updateViewPort(true, false);
     onChartUpdateTimer(m_ChartViewer);
     onChartUpdateTimer(m_ChartViewer_2);
+}
+
+void RealTime::updateTable()
+{
+    updateTableView();      // 更新TableView
 }
 
 //
@@ -1054,14 +1149,20 @@ void RealTime::onConnectUSB()
         qDebug() << "连接成功";
         m_UsbReceiveThread->isStop = false;
         m_UsbReceiveThread->start();   // 启动线程
-        m_ChartUpdateTimer->start();    // 启动更新表格
+        m_ChartUpdateTimer->start(100);    // 启动更新表格
+        m_TableUpdateTimer->start(100);    // 启动更新详细数据
         dataRateTimer->start(DataInterval); // 启动获取数据
         m_ComData->ClearData();         // 清之前的数据
+        play->setVisible(true);
+        play->setEnabled(false);
+        pause->setVisible(true);
+        pause->setEnabled(true);
         usb_str1->setText(m_UsbHid->str_Manufactured);
         usb_str2->setText(m_UsbHid->str_Product);
         usb_str3->setText(m_UsbHid->str_SerialNumber);
         m_Tips->setText("");
         m_Error->setText("");
+
     }
     else
     {
@@ -1075,6 +1176,7 @@ void RealTime::onDisConnectUSB()
 //    m_UsbReceiveThread->terminate();    // 关闭线程
 //    m_UsbReceiveThread->wait();
     m_ChartUpdateTimer->stop();     // 关闭更新表格
+    m_TableUpdateTimer->stop();    // 关闭更新详细数据
     dataRateTimer->stop();      // 关闭获取数据
     usb_str1->setText("-");
     usb_str2->setText("-");
@@ -1087,6 +1189,9 @@ void RealTime::thread_finished()
     {
         connectUSB->setEnabled(true);
         disconnectUSB->setEnabled(false);
+
+        play->setVisible(false);
+        pause->setVisible(false);
 
         qDebug() << "关闭成功";
     }
@@ -1175,109 +1280,20 @@ void RealTime:: CreateData()
 
 }
 
-void RealTime::m_get_USB_Data(ST_REC_STRUCT *bufData)
+void RealTime::m_get_USB_Data(QDateTime now, double tep, unsigned char tips, unsigned char err)
 {
-    unsigned char buf[32];
-    memcpy(buf, bufData, 32);
-    unsigned char *getHeader = new unsigned char[4]{};
-    memcpy(getHeader, buf, m_ComData->headerLength);
-    if(buf[28] != 0x59 || buf[29] != 0x3E || buf[30] != 0xBD)
-    {
-        return;     // 数据尾码不对，返回
-    }
-    emit send_Level_Num(buf[27]);
-    if(buf[27] == 0 || buf[27] > 4)
-    {
-        return;     // 档位不正确
-    }
-    if(0 == memcmp(getHeader, m_ComData->headerC, m_ComData->headerLength))
-    {
-        unsigned int sum = buf[5] + buf[6] + buf[7] + 0x9B;
-        if(buf[4] != (sum & 0xFF))
-        {
-            return;     // 校验和不正确
-        }
-      d_And_c dataB;
-      d_And_c dataC;
-//      memcpy(&dataB, buf + 4, sizeof(double));
-//      memcpy(&dataC, buf + 12, sizeof(double));
-      // 赋值
-      unsigned int buf_Vol = 0;
-      unsigned int buf_Temp = 0;
-      buf_Vol |= buf[8]; buf_Vol = buf_Vol << 8;
-      buf_Vol |= buf[9];
-      buf_Temp |= buf[10]; buf_Temp = buf_Temp << 8;
-      buf_Temp |= buf[11];
-      dataB.d = (double)buf_Vol / 4095 * 3 * 2.5;
-      double temperature = (1.43 - ((double)buf_Temp / 4095 * 3)) / 4.3 + 25;
-      m_Temp->setText("设备内部温度:" + QString::number(temperature, 'f', 1) + "℃");
-      unsigned int buf_Cur = 0;
-      unsigned int max_Cur = 0x7FFFFF;
-      double adVol = 0;     // 转换后ad采样的电压值
-      buf_Cur |= buf[7]; buf_Cur = buf_Cur << 8;
-      buf_Cur |= buf[6]; buf_Cur = buf_Cur << 8;
-      buf_Cur |= buf[5];
-      adVol = (double)buf_Cur / (double)max_Cur * 2500;     // 获取ad采样的电压值，mv为单位
-      switch (buf[27]) {
-        case 1: dataC.d = adVol / 14 / 100000; break;
-        case 2: dataC.d = adVol / 14 / 1000; break;
-        case 3: dataC.d = adVol / 14 / 1.003 / 10; break;   // 1.003 为修正mos管电压
-        case 4: dataC.d = adVol / 14 / (0.1 + 0.03181358); break;
-        default: dataC.d = 0; break;
-      }
-      // 更新数据到表格数据
-      // The current time
-      QDateTime now = QDateTime::currentDateTime();
-      m_ComData->lastTime = now;      // 更新接收时间
-      // We need the currentTime in millisecond resolution
-      double currentTime = Chart::chartTime2(now.toTime_t())
-                           + now.time().msec() / 10 * 0.01;
-      // After obtaining the new values, we need to update the data arrays.
-      double tmp_V = round(dataB.d * 1000) / 1000;          // 对数据进行最小精度的四舍五入
-      double tmp_A = round(dataC.d * 1000000) / 1000000;
-      if (m_ComData->d_currentIndex < m_ComData->DataSize)
-      {
-          // Store the new values in the current index position, and increment the index.
-          m_ComData->d_dataSeriesV[m_ComData->d_currentIndex] = tmp_V;
-          m_ComData->d_dataSeriesA[m_ComData->d_currentIndex] = tmp_A;
-          m_ComData->d_timeStamps[m_ComData->d_currentIndex] = currentTime;
-          ++m_ComData->d_currentIndex;
-
-      }
-      else
-      {
-          // The data arrays are full. Shift the arrays and store the values at the end.
-          ComData::shiftData_D(m_ComData->d_dataSeriesV, m_ComData->DataSize, tmp_V);
-          ComData::shiftData_D(m_ComData->d_dataSeriesA, m_ComData->DataSize, tmp_A);
-          ComData::shiftData_D(m_ComData->d_timeStamps, m_ComData->DataSize, currentTime);
-      }
-      qDebug() << "--单次接收的数据：dataB = " << dataB.d << ", dataC =" << dataC.d  << " Time = " << QDateTime::currentDateTime();
-      showVAW(m_ComData->d_dataSeriesV[m_ComData->d_currentIndex - 1], m_ComData->d_dataSeriesA[m_ComData->d_currentIndex - 1]);
-      // 处理电流过大/过小的情况
-      if(buf[25] == 0x01 && buf[26] == 0x01)
-      {
-          m_Tips->setText("提示：输入电流太小！");
-      }
-      else if(buf[25] == 0x02 && buf[26] == 0x02)
-      {
-          m_Tips->setText("提示：输入电流过大！");
-      } else {
-          m_Tips->setText("");
-      }
-    }
+    if(err != 0)
+        m_Error->setText("错误代码：" + QString::number(err));
     else {
-        // 处理错误代码
-        if(buf[0] == 0xaa && buf[1] == 0xbb && buf[2] == 0xcc && buf[3] == 0xdd)
-        {
-            unsigned int buf_Cur = 0;
-            buf_Cur |= buf[7]; buf_Cur = buf_Cur << 8;
-            buf_Cur |= buf[6]; buf_Cur = buf_Cur << 8;
-            buf_Cur |= buf[5]; buf_Cur = buf_Cur << 8; buf_Cur |= buf[4];
-            if(buf_Cur >= 0x80000000)
-            {
-                m_Error->setText("错误代码：" + QString::number(buf_Cur - 0x80000000));
-            }
-        }
+        m_Temp->setText("设备内部温度:" + QString::number(tep, 'f', 1) + "℃");
+        if(tips == 1)
+            m_Tips->setText("提示：输入电流太小！");
+        else if(tips == 2)
+            m_Tips->setText("提示：输入电流过大！");
+        else
+            m_Tips->setText("");
+        // 显示波形和Tab
+        showVAW(m_ComData->d_dataSeriesV[m_ComData->d_currentIndex - 1], m_ComData->d_dataSeriesA[m_ComData->d_currentIndex - 1]);
     }
 }
 
@@ -1357,4 +1373,130 @@ QString RealTime::loadFontFamilyFromTTF(QString str)
             font = loadedFontFamilies.at(0);
     }
     return font;
+}
+
+void RealTime::onBtnPlay()
+{
+    if(m_UsbHid->dev_handle == nullptr)
+    {
+//        qDebug() << "USB设备未打开！";
+        return;
+    }
+    play->setEnabled(false);
+    pause->setEnabled(true);
+    m_ChartUpdateTimer->start(100);    // 启动更新表格
+    m_TableUpdateTimer->start(100);    // 启动更新详细数据
+}
+void RealTime::onBtnPause()
+{
+    if(m_UsbHid->dev_handle == nullptr)
+    {
+//        qDebug() << "USB设备未打开！";
+        return;
+    }
+    play->setEnabled(true);
+    pause->setEnabled(false);
+    m_ChartUpdateTimer->stop();    // 关闭更新表格
+    m_TableUpdateTimer->stop();    // 关闭更新详细数据
+}
+void RealTime::onBtnDownload()
+{
+//    qDebug() << "点击导出按键。";
+    if(m_ComData->d_currentIndex <= 1)
+    {
+        QMessageBox::about(this, "提示", "暂无数据，无法导出！");
+        return;
+    }
+
+}
+void RealTime::updateTableView()
+{
+    if(m_ComData->d_currentIndex <= 1)
+    {
+        return;
+    }
+   dataView->setUpdatesEnabled(false);  //暂停界面刷新
+   int row = dataView->currentIndex().row();    // 获取选中的行号
+
+   /*设置行字段名*/
+   int rowCount = (int)m_ComData->d_currentIndex;
+   if(rowCount <= 1000)
+   {
+       dataModel->setRowCount(rowCount);        // 设置行
+       for (int i = 0; i < rowCount; i++) {
+           QString v = QString::number(m_ComData->d_dataSeriesV[i], 'f', 3) + "V";
+           QString a;
+           if(m_ComData->d_dataSeriesA[i] < 1) {
+               a = QString::number(m_ComData->d_dataSeriesA[i] * 1000, 'f', 3) + "uA";
+           } else {
+               a = QString::number(m_ComData->d_dataSeriesA[i], 'f', 3) + "mA";
+           }
+           QStandardItem *item[5];
+    //       item[1]->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter); //文本对齐格式
+           item[0] = new QStandardItem(QString::number(i + 1));
+           item[0]->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter); //文本对齐格式
+           dataModel->setItem(i, 0, item[0]);
+           item[1] = new QStandardItem(doubleToTime(m_ComData->d_timeStamps[i]));
+           item[1]->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter); //文本对齐格式
+           dataModel->setItem(i, 1, item[1]);
+           item[2] = new QStandardItem(v);
+           item[2]->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter); //文本对齐格式
+           dataModel->setItem(i, 2, item[2]);
+           item[3] = new QStandardItem(a);
+           item[3]->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter); //文本对齐格式
+           dataModel->setItem(i, 3, item[3]);
+           item[4] = new QStandardItem(QString::number(m_ComData->d_dataSeriesV[i] * m_ComData->d_dataSeriesA[i], 'f', 3) + "W");
+           item[4]->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter); //文本对齐格式
+           dataModel->setItem(i, 4, item[4]);
+       }
+   }
+   else
+   {
+       dataModel->setRowCount(1000);        // 设置行
+       for (int i = 0; i < 1000; i++) {
+           QString v = QString::number(m_ComData->d_dataSeriesV[rowCount - 1000 + i], 'f', 3) + "V";
+           QString a;
+           if(m_ComData->d_dataSeriesA[i] < 1) {
+               a = QString::number(m_ComData->d_dataSeriesA[rowCount - 1000 + i] * 1000, 'f', 3) + "uA";
+           } else {
+               a = QString::number(m_ComData->d_dataSeriesA[rowCount - 1000 + i], 'f', 3) + "mA";
+           }
+           QStandardItem *item[5];
+    //       item[1]->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter); //文本对齐格式
+           item[0] = new QStandardItem(QString::number(i + 1));
+           item[0]->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter); //文本对齐格式
+           dataModel->setItem(i, 0, item[0]);
+           item[1] = new QStandardItem(doubleToTime(m_ComData->d_timeStamps[rowCount - 1000 + i]));
+           item[1]->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter); //文本对齐格式
+           dataModel->setItem(i, 1, item[1]);
+           item[2] = new QStandardItem(v);
+           item[2]->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter); //文本对齐格式
+           dataModel->setItem(i, 2, item[2]);
+           item[3] = new QStandardItem(a);
+           item[3]->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter); //文本对齐格式
+           dataModel->setItem(i, 3, item[3]);
+           item[4] = new QStandardItem(QString::number(m_ComData->d_dataSeriesV[rowCount - 1000 + i] * m_ComData->d_dataSeriesA[rowCount - 1000 + i], 'f', 3) + "W");
+           item[4]->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter); //文本对齐格式
+           dataModel->setItem(i, 4, item[4]);
+       }
+   }
+
+   dataView->setModel(dataModel);
+   dataView->setColumnWidth(0,70);dataView->setColumnWidth(1,230);dataView->setColumnWidth(2,160);dataView->setColumnWidth(3,160);dataView->setColumnWidth(4,160);
+   dataView->setUpdatesEnabled(true);  //恢复界面刷新
+
+   QModelIndex index = dataModel->index(row,0);//选中行第一列的内容
+   dataView->setCurrentIndex(index);
+}
+
+QString RealTime::doubleToTime(double dTime)
+{
+    QDateTime *dt = new QDateTime();
+    dt->setDate(m_ComData->lastTime.date());
+    dt->setTime(m_ComData->lastTime.time());
+    double dec = dTime - m_ComData->d_timeStamps[m_ComData->d_currentIndex - 1];
+//    *dt = dt->addSecs((qint64)floor(dec));
+    *dt = dt->addMSecs((qint64)round(dec * 1000));
+
+    return dt->toString("yyyy-MM-dd hh:mm:ss");
 }

@@ -28,8 +28,8 @@ void USB_Receive_Thread::run()
               {
                   ST_REC_STRUCT *tmp = new ST_REC_STRUCT();
                   memcpy(tmp, buffer, 32);
-                  emit get_USB_Data(tmp);    // 发送接收信号
-                  qDebug("Received %d bytes, 成功.\n", numBytes);
+                  qDebug("Received %d bytes, 成功.", numBytes);
+                  HandleData(tmp);  // 处理数据
               }
               else
               {
@@ -54,4 +54,110 @@ void USB_Receive_Thread::run()
     }
 }
 
+void USB_Receive_Thread::HandleData(ST_REC_STRUCT *bufData)
+{
+    unsigned char buf[32];
+    memcpy(buf, bufData, 32);
+    unsigned char *getHeader = new unsigned char[4]{};
+    memcpy(getHeader, buf, m_ComData->headerLength);
+    if(buf[28] != 0x59 || buf[29] != 0x3E || buf[30] != 0xBD)
+    {
+        qDebug() << "尾码不正确"  << buf[27]  << buf[28] << buf[29] << buf[30] << buf[31];
+        return;     // 数据尾码不对，返回
+    }
+    emit send_Level_Num(buf[27]);
+    if(buf[27] == 0 || buf[27] > 4)
+    {
+        qDebug() << "档位不正确" << buf[27]  << buf[28] << buf[29] << buf[30] << buf[31];
+        return;     // 档位不正确
+    }
+    if(0 == memcmp(getHeader, m_ComData->headerC, m_ComData->headerLength))
+    {
+        unsigned int sum = buf[5] + buf[6] + buf[7] + 0x9B;
+        if(buf[4] != (sum & 0xFF))
+        {
+            qDebug() << "校验和不正确" << buf;
+            return;     // 校验和不正确
+        }
+      d_And_c dataB;
+      d_And_c dataC;
+//      memcpy(&dataB, buf + 4, sizeof(double));
+//      memcpy(&dataC, buf + 12, sizeof(double));
+      // 赋值
+      unsigned int buf_Vol = 0;
+      unsigned int buf_Temp = 0;
+      buf_Vol |= buf[8]; buf_Vol = buf_Vol << 8;
+      buf_Vol |= buf[9];
+      buf_Temp |= buf[10]; buf_Temp = buf_Temp << 8;
+      buf_Temp |= buf[11];
+      dataB.d = (double)buf_Vol / 4095 * 3.2558 * 2.5;
+      double temperature = (1.43 - ((double)buf_Temp / 4095 * 3)) / 4.3 + 25;   // 计算温度
+      unsigned int buf_Cur = 0;
+      unsigned int max_Cur = 0x7FFFFF;
+      double adVol = 0;     // 转换后ad采样的电压值
+      buf_Cur |= buf[7]; buf_Cur = buf_Cur << 8;
+      buf_Cur |= buf[6]; buf_Cur = buf_Cur << 8;
+      buf_Cur |= buf[5];
+      adVol = (double)buf_Cur / (double)max_Cur * 2500;     // 获取ad采样的电压值，mv为单位
+      switch (buf[27]) {
+        case 1: dataC.d = adVol / 14 / 100000; break;
+        case 2: dataC.d = adVol / 14 / 1000; break;
+        case 3: dataC.d = adVol / 14 / 1.003 / 10; break;   // 1.003 为修正mos管电压
+        case 4: dataC.d = adVol / 14 / (0.1 + 0.03181358); break;
+        default: dataC.d = 0; break;
+      }
+      // 更新数据到表格数据
+      // The current time
+      QDateTime now = QDateTime::currentDateTime();
+      m_ComData->lastTime = now;      // 更新接收时间
+      // We need the currentTime in millisecond resolution
+      double currentTime = Chart::chartTime2(now.toTime_t())
+                           + now.time().msec() / 10 * 0.01;
+      // After obtaining the new values, we need to update the data arrays.
+      double tmp_V = round(dataB.d * 1000) / 1000;          // 对数据进行最小精度的四舍五入
+      double tmp_A = round(dataC.d * 1000000) / 1000000;
+      if (m_ComData->d_currentIndex < m_ComData->DataSize)
+      {
+          // Store the new values in the current index position, and increment the index.
+          m_ComData->d_dataSeriesV[m_ComData->d_currentIndex] = tmp_V;
+          m_ComData->d_dataSeriesA[m_ComData->d_currentIndex] = tmp_A;
+          m_ComData->d_timeStamps[m_ComData->d_currentIndex] = currentTime;
+          ++m_ComData->d_currentIndex;
 
+      }
+      else
+      {
+          // The data arrays are full. Shift the arrays and store the values at the end.
+          ComData::shiftData_D(m_ComData->d_dataSeriesV, m_ComData->DataSize, tmp_V);
+          ComData::shiftData_D(m_ComData->d_dataSeriesA, m_ComData->DataSize, tmp_A);
+          ComData::shiftData_D(m_ComData->d_timeStamps, m_ComData->DataSize, currentTime);
+      }
+      qDebug() << "--单次接收的数据：dataB = " << dataB.d << ", dataC =" << dataC.d  << " Time = " << QDateTime::currentDateTime();
+      // 处理电流过大/过小的情况
+      unsigned char tips = 0;
+      if(buf[25] == 0x01 && buf[26] == 0x01)
+      {
+          tips = 1;
+      }
+      else if(buf[25] == 0x02 && buf[26] == 0x02)
+      {
+          tips = 2;
+      }
+      emit get_USB_Data(now, temperature, tips, 0);    // 发送接收信号
+    } else {
+        qDebug() << "头码不正确" << buf[0] << buf[1] << buf[2] << buf[3];
+        // 处理错误代码
+        if(buf[0] == 0xaa && buf[1] == 0xbb && buf[2] == 0xcc && buf[3] == 0xdd)
+        {
+            QDateTime now = QDateTime::currentDateTime();
+            unsigned int buf_Cur = 0;
+            buf_Cur |= buf[7]; buf_Cur = buf_Cur << 8;
+            buf_Cur |= buf[6]; buf_Cur = buf_Cur << 8;
+            buf_Cur |= buf[5]; buf_Cur = buf_Cur << 8; buf_Cur |= buf[4];
+            if(buf_Cur >= 0x80000000)
+            {
+                emit get_USB_Data(now, 0, 0, (unsigned char)(buf_Cur - 0x80000000));    // 发送接收信号
+            }
+        }
+    }
+}

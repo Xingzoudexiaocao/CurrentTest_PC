@@ -18,13 +18,13 @@ MainWindow::MainWindow(QWidget *parent, ComData *comD, USB_HID *hid) :
 //    QTextCodec::setCodecForLocale(codec);
 //    QTextCodec::setCodecForCStrings(codec);
 
-    setFixedSize(1100, 860);
+    setFixedSize(1100, 885);
     setWindowTitle(productName);
     this->grabKeyboard();       // 捕获键盘输入
 
     demo = new RealTime(this, m_ComData, m_UsbHid);
 //    demo->setStyleSheet("* {font-family:arial;font-size:15px}");
-    demo->setGeometry(8, 20, 990, 850);
+//    demo->setGeometry(8, 20, 990, 850);
     demo->show();
 #ifdef  isDebuf
         if(m_Debug == nullptr)
@@ -34,7 +34,7 @@ MainWindow::MainWindow(QWidget *parent, ComData *comD, USB_HID *hid) :
     //        demo->setWindowFlags(Qt::WindowStaysOnTopHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint); // 置顶，最小化，关闭
             m_Debug->setGeometry(0, 0, 400, 400);
             m_Debug->show();
-            connect(demo,SIGNAL(send_Level_Num(int)),m_Debug, SLOT(receive_Level_Num(int)));
+            connect(demo->m_UsbReceiveThread,SIGNAL(send_Level_Num(int)),m_Debug, SLOT(receive_Level_Num(int)));
             connect(m_Debug,SIGNAL(destroyed()),this, SLOT(colseDebug()));
         }
 #endif
@@ -103,7 +103,7 @@ void MainWindow::keyPressEvent(QKeyEvent *ev)
     //        demo->setWindowFlags(Qt::WindowStaysOnTopHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint); // 置顶，最小化，关闭
             m_Debug->setGeometry(0, 0, 400, 400);
             m_Debug->show();
-            connect(demo,SIGNAL(send_Level_Num(int)),m_Debug, SLOT(receive_Level_Num(int)));
+            connect(demo->m_UsbReceiveThread,SIGNAL(send_Level_Num(int)),m_Debug, SLOT(receive_Level_Num(int)));
             connect(m_Debug,SIGNAL(destroyed()),this, SLOT(colseDebug()));
         }
 #endif

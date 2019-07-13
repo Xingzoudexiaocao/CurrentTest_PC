@@ -3,15 +3,17 @@
 
 #include <QMainWindow>
 #include <QWidget>
+#include <QMessageBox>
 
 #include "comdata.h"
 
-class About : public QMainWindow
+class About : public QWidget
 {
     Q_OBJECT
 public:
     explicit About(QWidget *parent = nullptr);
     ~About();
+
 signals:
 
 public slots:

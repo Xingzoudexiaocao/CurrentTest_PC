@@ -7,7 +7,7 @@
 
 using namespace std;
 
-About::About(QWidget *parent) : QMainWindow(parent)
+About::About(QWidget *parent) : QWidget(parent)
 {
     qDebug() << "About构造函数。";
     setWindowFlags(Qt::WindowStaysOnTopHint | Qt::WindowCloseButtonHint); // 置顶，最小化，关闭

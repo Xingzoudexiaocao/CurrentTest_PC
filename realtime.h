@@ -15,6 +15,11 @@
 #include <QFileDialog>
 #include <QPixmap>
 #include <QFont>
+#include <QHBoxLayout>
+#include <QTableWidget>
+#include <QTableView>
+#include <QStandardItemModel>
+#include <QHeaderView>
 #include "comdata.h"
 #include "usb_hid.h"
 #include "usb_receive_thread.h"
@@ -26,8 +31,10 @@ class RealTime : public QWidget
 public:
     explicit RealTime(QWidget *parent = nullptr, ComData *comD = nullptr,  USB_HID *hid = nullptr);
     ~RealTime();
+
+    USB_Receive_Thread *m_UsbReceiveThread;
+
 signals:
-    void send_Level_Num(int);
 
 private:
     // The initial full range is set to 60 seconds of data.
@@ -52,6 +59,9 @@ private:
     QLabel *m_Tips;
     QLabel *m_Error;
 
+    QTabWidget * tabWidget;     // Tab界面
+    QTableView *dataView;       // TableView数据
+    QStandardItemModel *dataModel;     // TableModel数据
     About *m_About;
     int cntDisplay;
 
@@ -59,26 +69,30 @@ private:
     QChartViewer *m_ChartViewer_2;        // QChartViewer control
     QTimer *dataRateTimer;
     QTimer *m_ChartUpdateTimer;         // The chart update timer
+    QTimer *m_TableUpdateTimer;         // The chart update timer
     QScrollBar *m_HScrollBar;           // The scroll bar
     QScrollBar *m_HScrollBar_2;           // The scroll bar
 
     QPushButton *connectUSB;
     QPushButton *disconnectUSB;
 
+    QPushButton *play;
+    QPushButton *pause;
+    QPushButton *download;
+
     ComData *m_ComData;
     USB_HID *m_UsbHid;
-    USB_Receive_Thread *m_UsbReceiveThread;
 
     void drawChart(QChartViewer *viewer, int index);           // Draw chart
     void trackLineLabel(XYChart *c, int mouseX, int index);    // Draw track cursor
     void updateControls(QChartViewer *viewer, QScrollBar *bar);      // Update other controls as viewport changes
-
 private slots:
 //    void onUpdatePeriodChanged(QString);// The chart update timer interval has changed.
     QString loadFontFamilyFromTTF(QString);
     void linkUs(QString);
     void getData();                     // Get new data values
     void updateChart();                 // Update the chart.
+    void updateTable();                 // Update the table.
     void drawChart();                   // Draw the chart.
     void drawChart_2();                   // Draw the chart.
     void onMouseMovePlotArea(QMouseEvent *);
@@ -97,8 +111,14 @@ private slots:
     void onReadUSB();    // 接收数据方法
     void CreateData();
     void showVAW(double v, double mA);
+    void onBtnPlay();
+    void onBtnPause();
+    void onBtnDownload();
+    void updateTableView();
+    QString doubleToTime(double dTime);
+
 public slots:
-    void m_get_USB_Data(ST_REC_STRUCT *);
+    void m_get_USB_Data(QDateTime, double, unsigned char, unsigned char);
     void thread_finished();
     void aboutClose(void);
 

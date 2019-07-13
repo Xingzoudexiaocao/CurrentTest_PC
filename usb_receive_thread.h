@@ -15,7 +15,8 @@ public:
     explicit USB_Receive_Thread(QObject *parent = nullptr, USB_HID *hid = nullptr, ComData *comD = nullptr);
 
 signals:
-    void get_USB_Data(ST_REC_STRUCT *);
+    void send_Level_Num(int);   // 发送档位信息
+    void get_USB_Data(QDateTime, double, unsigned char, unsigned char);
     void end_Thread();
 
 protected:
@@ -28,6 +29,7 @@ private:
     USB_HID *m_UsbHid;
 
 private:
+    void HandleData(ST_REC_STRUCT *);
 
 };
 
