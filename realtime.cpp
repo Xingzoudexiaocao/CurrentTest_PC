@@ -116,6 +116,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     m_ValueB->setFont(font_VAW);
     m_ValueB->setAlignment(Qt::AlignHCenter);
     m_ValueB->setFrameShape(QFrame::NoFrame);
+    m_ValueB->setText(QString::number(0, 'f', 3));  // 初始化显示0
     QLabel *unitV = new QLabel(frame_3);
     unitV->setGeometry(6 + 190, 0, 50, 80);
     unitV->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:30px; color:#00cc00; background-color:white;}");
@@ -127,6 +128,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     m_ValueC->setFont(font_VAW);
     m_ValueC->setAlignment(Qt::AlignHCenter);
     m_ValueC->setFrameShape(QFrame::NoFrame);
+    m_ValueC->setText(QString::number(0, 'f', 3));  // 初始化显示0
     m_unitA = new QLabel(frame_3);
     m_unitA->setGeometry(6 + 190, 80, 50, 80);
     m_unitA->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:30px; color:blue; background-color:white;}");
@@ -138,6 +140,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     m_Power->setFont(font_VAW);
     m_Power->setAlignment(Qt::AlignHCenter);
     m_Power->setFrameShape(QFrame::NoFrame);
+    m_Power->setText(QString::number(0, 'f', 3));  // 初始化显示0
     QLabel *unitW = new QLabel(frame_3);
     unitW->setGeometry(6 + 190, 160, 50, 80);
     unitW->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:30px; color:red; background-color:white;}");
@@ -325,6 +328,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
 //    connect(dataRateTimer_2, SIGNAL(timeout()), SLOT(CreateData()));
 
     m_UsbReceiveThread = new USB_Receive_Thread(this, m_UsbHid, m_ComData);    // 新建线程
+//    m_UsbReceiveThread->setPriority(QThread::IdlePriority);
     connect(m_UsbReceiveThread,SIGNAL(get_USB_Data(QDateTime, double, unsigned char, unsigned char)),this, SLOT(m_get_USB_Data(QDateTime, double, unsigned char, unsigned char)));
     connect(m_UsbReceiveThread,SIGNAL(end_Thread()),this, SLOT(thread_finished()));
     // Set up the chart update timer
@@ -399,7 +403,11 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     dataModel->setHeaderData(2,Qt::Horizontal, "电压");
     dataModel->setHeaderData(3,Qt::Horizontal, "电流");
     dataModel->setHeaderData(4,Qt::Horizontal, "功率");
-    updateTableView();
+//    updateTableView();
+    // 初始化显示
+    dataView->setModel(dataModel);
+    dataView->setColumnWidth(0,70);dataView->setColumnWidth(1,230);dataView->setColumnWidth(2,160);dataView->setColumnWidth(3,160);dataView->setColumnWidth(4,160);
+    dataView->setUpdatesEnabled(true);  //恢复界面刷新
 
     QFrame *frameTop = new QFrame(this);
     frameTop->setGeometry(800, 4, 275, 30);
@@ -1162,12 +1170,12 @@ void RealTime::onConnectUSB()
         usb_str3->setText(m_UsbHid->str_SerialNumber);
         m_Tips->setText("");
         m_Error->setText("");
-
+        download->setEnabled(false);
     }
     else
     {
         qDebug() << "连接失败";
-        QMessageBox::about(this, "提示", "连接失败！");
+        QMessageBox::critical(this, "提示", "连接失败！");
     }
 }
 void RealTime::onDisConnectUSB()
@@ -1192,13 +1200,14 @@ void RealTime::thread_finished()
 
         play->setVisible(false);
         pause->setVisible(false);
+        download->setEnabled(true);
 
         qDebug() << "关闭成功";
     }
     else
     {
         qDebug() << "关闭失败";
-        QMessageBox::about(this, "提示", "关闭失败！");
+        QMessageBox::critical(this, "提示", "关闭失败！");
     }
 }
 void RealTime::onSendUSB()
@@ -1404,10 +1413,32 @@ void RealTime::onBtnDownload()
 //    qDebug() << "点击导出按键。";
     if(m_ComData->d_currentIndex <= 1)
     {
-        QMessageBox::about(this, "提示", "暂无数据，无法导出！");
+        QMessageBox::critical(this, "提示", "暂无数据，无法导出！");
         return;
     }
+    QString sFilePath="data.txt";
+    QFile file(sFilePath);
+    if(!file.open(QIODevice::WriteOnly|QIODevice::Text)) {
+        QMessageBox::critical(this,"提示","无法创建文件！");
+        return;
+    }
+    QTextStream out(&file);
+    QString title = "序号\t时间\t电压\t电流\t功率";
+    out<<title<<endl;//将a存进test.txt文件夹里面<<QObject::tr("go on")
+    for (int i = 0; i < m_ComData->d_currentIndex; i++) {
+        QString v = QString::number(m_ComData->d_dataSeriesV[i], 'f', 3) + "V";
+        QString a;
+        if(m_ComData->d_dataSeriesA[i] < 1) {
+            a = QString::number(m_ComData->d_dataSeriesA[i] * 1000, 'f', 3) + "uA";
+        } else {
+            a = QString::number(m_ComData->d_dataSeriesA[i], 'f', 3) + "mA";
+        }
+        out<<QString::number(i + 1)<<"\t"<<doubleToTime(m_ComData->d_timeStamps[i])<<"\t"<<v<<"\t"<<a<<"\t"<<QString::number(m_ComData->d_dataSeriesV[i] * m_ComData->d_dataSeriesA[i], 'f', 3) + "W"<<endl;
+    }
 
+    out.flush();
+    file.close();
+    QMessageBox::about(this,"提示","导入数据到文件'data.txt'成功！");
 }
 void RealTime::updateTableView()
 {
@@ -1462,7 +1493,6 @@ void RealTime::updateTableView()
                a = QString::number(m_ComData->d_dataSeriesA[rowCount - 1000 + i], 'f', 3) + "mA";
            }
            QStandardItem *item[5];
-    //       item[1]->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter); //文本对齐格式
            item[0] = new QStandardItem(QString::number(i + 1));
            item[0]->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter); //文本对齐格式
            dataModel->setItem(i, 0, item[0]);

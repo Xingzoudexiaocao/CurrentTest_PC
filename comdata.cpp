@@ -8,7 +8,7 @@ ComData::ComData()
 {
     myHandle = nullptr;
     lastTime = QDateTime::currentDateTime();
-    d_currentIndex = 0;     // 默认为1，这样会显示波形图
+    d_currentIndex = 1;     // 默认为1，这样会显示波形图
     DataSize = 360000;  // 保存1小时数据
     // 头码 167, 89, 62, 189 = (0xA7, 0x59, 0x3E, 0xBD)
     headerC = new unsigned char[4]{0xA7, 0x59, 0x3E, 0xBD};

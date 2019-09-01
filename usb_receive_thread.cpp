@@ -42,7 +42,8 @@ void USB_Receive_Thread::run()
             }
             res = -1;   // 置位
             numBytes = -1;
-            QThread::usleep(100);   // 延时100us
+            QThread::sleep(0);
+//            QThread::usleep(10);   // 延时100us
         } else {
             QThread::msleep(200);
             emit end_Thread();      // 发送信号
@@ -90,7 +91,7 @@ void USB_Receive_Thread::HandleData(ST_REC_STRUCT *bufData)
       buf_Vol |= buf[9];
       buf_Temp |= buf[10]; buf_Temp = buf_Temp << 8;
       buf_Temp |= buf[11];
-      dataB.d = (double)buf_Vol / 4095 * 3.2558 * 2.5;
+      dataB.d = (double)buf_Vol / 4095 * 3 * 2.5 * 1.0043;  // 1.0043为修正值
       double temperature = (1.43 - ((double)buf_Temp / 4095 * 3)) / 4.3 + 25;   // 计算温度
       unsigned int buf_Cur = 0;
       unsigned int max_Cur = 0x7FFFFF;
@@ -102,8 +103,15 @@ void USB_Receive_Thread::HandleData(ST_REC_STRUCT *bufData)
       switch (buf[27]) {
         case 1: dataC.d = adVol / 14 / 100000; break;
         case 2: dataC.d = adVol / 14 / 1000; break;
-        case 3: dataC.d = adVol / 14 / 1.003 / 10; break;   // 1.003 为修正mos管电压
-        case 4: dataC.d = adVol / 14 / (0.1 + 0.03181358); break;
+        case 3:
+          if((adVol / 14) >= 20) {
+              double dec = adVol / 14 - 20;
+              dataC.d = (dec / 1.001 + 20) / 10;  // 大于3mA电流需要减去mos管电压
+          } else {
+              dataC.d = adVol / 14 / 10;
+          }
+          break;   // 1.003 为修正mos管电压
+        case 4: dataC.d = adVol / 14 / (0.1 + 0.0075); break;       // 0.03181358
         default: dataC.d = 0; break;
       }
       // 更新数据到表格数据
@@ -114,7 +122,8 @@ void USB_Receive_Thread::HandleData(ST_REC_STRUCT *bufData)
       double currentTime = Chart::chartTime2(now.toTime_t())
                            + now.time().msec() / 10 * 0.01;
       // After obtaining the new values, we need to update the data arrays.
-      double tmp_V = round(dataB.d * 1000) / 1000;          // 对数据进行最小精度的四舍五入
+//      double tmp_V = round(dataB.d * 1000) / 1000;          // 对数据进行最小精度的四舍五入
+      double tmp_V = round(adVol) / 1000;          // 对数据进行最小精度的四舍五入，测试ad1259的采样值
       double tmp_A = round(dataC.d * 1000000) / 1000000;
       if (m_ComData->d_currentIndex < m_ComData->DataSize)
       {
