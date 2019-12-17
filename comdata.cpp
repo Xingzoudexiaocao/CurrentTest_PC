@@ -26,6 +26,10 @@ ComData::ComData()
     // 初始化平均值
     d_Avg_V = 0;
     d_Avg_A = 0;
+
+    updataFile = new unsigned char[256000];     // 最大256k
+//    memset(&updataFile, 0x00, sizeof(updataFile));
+    updataFileLen = 0;
 }
 
 ComData::~ComData()

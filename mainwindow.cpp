@@ -215,8 +215,8 @@ void MainWindow::serialPort_readyRead()
 
 }
 
-void MainWindow::on_OpenCom_clicked()
-{
+//void MainWindow::on_OpenCom_clicked()
+//{
 //    if(ui->pushButton_4->text()==QString("打开串口"))
 //    {
 //        //设置串口名
@@ -285,32 +285,32 @@ void MainWindow::on_OpenCom_clicked()
 //        ui->pushButton_5->setEnabled(false);
 //    }
 
-}
+//}
 
-void MainWindow::on_SearchCom_clicked()
-{
+//void MainWindow::on_SearchCom_clicked()
+//{
 //    ui->comboBox->clear();
 //    //通过QSerialPortInfo查找可用串口
 //    foreach(const QSerialPortInfo &info, QSerialPortInfo::availablePorts())
 //    {
 //        ui->comboBox->addItem(info.portName());
 //    }
-}
+//}
 
-void MainWindow::on_SendData_clicked()
-{
+//void MainWindow::on_SendData_clicked()
+//{
 //    //获取界面上的数据并转换成utf8格式的字节流
 //    QByteArray data = ui->textEdit_2->toPlainText().toUtf8();
 //    serial.write(data);
-}
+//}
 
-void MainWindow::on_ClearData_clicked()
-{
+//void MainWindow::on_ClearData_clicked()
+//{
 //    ui->textEdit->clear();
-}
+//}
 
-void MainWindow::on_AutoSend_clicked()
-{
+//void MainWindow::on_AutoSend_clicked()
+//{
 //    if(serial.isOpen())
 //    {
 //        if(ui->pushButton_5->text()==QString("打开发送数据"))
@@ -329,4 +329,4 @@ void MainWindow::on_AutoSend_clicked()
 //        }
 //    }
 
-}
+//}

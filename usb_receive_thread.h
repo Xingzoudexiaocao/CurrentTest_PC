@@ -18,6 +18,7 @@ signals:
     void send_Level_Num(int);   // 发送档位信息
     void get_USB_Data(QDateTime, double, unsigned char, unsigned char);
     void end_Thread();
+    void setAckOrNak(int);
 
 protected:
     void run();

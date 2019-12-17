@@ -22,6 +22,7 @@ public slots:
     void receive_Level_Num(int);
 private slots:
     void onLedOnOffChanged(int);
+    void onBtnWriteFlash();
     void onBtnOFC();
     void onBtnFSC();
 

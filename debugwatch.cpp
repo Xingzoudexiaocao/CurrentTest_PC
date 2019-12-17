@@ -23,6 +23,11 @@ DebugWatch::DebugWatch(QWidget *parent, ComData *comD, USB_HID *hid) : QMainWind
     m_TestInfo->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:14px; color:red;}");
     m_TestInfo->setText("当前档位：");
     // Run push button
+    QPushButton *btnWriteFlash = new QPushButton("测试写Flash", this);
+    btnWriteFlash->setGeometry(6, 120, 150, 40);
+    btnWriteFlash->setStyleSheet("QPushButton { text-align:left; padding:5px; font-size:24px;}");
+    connect(btnWriteFlash, SIGNAL(clicked(bool)), SLOT(onBtnWriteFlash()));
+    // Run push button
     QPushButton *btnOFC = new QPushButton("校准偏移", this);
     btnOFC->setGeometry(6, 200, 150, 40);
     btnOFC->setStyleSheet("QPushButton { text-align:left; padding:5px; font-size:24px;}");
@@ -72,6 +77,21 @@ void DebugWatch::onLedOnOffChanged(int index)
         default: break;
     }
     m_UsbHid->SendUSB(sendP, 32);   // 使用USB发送数据
+}
+void DebugWatch::onBtnWriteFlash()
+{
+    if(m_UsbHid->dev_handle == nullptr)
+    {
+        qDebug() << "USB设备未打开！";
+        QMessageBox::about(this, "提示", "USB设备未打开！");
+        return;
+    }
+    unsigned char sendP[32];
+    memset(sendP, 0, sizeof (sendP));
+    sendP[0] = 0xa5; sendP[1] = 0xb7; sendP[2] = 0xa5; sendP[3] = 0xb7;
+    sendP[4] = 0x08; qDebug() << "Wirte Flash Test.";
+    m_UsbHid->SendUSB(sendP, 32);   // 使用USB发送数据
+
 }
 void DebugWatch::onBtnOFC()
 {

@@ -261,14 +261,19 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     frame_2_ext->setGeometry(0, 0, 815, 847);
 //    frame_2_ext->setBackgroundRole(QPalette::shadow());
     frame_2_ext->setFrameShape(QFrame::StyledPanel);
+    QFrame *frame_2_updata = new QFrame();     // 更新程序界面
+    frame_2_updata->setGeometry(0, 0, 815, 847);
+//    frame_2_updata->setBackgroundRole(QPalette::shadow());
+    frame_2_updata->setFrameShape(QFrame::StyledPanel);
 
     tabWidget = new QTabWidget(this);
     tabWidget->setGeometry(262, 4, 815, 847);
     tabWidget->addTab(frame_2, "波形显示");
     tabWidget->addTab(frame_2_ext, "数据显示");
+    tabWidget->addTab(frame_2_updata, "程序升级");
     QString tabBarStyle = "QTabWidget::tab-bar{ alignment:left;}\
-            QTabBar::tab{background-color: rgb(96, 96, 96); /*灰色*/ color:white; width:150px; min-height:10px; border: 1px; padding:5px;}\
-            QTabBar::tab:selected{ border-color: white; background-color: #0066CC; /*浅蓝色*/ color:white;font-weight:bold;}\
+            QTabBar::tab{border-color: #805533; background-color: rgb(96, 96, 96); /*灰色*/ color:white; width:150px; min-height:10px; border: 2px solid #FFFFFF; padding:5px;}\
+            QTabBar::tab:selected{background-color: #0066CC; /*浅蓝色*/ color:white; font-weight:bold; border: 2px solid #0066CC;}\
             QTabBar::tab:!selected { margin-top: 5px;}";
     tabWidget->setStyleSheet(tabBarStyle);
 
@@ -330,7 +335,16 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     m_UsbReceiveThread = new USB_Receive_Thread(this, m_UsbHid, m_ComData);    // 新建线程
 //    m_UsbReceiveThread->setPriority(QThread::IdlePriority);
     connect(m_UsbReceiveThread,SIGNAL(get_USB_Data(QDateTime, double, unsigned char, unsigned char)),this, SLOT(m_get_USB_Data(QDateTime, double, unsigned char, unsigned char)));
-    connect(m_UsbReceiveThread,SIGNAL(end_Thread()),this, SLOT(thread_finished()));
+    connect(m_UsbReceiveThread,SIGNAL(end_Thread()),this, SLOT(thread_receive_finished()));
+    m_UsbSendThread = new USB_Send_Thread(this, m_UsbHid, m_ComData);    // 新建线程
+//    m_UsbSendThread->setPriority(QThread::IdlePriority);
+//    connect(m_UsbSendThread,SIGNAL(get_USB_Data(QDateTime, double, unsigned char, unsigned char)),this, SLOT(m_get_USB_Data(QDateTime, double, unsigned char, unsigned char)));
+    connect(m_UsbSendThread,SIGNAL(end_Thread()),this, SLOT(thread_send_finished()));
+    connect(m_UsbSendThread,SIGNAL(sendProgressBar(unsigned long)),this, SLOT(updataProgressBar(unsigned long)));
+    connect(m_UsbSendThread,SIGNAL(usbSuccess()),this, SLOT(upadataSuccess()));
+    connect(m_UsbSendThread,SIGNAL(usbFail()),this, SLOT(updataFail()));
+    connect(m_UsbSendThread,SIGNAL(usbTimeOut()),this, SLOT(upadtaTimeOut()));
+    connect(m_UsbReceiveThread,SIGNAL(setAckOrNak(int)),m_UsbSendThread, SLOT(setAckState(int)));
     // Set up the chart update timer
     m_ChartUpdateTimer = new QTimer(this);
     connect(m_ChartUpdateTimer, SIGNAL(timeout()), SLOT(updateChart()));
@@ -408,6 +422,59 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     dataView->setModel(dataModel);
     dataView->setColumnWidth(0,70);dataView->setColumnWidth(1,230);dataView->setColumnWidth(2,160);dataView->setColumnWidth(3,160);dataView->setColumnWidth(4,160);
     dataView->setUpdatesEnabled(true);  //恢复界面刷新
+
+    QLabel *appInfo = new QLabel(frame_2_updata);
+    appInfo->setGeometry(4, 5, 130, 50);
+    appInfo->setStyleSheet("QLabel {font-family:arial; text-align:left; padding:2px; font-size:24px;}");
+    appInfo->setText("程序版本:");    // SerialNumber
+    appVersion = new QLabel(frame_2_updata);
+    appVersion->setStyleSheet("QLabel {font-family:arial; text-align:left; padding:0px; font-size:24px;}");
+    appVersion->setGeometry(130, 5, 200, 50);
+    appVersion->setFrameShape(QFrame::NoFrame);
+    appVersion->setText("-");
+    QLabel *appInfo_2 = new QLabel(frame_2_updata);
+    appInfo_2->setGeometry(350, 5, 130, 50);
+    appInfo_2->setStyleSheet("QLabel {font-family:arial; text-align:left; padding:2px; font-size:24px;}");
+    appInfo_2->setText("程序大小:");    // SerialNumber
+    appLength = new QLabel(frame_2_updata);
+    appLength->setStyleSheet("QLabel {font-family:arial; text-align:left; padding:0px; font-size:24px;}");
+    appLength->setGeometry(480, 5, 200, 50);
+    appLength->setFrameShape(QFrame::NoFrame);
+    appLength->setText("-");
+    updataFile = new QPushButton(frame_2_updata);
+    updataFile->setStyleSheet("QPushButton {font-family:arial; text-align:left; padding:5px; font-size:20px; border:1px solid #000000;}");
+    updataFile->setGeometry(4, 60, 500-4, 40);
+//    updataFile->setFrameShape(QFrame::NoFrame);
+    updataFile->setText("");
+    connect(updataFile, &QAbstractButton::clicked, this, &RealTime::UpdataOpen);
+    updataOpen = new QPushButton( " 打开文件", frame_2_updata);
+    updataOpen->setGeometry(502, 60, 130, 40);
+    updataOpen->setStyleSheet(bnt_qss1);
+    updataOpen->setFont(font);
+    connect(updataOpen, &QAbstractButton::clicked, this, &RealTime::UpdataOpen);
+    updataBegin = new QPushButton( " 升级程序", frame_2_updata);
+    updataBegin->setGeometry(650, 60, 130, 40);
+    updataBegin->setStyleSheet(bnt_qss1);
+    updataBegin->setFont(font);
+    connect(updataBegin, &QAbstractButton::clicked, this, &RealTime::UpdataSend);
+    updataBar = new QProgressBar(frame_2_updata);
+    updataBar->setGeometry(4, 120, 780, 40);
+    updataBar->setOrientation(Qt::Horizontal);  // 水平方向
+    updataBar->setMinimum(0);  // 最小值
+    updataBar->setMaximum(1000);  // 最大值
+    updataBar->setValue(0);  // 当前进度
+    double dProgress = (updataBar->value() - updataBar->minimum()) * 100.0
+                    / (updataBar->maximum() - updataBar->minimum()); // 百分比计算公式
+    updataBar->setFormat(QString("当前进度为：%1%").arg(QString::number(dProgress, 'f', 1)));
+//    updataBar->setFormat(tr("Current progress : %1%").arg(QString::number(dProgress, 'f', 1)));
+    updataBar->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);  // 对齐方式
+    updataTips = new QLabel(frame_2_updata);
+    updataTips->setStyleSheet("QLabel {font-family:arial; text-align:left; padding:0px; font-size:18px;}");
+    updataTips->setGeometry(10, 120, 200, 40);
+    updataTips->setFrameShape(QFrame::NoFrame);
+    updataTips->setText("当前文件：");
+    updataTips->setVisible(false);
+    updataBar->setVisible(false);
 
     QFrame *frameTop = new QFrame(this);
     frameTop->setGeometry(800, 4, 275, 30);
@@ -1157,9 +1224,9 @@ void RealTime::onConnectUSB()
         qDebug() << "连接成功";
         m_UsbReceiveThread->isStop = false;
         m_UsbReceiveThread->start();   // 启动线程
-        m_ChartUpdateTimer->start(100);    // 启动更新表格
-        m_TableUpdateTimer->start(100);    // 启动更新详细数据
-        dataRateTimer->start(DataInterval); // 启动获取数据
+//        m_ChartUpdateTimer->start(100);    // 启动更新表格
+//        m_TableUpdateTimer->start(100);    // 启动更新详细数据
+//        dataRateTimer->start(DataInterval); // 启动获取数据
         m_ComData->ClearData();         // 清之前的数据
         play->setVisible(true);
         play->setEnabled(false);
@@ -1183,6 +1250,8 @@ void RealTime::onDisConnectUSB()
     m_UsbReceiveThread->isStop = true;
 //    m_UsbReceiveThread->terminate();    // 关闭线程
 //    m_UsbReceiveThread->wait();
+    m_UsbSendThread->isStop = true;
+
     m_ChartUpdateTimer->stop();     // 关闭更新表格
     m_TableUpdateTimer->stop();    // 关闭更新详细数据
     dataRateTimer->stop();      // 关闭获取数据
@@ -1191,7 +1260,7 @@ void RealTime::onDisConnectUSB()
     usb_str3->setText("-");
 }
 
-void RealTime::thread_finished()
+void RealTime::thread_receive_finished()
 {
     if(m_UsbHid->DisConnectUSB())
     {
@@ -1209,6 +1278,11 @@ void RealTime::thread_finished()
         qDebug() << "关闭失败";
         QMessageBox::critical(this, "提示", "关闭失败！");
     }
+}
+void RealTime::thread_send_finished()
+{
+    m_UsbSendThread->isStop = true;
+    qDebug() << "发送线程关闭";
 }
 void RealTime::onSendUSB()
 {
@@ -1529,4 +1603,133 @@ QString RealTime::doubleToTime(double dTime)
     *dt = dt->addMSecs((qint64)round(dec * 1000));
 
     return dt->toString("yyyy-MM-dd hh:mm:ss");
+}
+
+void RealTime::UpdataOpen()
+{
+//    if(m_UsbHid->dev_handle == nullptr)
+//    {
+//        qDebug() << "USB设备未打开！";
+//        QMessageBox::about(this, "提示", "USB设备未打开！");
+//        return;
+//    }
+
+    QString fileName=QFileDialog::getOpenFileName(this,QString::fromLocal8Bit("bin file"),qApp->applicationDirPath(),
+                                                  QString::fromLocal8Bit("bin File(*.bin)"));//新建文件打开窗口
+    if (fileName.isEmpty())//如果未选择文件便确认，即返回
+        return;
+    QFile file(fileName);
+    if(!file.open(QIODevice::ReadOnly))
+        qDebug() << file.errorString();//文件打开错误显示错误信息
+    QByteArray arry=file.readAll();//读取文件
+    file.close();
+    qDebug() << "打开文件：" << fileName;
+//    int length=arry.size();//计算长度    qDebug()<<length;
+    qDebug() << "1.arry.size() = " << arry.size();
+    if((arry.size() % 1024) != 0) {
+            arry.insert(arry.size(), 1024 - (arry.size() % 1024), -1);
+    }
+//    length = arry.size();//计算长度
+    qDebug() << "2.arry.size() = " << arry.size();
+
+    if(arry.size() > 256000)
+    {
+        qDebug() << "文件过大，无法加载！";
+        QMessageBox::about(this, "提示", "文件过大，无法加载！");
+        return;
+    }
+    updataFile->setText(fileName);
+    updataTips->setText("当前文件：" + QString::number(arry.size()) + "字节");
+    updataTips->setVisible(true);
+    updataBar->setMaximum(arry.size());
+    updataBar->setVisible(true);
+    m_ComData->updataFileLen = (unsigned int)arry.size();     // 赋值长度
+//    m_ComData->updataFile = new unsigned char[m_ComData->updataFileLen];
+//    m_ComData->updataFile = (unsigned char *)arry.data();
+//    memcpy(m_ComData->updataFile, arry.data(), m_ComData->updataFileLen);
+    for (int i = 0; i < arry.size(); i++) {
+//        qDebug("%x ", *(arry.data() + i));
+        m_ComData->updataFile[i] = (unsigned char)(*(arry.data() + i));
+    }
+
+    /*
+    QString fileName = QFileDialog::getOpenFileName(
+                           this,
+                           tr("Select KW35 Bin file"),
+                           "./",
+                           tr("bin file(*.bin)"));
+   if(fileName.isEmpty()){
+       QMessageBox mesg;
+       mesg.critical(this,tr("Error"),tr("打开Bin文件发生错误！"));
+       return;
+   }else{
+       qDebug() << "打开文件：" << fileName;
+   }
+   QFileInfo *fileInfo = new QFileInfo(fileName);
+   qDebug() << "文件长度：" << fileInfo->size();
+
+   QFile *file = new QFile;
+   file->setFileName(mFileInfo.BinFileInfo.filePath());
+   if(file->open(QIODevice::ReadOnly)){
+       QDataStream BinFileData(file);
+       char *pBuff = new char[mFileInfo.BinFileInfo.size()];
+       BinFileData.readRawData(pBuff,static_cast<int>(mFileInfo.BinFileInfo.size()));
+       mFileInfo.BinFileRawData = QByteArray(pBuff,static_cast<int>(mFileInfo.BinFileInfo.size()));
+
+       //qDebug()<< mFileInfo.BinFileRawData;
+       file->close();
+   }else {
+       QMessageBox mesg;
+       mesg.critical(this,tr("Error"),tr("无法读取,请检查BIN文件路径!"));
+       return;
+   }
+*/
+}
+void RealTime::UpdataSend()
+{
+    if(m_UsbHid->dev_handle == nullptr)
+    {
+        qDebug() << "USB设备未打开！";
+        QMessageBox::about(this, "提示", "USB设备未打开！");
+        return;
+    }
+
+    m_UsbSendThread->isStop = false;
+    m_UsbSendThread->start();   // 启动线程
+
+
+//    unsigned char sendP[32];
+//    memset(sendP, 0, sizeof (sendP));
+//    sendP[0] = 0xa5; sendP[1] = 0xb7; sendP[2] = 0xa5; sendP[3] = 0xb7;
+//    sendP[4] = 0x08; qDebug() << "Wirte Flash Test.";
+//    m_UsbHid->SendUSB(sendP, 32);   // 使用USB发送数据
+
+
+}
+
+void RealTime::updataProgressBar(unsigned long val)
+{
+    updataBar->setValue((int)val);  // 当前进度
+    double dProgress = (updataBar->value() - updataBar->minimum()) * 100.0
+                    / (updataBar->maximum() - updataBar->minimum()); // 百分比计算公式
+    updataBar->setFormat(QString("当前进度为：%1%").arg(QString::number(dProgress, 'f', 1)));
+
+}
+
+void RealTime::upadataSuccess()
+{
+    m_UsbSendThread->isStop = true;
+    updataBar->setValue(updataBar->maximum());  // 设为100%
+    updataBar->setFormat(QString("当前进度为：%1%").arg(QString::number(100, 'f', 1)));
+    QMessageBox::about(this, "提示", "升级成功，请重启设备电源完成升级！");
+}
+void RealTime::updataFail()
+{
+    m_UsbSendThread->isStop = true;
+    QMessageBox::about(this, "提示", "升级失败，请重新升级程序！");
+}
+void RealTime::upadtaTimeOut()
+{
+    m_UsbSendThread->isStop = true;
+    QMessageBox::about(this, "提示", "升级超时，请重新升级程序！");
 }

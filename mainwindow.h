@@ -31,11 +31,11 @@ public Q_SLOTS:
     void colseDebug();
 private Q_SLOTS:
     void serialPort_readyRead();
-    void on_OpenCom_clicked();
-    void on_SearchCom_clicked();
-    void on_SendData_clicked();
-    void on_ClearData_clicked();
-    void on_AutoSend_clicked();
+//    void on_OpenCom_clicked();
+//    void on_SearchCom_clicked();
+//    void on_SendData_clicked();
+//    void on_ClearData_clicked();
+//    void on_AutoSend_clicked();
 
 private:
     Ui::MainWindow *ui;

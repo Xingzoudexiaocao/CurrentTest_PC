@@ -16,15 +16,15 @@ void USB_Receive_Thread::run()
     unsigned char buffer[32];
     memset(buffer, 0, 32);
 
-    while (1) {
+    while (!isStop) {
 //        if(isStop)
 //            break;
-        if(!isStop) {
+//        if(!isStop) {
             /* Wait up to 5 seconds for a message to arrive on endpoint 0x81. */
             res = libusb_interrupt_transfer(m_UsbHid->dev_handle, 0x81, buffer, 32, &numBytes, 100);
             if (0 == res)
             {
-              if (numBytes == 32)
+        /*      if (numBytes == 32)
               {
                   ST_REC_STRUCT *tmp = new ST_REC_STRUCT();
                   memcpy(tmp, buffer, 32);
@@ -34,7 +34,11 @@ void USB_Receive_Thread::run()
               else
               {
                   qDebug("Received %d bytes, 数值不对.\n", numBytes);
-              }
+              }*/
+                if(buffer[0] == YMODEM_ACK && buffer[1] == YMODEM_ACK && buffer[2] == YMODEM_ACK && buffer[3] == YMODEM_ACK)
+                    emit setAckOrNak(YMODEM_ACK);
+                else if(buffer[0] == YMODEM_NAK && buffer[1] == YMODEM_NAK && buffer[2] == YMODEM_NAK && buffer[3] == YMODEM_NAK)
+                    emit setAckOrNak(YMODEM_NAK);
             }
             else
             {
@@ -44,15 +48,18 @@ void USB_Receive_Thread::run()
             numBytes = -1;
             QThread::sleep(0);
 //            QThread::usleep(10);   // 延时100us
-        } else {
-            QThread::msleep(200);
-            emit end_Thread();      // 发送信号
-//            this->terminate();      // 关闭线程
-            this->quit();
-            this->wait();
-            break;
-        }
+//        } else {
+//            QThread::msleep(200);
+//            emit end_Thread();      // 发送信号
+////            this->terminate();      // 关闭线程
+//            this->quit();
+//            this->wait();
+//            break;
+//        }
     }
+    emit end_Thread();      // 发送信号
+    this->quit();
+    this->wait();
 }
 
 void USB_Receive_Thread::HandleData(ST_REC_STRUCT *bufData)

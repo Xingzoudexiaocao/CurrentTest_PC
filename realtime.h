@@ -5,6 +5,7 @@
 #include <QDateTime>
 #include <QTimer>
 #include <QLabel>
+#include <QProgressBar>
 #include <QButtonGroup>
 #include <QIcon>
 #include <QPushButton>
@@ -23,6 +24,7 @@
 #include "comdata.h"
 #include "usb_hid.h"
 #include "usb_receive_thread.h"
+#include "usb_send_thread.h"
 #include "about.h"
 
 class RealTime : public QWidget
@@ -33,6 +35,7 @@ public:
     ~RealTime();
 
     USB_Receive_Thread *m_UsbReceiveThread;
+    USB_Send_Thread *m_UsbSendThread;
 
 signals:
 
@@ -80,6 +83,14 @@ private:
     QPushButton *pause;
     QPushButton *download;
 
+    QLabel *appVersion;
+    QLabel *appLength;
+    QPushButton *updataFile;
+    QPushButton *updataOpen;
+    QPushButton *updataBegin;
+    QProgressBar *updataBar;
+    QLabel *updataTips;
+
     ComData *m_ComData;
     USB_HID *m_UsbHid;
 
@@ -116,11 +127,19 @@ private slots:
     void onBtnDownload();
     void updateTableView();
     QString doubleToTime(double dTime);
+    void UpdataOpen();
+    void UpdataSend();
 
 public slots:
     void m_get_USB_Data(QDateTime, double, unsigned char, unsigned char);
-    void thread_finished();
+    void thread_receive_finished();
+    void thread_send_finished();
     void aboutClose(void);
+
+    void updataProgressBar(unsigned long);
+    void upadataSuccess();
+    void updataFail();
+    void upadtaTimeOut();
 
 };
 
