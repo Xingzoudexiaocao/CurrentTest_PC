@@ -1,6 +1,6 @@
 #include "usb_send_thread.h"
 
-USB_Send_Thread::USB_Send_Thread(QObject *parent, USB_HID *hid, ComData *comD) : QObject(parent), QThread ()
+USB_Send_Thread::USB_Send_Thread(QObject *parent, USB_HID *hid, ComData *comD) : QThread ()
 {
     qDebug("发送线程create: %d", this->currentThreadId());
     m_UsbHid = hid;

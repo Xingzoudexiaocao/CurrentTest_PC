@@ -8,7 +8,7 @@
 #include "usb_hid.h"
 #include "qchartviewer.h"
 
-class USB_Receive_Thread : public QObject, public QThread
+class USB_Receive_Thread : public QThread
 {
     Q_OBJECT
 public:

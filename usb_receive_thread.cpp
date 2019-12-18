@@ -1,6 +1,7 @@
 ﻿#include "usb_receive_thread.h"
+#include <math.h>
 
-USB_Receive_Thread::USB_Receive_Thread(QObject *parent, USB_HID *hid, ComData *comD) : QObject(parent), QThread ()
+USB_Receive_Thread::USB_Receive_Thread(QObject *parent, USB_HID *hid, ComData *comD) : QThread ()
 {
     qDebug("接收线程create: %d", this->currentThreadId());
     m_UsbHid = hid;
