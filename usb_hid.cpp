@@ -137,7 +137,7 @@ bool USB_HID::ConnectUSB()
 //            qDebug()<<"Cannot Release Interface"<<endl;
 //            return false;
 //        }
-//        qDebug()<<"Released Interface"<<endl;   
+//        qDebug()<<"Released Interface"<<endl;
 
 
         return true;
@@ -175,12 +175,12 @@ int USB_HID::SendUSB(unsigned char *buf, unsigned char len)
     int res                      = -1;  /* return codes from libusb functions */
     int numBytes                 = -1;  /* Actual bytes transferred. */
 
-    res = libusb_claim_interface(dev_handle, 0);            //claim interface 0 (the first) of device (mine had jsut 1)
-    if(res < 0)
-    {
+//    res = libusb_claim_interface(dev_handle, 0);            //claim interface 0 (the first) of device (mine had jsut 1)
+//    if(res < 0)
+//    {
 //        qDebug()<<"Cannot Claim Interface"<<endl;
-        return -1;
-    }
+//        return -1;
+//    }
 //    qDebug()<<"Claimed Interface"<<endl;
 
     /* Send the message to endpoint 1 with a 100ms timeout. */
@@ -191,15 +191,15 @@ int USB_HID::SendUSB(unsigned char *buf, unsigned char len)
     }
     else
     {
-//      qDebug("Error sending message to device.\n");
+      qDebug("Error sending message to device.\n");
     }
 
-    res = libusb_release_interface(dev_handle, 0); //release the claimed interface
-    if(res !=0)
-    {
+//    res = libusb_release_interface(dev_handle, 0); //release the claimed interface
+//    if(res !=0)
+//    {
 //        qDebug()<<"Cannot Release Interface"<<endl;
-        return -1;
-    }
+//        return -1;
+//    }
 //    qDebug()<<"Released Interface"<<endl;
 
     return numBytes;

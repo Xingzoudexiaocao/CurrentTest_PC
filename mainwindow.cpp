@@ -26,18 +26,11 @@ MainWindow::MainWindow(QWidget *parent, ComData *comD, USB_HID *hid) :
 //    demo->setStyleSheet("* {font-family:arial;font-size:15px}");
 //    demo->setGeometry(8, 20, 990, 850);
     demo->show();
-#ifdef  isDebuf
-        if(m_Debug == nullptr)
-        {
-            m_Debug = new DebugWatch(nullptr, m_ComData, m_UsbHid);
-    //        demo->setStyleSheet("* {font-family:arial;font-size:15px}");
-    //        demo->setWindowFlags(Qt::WindowStaysOnTopHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint); // 置顶，最小化，关闭
-            m_Debug->setGeometry(0, 0, 400, 400);
-            m_Debug->show();
-            connect(demo->m_UsbReceiveThread,SIGNAL(send_Level_Num(int)),m_Debug, SLOT(receive_Level_Num(int)));
-            connect(m_Debug,SIGNAL(destroyed()),this, SLOT(colseDebug()));
-        }
-#endif
+
+//#ifdef  isDebuf
+//    OpenDebugWindow();  // 默认开启
+//#endif
+
 //    QObject::connect(ui->pushButton,SIGNAL(clicked()), this, SLOT(on_ClearData_clicked()));
 //    QObject::connect(ui->pushButton_2,SIGNAL(clicked()), this, SLOT(on_SendData_clicked()));
 //    QObject::connect(ui->pushButton_3,SIGNAL(clicked()), this, SLOT(on_SearchCom_clicked()));
@@ -96,16 +89,7 @@ void MainWindow::keyPressEvent(QKeyEvent *ev)
     if(ev->modifiers() == Qt::ControlModifier && ev->key() == Qt::Key_P) {
         qDebug() << "Ctrl+p 按键按下。";
 #ifdef  isDebuf
-        if(m_Debug == nullptr)
-        {
-            m_Debug = new DebugWatch(nullptr, m_ComData, m_UsbHid);
-    //        demo->setStyleSheet("* {font-family:arial;font-size:15px}");
-    //        demo->setWindowFlags(Qt::WindowStaysOnTopHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint); // 置顶，最小化，关闭
-            m_Debug->setGeometry(0, 0, 400, 400);
-            m_Debug->show();
-            connect(demo->m_UsbReceiveThread,SIGNAL(send_Level_Num(int)),m_Debug, SLOT(receive_Level_Num(int)));
-            connect(m_Debug,SIGNAL(destroyed()),this, SLOT(colseDebug()));
-        }
+    OpenDebugWindow();
 #endif
         return;
     }
@@ -120,6 +104,19 @@ void MainWindow::keyReleaseEvent(QKeyEvent *ev)
     QWidget::keyReleaseEvent(ev);
 }
 
+void MainWindow::OpenDebugWindow()
+{
+    if(m_Debug == nullptr)
+    {
+        m_Debug = new DebugWatch(nullptr, m_ComData, m_UsbHid);
+//        demo->setStyleSheet("* {font-family:arial;font-size:15px}");
+//        demo->setWindowFlags(Qt::WindowStaysOnTopHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint); // 置顶，最小化，关闭
+        m_Debug->setGeometry(0, 0, 400, 400);
+        m_Debug->show();
+        connect(demo->m_UsbReceiveThread,SIGNAL(send_Level_Num(int)),m_Debug, SLOT(receive_Level_Num(int)));
+        connect(m_Debug,SIGNAL(destroyed()),this, SLOT(colseDebug()));
+    }
+}
 
 void MainWindow::serialPort_readyRead()
 {

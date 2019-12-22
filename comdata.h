@@ -5,18 +5,22 @@
 #include "hidapi.h"
 #include "libusb.h"
 #include "usb.h"
+#include <math.h>
 
 #ifdef _MSC_VER
 #pragma execution_character_set("utf-8")
 #endif
 
 #define isDebuf           // 是否调试模式
+#define appUpdataDebug    // APP升级部分区别，调试时用,判断是否对bin文件加密处理
 
 #define YMODEM_SOH (0x01)
 #define YMODEM_STX (0x02)
 #define YMODEM_EOT (0x04)
 #define YMODEM_ACK (0x06)
 #define YMODEM_NAK (0x15)
+#define YMODEM_VER_LEN (0xA3)
+#define YMODEM_TIMEOUT (0x7B)
 //#define YMODEM_CAN (0x18)
 //#define YMODEM_C (0x43)
 

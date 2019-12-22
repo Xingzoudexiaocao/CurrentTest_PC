@@ -51,6 +51,7 @@ private:
 protected:
     virtual void keyPressEvent(QKeyEvent *ev);      // 键盘事件
     virtual void keyReleaseEvent(QKeyEvent *ev);
+    void OpenDebugWindow();
 
 };
 

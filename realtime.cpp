@@ -335,10 +335,10 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     m_UsbReceiveThread = new USB_Receive_Thread(this, m_UsbHid, m_ComData);    // 新建线程
 //    m_UsbReceiveThread->setPriority(QThread::IdlePriority);
     connect(m_UsbReceiveThread,SIGNAL(get_USB_Data(QDateTime, double, unsigned char, unsigned char)),this, SLOT(m_get_USB_Data(QDateTime, double, unsigned char, unsigned char)));
+    connect(m_UsbReceiveThread,SIGNAL(get_Version_Length(unsigned long long, unsigned long long)),this, SLOT(m_get_Version_Length(unsigned long long, unsigned long long)));
     connect(m_UsbReceiveThread,SIGNAL(end_Thread()),this, SLOT(thread_receive_finished()));
     m_UsbSendThread = new USB_Send_Thread(this, m_UsbHid, m_ComData);    // 新建线程
 //    m_UsbSendThread->setPriority(QThread::IdlePriority);
-//    connect(m_UsbSendThread,SIGNAL(get_USB_Data(QDateTime, double, unsigned char, unsigned char)),this, SLOT(m_get_USB_Data(QDateTime, double, unsigned char, unsigned char)));
     connect(m_UsbSendThread,SIGNAL(end_Thread()),this, SLOT(thread_send_finished()));
     connect(m_UsbSendThread,SIGNAL(sendProgressBar(unsigned long)),this, SLOT(updataProgressBar(unsigned long)));
     connect(m_UsbSendThread,SIGNAL(usbSuccess()),this, SLOT(upadataSuccess()));
@@ -1238,6 +1238,11 @@ void RealTime::onConnectUSB()
         m_Tips->setText("");
         m_Error->setText("");
         download->setEnabled(false);
+        // 设置更新进度条不可见
+        updataTips->setVisible(false);
+        updataBar->setVisible(false);
+        // 发送读取版本号和文件长度指令
+        send_CMD(0x08);     // 读取版本号和文件长度指令
     }
     else
     {
@@ -1247,10 +1252,17 @@ void RealTime::onConnectUSB()
 }
 void RealTime::onDisConnectUSB()
 {
+    if(m_UsbSendThread->isStop == false)
+    {
+        qDebug() << "关闭失败";
+        QMessageBox::critical(this, "提示", "正在更新程序，请勿关闭！");
+        return;
+    }
     m_UsbReceiveThread->isStop = true;
 //    m_UsbReceiveThread->terminate();    // 关闭线程
 //    m_UsbReceiveThread->wait();
     m_UsbSendThread->isStop = true;
+    m_UsbSendThread->terminate();       // 关闭发送线程
 
     m_ChartUpdateTimer->stop();     // 关闭更新表格
     m_TableUpdateTimer->stop();    // 关闭更新详细数据
@@ -1267,6 +1279,7 @@ void RealTime::thread_receive_finished()
         connectUSB->setEnabled(true);
         disconnectUSB->setEnabled(false);
 
+//        m_UsbReceiveThread->terminate();    // 关闭线程
         play->setVisible(false);
         pause->setVisible(false);
         download->setEnabled(true);
@@ -1282,8 +1295,10 @@ void RealTime::thread_receive_finished()
 void RealTime::thread_send_finished()
 {
     m_UsbSendThread->isStop = true;
-    qDebug() << "发送线程关闭";
+    m_UsbSendThread->terminate();       // 关闭发送线程
+    qDebug() << "发送线程关闭成功";
 }
+/*
 void RealTime::onSendUSB()
 {
 //    qDebug()<<"isrunning"<< m_UsbReceiveThread->isRunning();
@@ -1326,7 +1341,7 @@ void RealTime::onReadUSB()
 
     m_UsbHid->ReadUSB();
 }
-
+*/
 void RealTime:: CreateData()
 {
     return;
@@ -1378,6 +1393,18 @@ void RealTime::m_get_USB_Data(QDateTime now, double tep, unsigned char tips, uns
         // 显示波形和Tab
         showVAW(m_ComData->d_dataSeriesV[m_ComData->d_currentIndex - 1], m_ComData->d_dataSeriesA[m_ComData->d_currentIndex - 1]);
     }
+}
+
+void RealTime::m_get_Version_Length(unsigned long long ver, unsigned long long len)
+{
+    unsigned char version[4];
+    memcpy(version,  &ver, 4);   // 赋值版本号
+    qDebug() << "版本号为：" << version[0] << version[1] << version[2] << version[3];
+    qDebug() << "文件长度为：" << len;
+    QString strVersion = QString(version[0]) + QString::number(version[1]) + "." + QString::number(version[2]) + "." + QString::number(version[3]);
+    QString strLength = QString::number(len/1024) + "k";
+    appVersion->setText(strVersion);
+    appLength->setText(strLength);
 }
 
 void RealTime::showVAW(double v, double mA)
@@ -1465,6 +1492,12 @@ void RealTime::onBtnPlay()
 //        qDebug() << "USB设备未打开！";
         return;
     }
+    if(m_UsbSendThread->isStop == false)
+    {
+        qDebug() << "点击开始失败";
+        QMessageBox::critical(this, "提示", "正在更新程序，请勿执行其他操作！");
+        return;
+    }
     play->setEnabled(false);
     pause->setEnabled(true);
     m_ChartUpdateTimer->start(100);    // 启动更新表格
@@ -1475,6 +1508,12 @@ void RealTime::onBtnPause()
     if(m_UsbHid->dev_handle == nullptr)
     {
 //        qDebug() << "USB设备未打开！";
+        return;
+    }
+    if(m_UsbSendThread->isStop == false)
+    {
+        qDebug() << "点击暂停失败";
+        QMessageBox::critical(this, "提示", "正在更新程序，请勿执行其他操作！");
         return;
     }
     play->setEnabled(true);
@@ -1488,6 +1527,12 @@ void RealTime::onBtnDownload()
     if(m_ComData->d_currentIndex <= 1)
     {
         QMessageBox::critical(this, "提示", "暂无数据，无法导出！");
+        return;
+    }
+    if(m_UsbSendThread->isStop == false)
+    {
+        qDebug() << "点击保存失败";
+        QMessageBox::critical(this, "提示", "正在更新程序，请勿执行其他操作！");
         return;
     }
     QString sFilePath="data.txt";
@@ -1607,12 +1652,18 @@ QString RealTime::doubleToTime(double dTime)
 
 void RealTime::UpdataOpen()
 {
-//    if(m_UsbHid->dev_handle == nullptr)
-//    {
-//        qDebug() << "USB设备未打开！";
-//        QMessageBox::about(this, "提示", "USB设备未打开！");
-//        return;
-//    }
+    if(m_UsbHid->dev_handle == nullptr)
+    {
+        qDebug() << "USB设备未打开！";
+        QMessageBox::about(this, "提示", "USB设备未打开！");
+        return;
+    }
+    if(m_UsbSendThread->isStop == false)
+    {
+        qDebug() << "点击打开失败";
+        QMessageBox::critical(this, "提示", "正在更新程序，请勿执行其他操作！");
+        return;
+    }
 
     QString fileName=QFileDialog::getOpenFileName(this,QString::fromLocal8Bit("bin file"),qApp->applicationDirPath(),
                                                   QString::fromLocal8Bit("bin File(*.bin)"));//新建文件打开窗口
@@ -1625,6 +1676,16 @@ void RealTime::UpdataOpen()
     file.close();
     qDebug() << "打开文件：" << fileName;
 //    int length=arry.size();//计算长度    qDebug()<<length;
+
+#ifndef appUpdataDebug
+    if((arry.size() % 1024) != 0 || arry[arry.size() - 4] != 'V' || (unsigned char)arry[arry.size() - 3] < 0x80)
+    {
+        qDebug() << "升级文件有误，无法加载！";
+        QMessageBox::about(this, "提示", "升级文件有误，无法加载！");
+        return;
+    }
+#endif
+
     qDebug() << "1.arry.size() = " << arry.size();
     if((arry.size() % 1024) != 0) {
             arry.insert(arry.size(), 1024 - (arry.size() % 1024), -1);
@@ -1634,8 +1695,8 @@ void RealTime::UpdataOpen()
 
     if(arry.size() > 256000)
     {
-        qDebug() << "文件过大，无法加载！";
-        QMessageBox::about(this, "提示", "文件过大，无法加载！");
+        qDebug() << "升级文件过大，无法加载！";
+        QMessageBox::about(this, "提示", "升级文件过大，无法加载！");
         return;
     }
     updataFile->setText(fileName);
@@ -1643,6 +1704,7 @@ void RealTime::UpdataOpen()
     updataTips->setVisible(true);
     updataBar->setMaximum(arry.size());
     updataBar->setVisible(true);
+    updataBar->setValue(0);  // 当前进度
     m_ComData->updataFileLen = (unsigned int)arry.size();     // 赋值长度
 //    m_ComData->updataFile = new unsigned char[m_ComData->updataFileLen];
 //    m_ComData->updataFile = (unsigned char *)arry.data();
@@ -1693,17 +1755,15 @@ void RealTime::UpdataSend()
         QMessageBox::about(this, "提示", "USB设备未打开！");
         return;
     }
+    if(m_UsbSendThread->isStop == false)
+    {
+        qDebug() << "点击更新失败";
+        QMessageBox::critical(this, "提示", "正在更新程序，请勿执行其他操作！");
+        return;
+    }
 
     m_UsbSendThread->isStop = false;
     m_UsbSendThread->start();   // 启动线程
-
-
-//    unsigned char sendP[32];
-//    memset(sendP, 0, sizeof (sendP));
-//    sendP[0] = 0xa5; sendP[1] = 0xb7; sendP[2] = 0xa5; sendP[3] = 0xb7;
-//    sendP[4] = 0x08; qDebug() << "Wirte Flash Test.";
-//    m_UsbHid->SendUSB(sendP, 32);   // 使用USB发送数据
-
 
 }
 
@@ -1719,17 +1779,29 @@ void RealTime::updataProgressBar(unsigned long val)
 void RealTime::upadataSuccess()
 {
     m_UsbSendThread->isStop = true;
+    m_UsbSendThread->terminate();       // 关闭发送线程
     updataBar->setValue(updataBar->maximum());  // 设为100%
     updataBar->setFormat(QString("当前进度为：%1%").arg(QString::number(100, 'f', 1)));
-    QMessageBox::about(this, "提示", "升级成功，请重启设备电源完成升级！");
+    QMessageBox::about(this, "提示", "升级成功，请关闭设备并重启设备电源！");
 }
 void RealTime::updataFail()
 {
     m_UsbSendThread->isStop = true;
+    m_UsbSendThread->terminate();       // 关闭发送线程
     QMessageBox::about(this, "提示", "升级失败，请重新升级程序！");
 }
 void RealTime::upadtaTimeOut()
 {
     m_UsbSendThread->isStop = true;
+    m_UsbSendThread->terminate();       // 关闭发送线程
     QMessageBox::about(this, "提示", "升级超时，请重新升级程序！");
+}
+
+void RealTime::send_CMD(unsigned char cmd)
+{
+    unsigned char sendP[32];
+    memset(sendP, 0, sizeof (sendP));
+    sendP[0] = 0xa5; sendP[1] = 0xb7; sendP[2] = 0xa5; sendP[3] = 0xb7;
+    sendP[4] = cmd;
+    m_UsbHid->SendUSB(sendP, 32);   // 使用USB发送数据
 }

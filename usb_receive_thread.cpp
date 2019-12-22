@@ -1,5 +1,4 @@
 ﻿#include "usb_receive_thread.h"
-#include <math.h>
 
 USB_Receive_Thread::USB_Receive_Thread(QObject *parent, USB_HID *hid, ComData *comD) : QThread ()
 {
@@ -25,21 +24,34 @@ void USB_Receive_Thread::run()
             res = libusb_interrupt_transfer(m_UsbHid->dev_handle, 0x81, buffer, 32, &numBytes, 100);
             if (0 == res)
             {
-        /*      if (numBytes == 32)
+              if (numBytes == 32)
               {
-                  ST_REC_STRUCT *tmp = new ST_REC_STRUCT();
-                  memcpy(tmp, buffer, 32);
-                  qDebug("Received %d bytes, 成功.", numBytes);
-                  HandleData(tmp);  // 处理数据
+                  if(buffer[0] == YMODEM_ACK && buffer[1] == YMODEM_ACK && buffer[2] == YMODEM_ACK && buffer[3] == YMODEM_ACK)
+                      emit setAckOrNak(YMODEM_ACK);
+                  else if(buffer[0] == YMODEM_NAK && buffer[1] == YMODEM_NAK && buffer[2] == YMODEM_NAK && buffer[3] == YMODEM_NAK)
+                      emit setAckOrNak(YMODEM_NAK);
+                  else if(buffer[0] == YMODEM_TIMEOUT && buffer[1] == YMODEM_TIMEOUT && buffer[2] == YMODEM_TIMEOUT && buffer[3] == YMODEM_TIMEOUT)
+                      emit setAckOrNak(YMODEM_TIMEOUT);
+                  else if(buffer[0] == YMODEM_VER_LEN && buffer[1] == YMODEM_VER_LEN && buffer[2] == YMODEM_VER_LEN && buffer[3] == YMODEM_VER_LEN)
+                  {
+                      unsigned long long ver,len;
+                      memcpy(&ver,  buffer + 4, 4);   // 赋值版本号
+                      memcpy(&len,  buffer + 8, 4);   // 赋值文件长度
+                      emit get_Version_Length(ver, len);
+                  }
+                  else
+                  {
+                      ST_REC_STRUCT *tmp = new ST_REC_STRUCT();
+                      memcpy(tmp, buffer, 32);
+//                      qDebug("Received %d bytes, 成功.", numBytes);
+                      HandleData(tmp);  // 处理数据
+                  }
               }
               else
               {
                   qDebug("Received %d bytes, 数值不对.\n", numBytes);
-              }*/
-                if(buffer[0] == YMODEM_ACK && buffer[1] == YMODEM_ACK && buffer[2] == YMODEM_ACK && buffer[3] == YMODEM_ACK)
-                    emit setAckOrNak(YMODEM_ACK);
-                else if(buffer[0] == YMODEM_NAK && buffer[1] == YMODEM_NAK && buffer[2] == YMODEM_NAK && buffer[3] == YMODEM_NAK)
-                    emit setAckOrNak(YMODEM_NAK);
+              }
+
             }
             else
             {

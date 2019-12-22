@@ -118,8 +118,8 @@ private slots:
     void onChartUpdateTimer(QChartViewer *viewer);                      // Update the chart.
     void onConnectUSB();    // 连接USB_HID方法
     void onDisConnectUSB();    // 关闭连接USB_HID方法
-    void onSendUSB();    // 发送数据方法
-    void onReadUSB();    // 接收数据方法
+//    void onSendUSB();    // 发送数据方法
+//    void onReadUSB();    // 接收数据方法
     void CreateData();
     void showVAW(double v, double mA);
     void onBtnPlay();
@@ -132,6 +132,7 @@ private slots:
 
 public slots:
     void m_get_USB_Data(QDateTime, double, unsigned char, unsigned char);
+    void m_get_Version_Length(unsigned long long, unsigned long long);
     void thread_receive_finished();
     void thread_send_finished();
     void aboutClose(void);
@@ -140,6 +141,8 @@ public slots:
     void upadataSuccess();
     void updataFail();
     void upadtaTimeOut();
+
+    void send_CMD(unsigned char cmd);
 
 };
 

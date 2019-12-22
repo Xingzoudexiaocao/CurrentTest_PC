@@ -19,6 +19,7 @@ signals:
     void get_USB_Data(QDateTime, double, unsigned char, unsigned char);
     void end_Thread();
     void setAckOrNak(int);
+    void get_Version_Length(unsigned long long, unsigned long long);
 
 protected:
     void run();

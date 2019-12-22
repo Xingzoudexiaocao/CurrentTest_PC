@@ -1,11 +1,11 @@
-#include "usb_send_thread.h"
+﻿#include "usb_send_thread.h"
 
 USB_Send_Thread::USB_Send_Thread(QObject *parent, USB_HID *hid, ComData *comD) : QThread ()
 {
     qDebug("发送线程create: %d", this->currentThreadId());
     m_UsbHid = hid;
     m_ComData = comD;
-    isStop = false;
+    isStop = true;
     this->AckState = -1;
 }
 
@@ -19,7 +19,7 @@ void USB_Send_Thread::run()
     unsigned long upIndex = 0;
     unsigned long upStep = m_ComData->updataFileLen / 1024;
 
-    unsigned char upVersion[4] = {1, 2, 3, 4};
+    unsigned char upVersion[4];
     unsigned long long upLength = m_ComData->updataFileLen;
     unsigned char sendPage[1056];
     unsigned char sendOnce[32];
@@ -27,6 +27,14 @@ void USB_Send_Thread::run()
     unsigned char pageIndex = 0;
     unsigned int crcValue = 0;
     int ackValue = -1;
+
+    // 设置版本号
+    memcpy(upVersion,  m_ComData->updataFile + (m_ComData->updataFileLen - 4), sizeof (sendOnce));  // 读取最后四个字节
+    memset(m_ComData->updataFile + (m_ComData->updataFileLen - 4), 0xFF, sizeof (sendOnce));    // 重置最后四个字节
+#ifdef appUpdataDebug
+    upVersion[0] = 'V';     // 调试模式版本号为V128.128.128
+    memset(upVersion + 1, 0x80, sizeof (sendOnce) - 1);
+#endif
 
     // send head data
     memset(sendOnce, 0x00, sizeof (sendOnce));
@@ -113,6 +121,7 @@ void USB_Send_Thread::run()
     emit end_Thread();      // 发送信号
     this->quit();
     this->wait();
+//    this->terminate();
 }
 
 int USB_Send_Thread::getAck(void)
@@ -128,6 +137,9 @@ int USB_Send_Thread::getAck(void)
             ren = 0;
             this->AckState = -1;
             break;
+        } else if(this->AckState == YMODEM_TIMEOUT) {
+            this->AckState = -1;
+            return 1;   // TimeOut
         } else {
             this->AckState = -1;
         }
