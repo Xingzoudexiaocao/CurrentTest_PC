@@ -6,7 +6,7 @@
 
 QT       += core gui
 QT       += serialport
-
+QT       += sql
 #QT       += hidapi
 #QT       += charts
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
@@ -75,9 +75,9 @@ else:unix: LIBS += -L$$PWD/lib64/ -lchartdir60
 INCLUDEPATH += $$PWD/lib64
 DEPENDPATH += $$PWD/lib64
 
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/lib64/ -lhidapi
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/lib64/ -lhidapi
-else:unix: LIBS += -L$$PWD/lib64/ -lhidapi
+#win32:CONFIG(release, debug|release): LIBS += -L$$PWD/lib64/ -lhidapi
+#else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/lib64/ -lhidapi
+#else:unix: LIBS += -L$$PWD/lib64/ -lhidapi
 
 INCLUDEPATH += $$PWD/lib64
 DEPENDPATH += $$PWD/lib64

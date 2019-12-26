@@ -1217,6 +1217,9 @@ void RealTime::onChartUpdateTimer(QChartViewer *viewer)
 
 void RealTime::onConnectUSB()
 {
+    writeSQL(0, 0, 0);
+    return;
+
     if(m_UsbHid->ConnectUSB())
     {
         connectUSB->setEnabled(false);
@@ -1804,4 +1807,84 @@ void RealTime::send_CMD(unsigned char cmd)
     sendP[0] = 0xa5; sendP[1] = 0xb7; sendP[2] = 0xa5; sendP[3] = 0xb7;
     sendP[4] = cmd;
     m_UsbHid->SendUSB(sendP, 32);   // 使用USB发送数据
+}
+
+void RealTime::writeSQL(int time, double vol, double cur)
+{
+     qDebug() << "测试数据库读写。" << QDir::currentPath();
+
+     QDir dir(QDir::currentPath() + "/iSCAN_Data");
+     if(!dir.exists())
+     {
+        qDebug() << "创建文件夹";
+        dir.mkdir(QDir::currentPath() + "/iSCAN_Data");  //只创建一级子目录，即必须保证上级目录存在
+     }
+
+//     QDateTime timeQ = QDateTime::currentDateTime();   //获取当前时间
+//     int64_t timeD = timeQ.toMSecsSinceEpoch();     //将当前时间转为时间戳,精确到ms
+//     int timeT = timeQ.toTime_t();   //将当前时间转为时间戳
+//     qDebug() << "timeQ = " << timeQ << "; timeT = " << timeT << "; timeD = " << timeD;
+//     QDateTime timeGet = QDateTime::fromTime_t(timeT);
+//     qDebug() << "timeGet = " << timeGet;
+//     QDateTime timeGet_M = QDateTime::fromMSecsSinceEpoch(timeD);
+//     qDebug() << "timeGet_M = " << timeGet_M;
+
+     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+     QString strName = QDir::currentPath() + "/iSCAN_Data/" + QDateTime::currentDateTime().toString("yyyy_MM_dd hh_mm_ss") + " Record.db";
+     qDebug() << "strName = " << strName;
+//     strName = QDir::currentPath() + "/iSCAN_Data/" + "Record.db";      // 测试
+     db.setDatabaseName(strName);    // QApplication::applicationDirPath() + "CONFIG.db"     不能包含字符
+//     db.setUserName("admin");
+//     db.setPassword("admin");
+     if (!db.open())     // if (!db.open("admin","admin"))
+     {
+         qDebug() << "创建数据库文件失败！";
+         return;
+     }
+     QSqlQuery query("", db);
+//     if(!query.exec("select count(*)  from sqlite_master where type='table' and name = 'stm32_data'"))
+//     {
+//         query.exec("DROP TABLE stm32_data");        //先清空一下表
+         query.exec("CREATE TABLE stm32_data ("
+                            "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                            "time INT64 NOT NULL, "
+                            "voltage DOUBLE NOT NULL, "
+                            "current DOUBLE NOT NULL)");         //创建一个stm32_data表
+         qDebug() << "新建表stm32_data";
+//     }
+
+
+//         query.prepare("INSERT INTO stm32_data (time, voltage, current) "
+//                           "VALUES (:time, :voltage, :current)");   //为每一列标题添加绑定值
+//         for(int i = 0 ; i < 10; i++)       //从names表里获取每个名字
+//         {
+//             query.bindValue(":time", QDateTime::currentDateTime().toMSecsSinceEpoch());                      //向绑定值里加入
+//             query.bindValue(":voltage", (double)i/1000);      //
+//             query.bindValue(":current", (double)i/2000);    //
+//             query.exec();               //加入库中
+//          }
+//        qDebug() << "插入数据前时间" << QDateTime::currentDateTime();
+//        query.exec("INSERT INTO stm32_data (ID,time,voltage,current) VALUES (20, 100, 100.01, 20000.00 )");     // 写一条指令时间8ms~9ms
+//        qDebug() << "插入数据后时间" << QDateTime::currentDateTime();
+
+         // 开始启动事务
+          qDebug() << "插入数据前时间" << QDateTime::currentDateTime();
+//         bool    bsuccess = false;
+//         QTime    tmpTime;
+         db.transaction();
+//         tmpTime.start();
+          query.prepare("INSERT INTO stm32_data (time, voltage, current) "
+                            "VALUES (:time, :voltage, :current)");   //为每一列标题添加绑定值
+          for(int i = 0 ; i < 10000; i++)       //从names表里获取每个名字
+          {
+              query.bindValue(":time", QDateTime::currentDateTime().toMSecsSinceEpoch());                      //向绑定值里加入
+              query.bindValue(":voltage", (double)i/1000);      //
+              query.bindValue(":current", (double)i/2000);    //
+              query.exec();               //加入库中
+           }
+         // 提交事务，这个时候才是真正打开文件执行SQL语句的时候
+         db.commit();
+        qDebug() << "插入数据后时间" << QDateTime::currentDateTime();
+
+
 }

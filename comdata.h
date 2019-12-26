@@ -7,6 +7,10 @@
 #include "usb.h"
 #include <math.h>
 
+#include <QtSql/QSqlDatabase>
+#include <QtSql/QSqlQuery>
+#include <QtSql/QSqlRecord>
+
 #ifdef _MSC_VER
 #pragma execution_character_set("utf-8")
 #endif

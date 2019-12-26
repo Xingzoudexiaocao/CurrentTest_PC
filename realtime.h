@@ -143,6 +143,7 @@ public slots:
     void upadtaTimeOut();
 
     void send_CMD(unsigned char cmd);
+    void writeSQL(int time, double vol, double cur);
 
 };
 
