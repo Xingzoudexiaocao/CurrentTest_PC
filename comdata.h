@@ -33,6 +33,13 @@ typedef struct ST_REC_STRUCT
     unsigned char rec[32];
 } ST_REC_STRUCT;
 
+typedef struct DB_WRITE_STRUCT
+{
+    qint64 time;
+    double vol;
+    double cur;
+} DB_WRITE_STRUCT;
+
 union d_And_c
 {
     double d;

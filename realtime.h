@@ -67,6 +67,8 @@ private:
     QStandardItemModel *dataModel;     // TableModel数据
     About *m_About;
     int cntDisplay;
+    QString m_DbName;
+    QList<DB_WRITE_STRUCT> m_DbData;
 
     QChartViewer *m_ChartViewer;        // QChartViewer control
     QChartViewer *m_ChartViewer_2;        // QChartViewer control
@@ -143,7 +145,7 @@ public slots:
     void upadtaTimeOut();
 
     void send_CMD(unsigned char cmd);
-    void writeSQL(int time, double vol, double cur);
+    void writeSQL(qint64 time, double vol, double cur);
 
 };
 
