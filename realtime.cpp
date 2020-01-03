@@ -334,6 +334,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
 
     m_UsbReceiveThread = new USB_Receive_Thread(this, m_UsbHid, m_ComData);    // 新建线程
 //    m_UsbReceiveThread->setPriority(QThread::IdlePriority);
+    connect(m_UsbReceiveThread,SIGNAL(get_Vol_Cur_Now(qint64, double, double)),this, SLOT(writeSQL(qint64, double, double)));
     connect(m_UsbReceiveThread,SIGNAL(get_USB_Data(QDateTime, double, unsigned char, unsigned char)),this, SLOT(m_get_USB_Data(QDateTime, double, unsigned char, unsigned char)));
     connect(m_UsbReceiveThread,SIGNAL(get_Version_Length(unsigned long long, unsigned long long)),this, SLOT(m_get_Version_Length(unsigned long long, unsigned long long)));
     connect(m_UsbReceiveThread,SIGNAL(end_Thread()),this, SLOT(thread_receive_finished()));
@@ -1841,7 +1842,7 @@ void RealTime::send_CMD(unsigned char cmd)
 
 void RealTime::writeSQL(qint64 time, double vol, double cur)
 {
-     qDebug() << "测试数据库读写。" << QDir::currentPath();
+//     qDebug() << "测试数据库读写。" << QDir::currentPath();
 
 //     QDateTime timeQ = QDateTime::currentDateTime();   //获取当前时间
 //     int64_t timeD = timeQ.toMSecsSinceEpoch();     //将当前时间转为时间戳,精确到ms

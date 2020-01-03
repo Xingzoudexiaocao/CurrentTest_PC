@@ -161,7 +161,8 @@ void USB_Receive_Thread::HandleData(ST_REC_STRUCT *bufData)
           ComData::shiftData_D(m_ComData->d_dataSeriesA, m_ComData->DataSize, tmp_A);
           ComData::shiftData_D(m_ComData->d_timeStamps, m_ComData->DataSize, currentTime);
       }
-      qDebug() << "--单次接收的数据：dataB = " << dataB.d << ", dataC =" << dataC.d  << " Time = " << QDateTime::currentDateTime();
+      emit get_Vol_Cur_Now(now.toMSecsSinceEpoch(), dataB.d, dataC.d);
+//      qDebug() << "--单次接收的数据：dataB = " << dataB.d << ", dataC =" << dataC.d  << " Time = " << QDateTime::currentDateTime();
       // 处理电流过大/过小的情况
       unsigned char tips = 0;
       if(buf[25] == 0x01 && buf[26] == 0x01)

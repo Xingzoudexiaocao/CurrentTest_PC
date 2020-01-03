@@ -16,6 +16,7 @@ public:
 
 signals:
     void send_Level_Num(int);   // 发送档位信息
+    void get_Vol_Cur_Now(qint64, double, double);
     void get_USB_Data(QDateTime, double, unsigned char, unsigned char);
     void end_Thread();
     void setAckOrNak(int);
