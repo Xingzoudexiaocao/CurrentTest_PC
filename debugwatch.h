@@ -9,6 +9,7 @@
 #include <QLabel>
 #include "comdata.h"
 #include "usb_hid.h"
+#include <QButtonGroup>
 
 class DebugWatch : public QMainWindow
 {
@@ -25,6 +26,7 @@ private slots:
     void onBtnWriteFlash();
     void onBtnOFC();
     void onBtnFSC();
+    void buttonGroupSlot(int);
 
 private:
     void closeEvent ( QCloseEvent*);
