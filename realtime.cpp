@@ -1228,7 +1228,7 @@ void RealTime::onConnectUSB()
         qDebug() << "连接成功";
         m_UsbReceiveThread->isStop = false;
         m_UsbReceiveThread->start();   // 启动线程
-//        m_ChartUpdateTimer->start(100);    // 启动更新表格
+        m_ChartUpdateTimer->start(100);    // 启动更新表格
 //        m_TableUpdateTimer->start(100);    // 启动更新详细数据
 //        dataRateTimer->start(DataInterval); // 启动获取数据
         m_ComData->ClearData();         // 清之前的数据
@@ -1299,7 +1299,7 @@ void RealTime::onDisConnectUSB()
     m_UsbSendThread->terminate();       // 关闭发送线程
 
     m_ChartUpdateTimer->stop();     // 关闭更新表格
-    m_TableUpdateTimer->stop();    // 关闭更新详细数据
+//    m_TableUpdateTimer->stop();    // 关闭更新详细数据
     dataRateTimer->stop();      // 关闭获取数据
     usb_str1->setText("-");
     usb_str2->setText("-");
@@ -1535,7 +1535,7 @@ void RealTime::onBtnPlay()
     play->setEnabled(false);
     pause->setEnabled(true);
     m_ChartUpdateTimer->start(100);    // 启动更新表格
-    m_TableUpdateTimer->start(100);    // 启动更新详细数据
+//    m_TableUpdateTimer->start(100);    // 启动更新详细数据
 }
 void RealTime::onBtnPause()
 {
@@ -1553,7 +1553,7 @@ void RealTime::onBtnPause()
     play->setEnabled(true);
     pause->setEnabled(false);
     m_ChartUpdateTimer->stop();    // 关闭更新表格
-    m_TableUpdateTimer->stop();    // 关闭更新详细数据
+//    m_TableUpdateTimer->stop();    // 关闭更新详细数据
 }
 void RealTime::onBtnDownload()
 {

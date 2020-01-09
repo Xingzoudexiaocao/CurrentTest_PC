@@ -97,7 +97,7 @@ void USB_Receive_Thread::HandleData(ST_REC_STRUCT *bufData)
         unsigned int sum = buf[5] + buf[6] + buf[7] + 0x9B;
         if(buf[4] != (sum & 0xFF))
         {
-            qDebug() << "校验和不正确" << buf;
+            qDebug() << "校验和不正确" << buf[4] << buf[5] << buf[6] << buf[7];
             return;     // 校验和不正确
         }
       d_And_c dataB;
@@ -142,8 +142,8 @@ void USB_Receive_Thread::HandleData(ST_REC_STRUCT *bufData)
       double currentTime = Chart::chartTime2(now.toTime_t())
                            + now.time().msec() / 10 * 0.01;
       // After obtaining the new values, we need to update the data arrays.
-//      double tmp_V = round(dataB.d * 1000) / 1000;          // 对数据进行最小精度的四舍五入
-      double tmp_V = round(adVol) / 1000;          // 对数据进行最小精度的四舍五入，测试ad1259的采样值
+      double tmp_V = round(dataB.d * 1000) / 1000;          // 对数据进行最小精度的四舍五入
+//      double tmp_V = round(adVol) / 1000;          // 对数据进行最小精度的四舍五入，测试ad1259的采样值
       double tmp_A = round(dataC.d * 1000000) / 1000000;
       if (m_ComData->d_currentIndex < m_ComData->DataSize)
       {
