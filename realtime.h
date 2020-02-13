@@ -26,6 +26,7 @@
 #include "usb_receive_thread.h"
 #include "usb_send_thread.h"
 #include "about.h"
+#include "historyview.h"
 
 class RealTime : public QWidget
 {
@@ -96,6 +97,11 @@ private:
     ComData *m_ComData;
     USB_HID *m_UsbHid;
 
+    QPushButton *historyFile;
+    QPushButton *historyOpen;
+
+    HistoryView *historyView;
+
     void drawChart(QChartViewer *viewer, int index);           // Draw chart
     void trackLineLabel(XYChart *c, int mouseX, int index);    // Draw track cursor
     void updateControls(QChartViewer *viewer, QScrollBar *bar);      // Update other controls as viewport changes
@@ -131,6 +137,7 @@ private slots:
     QString doubleToTime(double dTime);
     void UpdataOpen();
     void UpdataSend();
+    void HistoryOpen();
 
 public slots:
     void m_get_USB_Data(QDateTime, double, unsigned char, unsigned char);

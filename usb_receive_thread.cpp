@@ -55,7 +55,7 @@ void USB_Receive_Thread::run()
             }
             else
             {
-//                qDebug("Error receiving message.\n");
+                qDebug("Error receiving message.\n");
             }
             res = -1;   // 置位
             numBytes = -1;
@@ -107,9 +107,9 @@ void USB_Receive_Thread::HandleData(ST_REC_STRUCT *bufData)
       // 赋值
       unsigned int buf_Vol = 0;
       unsigned int buf_Temp = 0;
-      buf_Vol |= buf[8]; buf_Vol = buf_Vol << 8;
+      buf_Vol |= buf[8]; buf_Vol = buf_Vol << 8;            // aADCxConvertedValues[0]电压
       buf_Vol |= buf[9];
-      buf_Temp |= buf[10]; buf_Temp = buf_Temp << 8;
+      buf_Temp |= buf[10]; buf_Temp = buf_Temp << 8;        // aADCxConvertedValues[1]温度
       buf_Temp |= buf[11];
       dataB.d = (double)buf_Vol / 4095 * 3 * 2.5 * 1.0043;  // 1.0043为修正值
       double temperature = (1.43 - ((double)buf_Temp / 4095 * 3)) / 4.3 + 25;   // 计算温度

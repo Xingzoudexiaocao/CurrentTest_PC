@@ -9,6 +9,7 @@ QT       += serialport
 QT       += sql
 #QT       += hidapi
 #QT       += charts
+QT += charts
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = Test
@@ -31,6 +32,7 @@ SOURCES += \
         about.cpp \
         comdata.cpp \
         debugwatch.cpp \
+        historyview.cpp \
         main.cpp \
         mainwindow.cpp \
         qchartviewer.cpp \
@@ -44,6 +46,7 @@ HEADERS += \
         about.h \
         comdata.h \
         debugwatch.h \
+        historyview.h \
         mainwindow.h \
         qchartviewer.h \
         realtime.h \

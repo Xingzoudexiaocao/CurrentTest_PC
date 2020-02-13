@@ -268,8 +268,8 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
 
     tabWidget = new QTabWidget(this);
     tabWidget->setGeometry(262, 4, 815, 847);
-    tabWidget->addTab(frame_2, "波形显示");
-    tabWidget->addTab(frame_2_ext, "数据显示");
+    tabWidget->addTab(frame_2, "最新数据");
+    tabWidget->addTab(frame_2_ext, "历史数据");
     tabWidget->addTab(frame_2_updata, "程序升级");
     QString tabBarStyle = "QTabWidget::tab-bar{ alignment:left;}\
             QTabBar::tab{border-color: #805533; background-color: rgb(96, 96, 96); /*灰色*/ color:white; width:150px; min-height:10px; border: 2px solid #FFFFFF; padding:5px;}\
@@ -398,31 +398,45 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
 //    dataShow->setRowCount(0);   // 初始化显示0行
 //    dataShow->clearContents();//只清除工作区，不清除表头
     //  QTableView {color:black;/*前景色：文字颜色*/ /*gridline-color:red;*//*表格中的网格线条颜色*/ background:white; alternate-background-color:rgb(211, 211, 211); border:1px solid gray;  /*边框线的宽度、颜色*/ }
-    QString dataQss = "QHeaderView {color: black;font: bold 10pt;background-color: rgb(255, 255, 255); border:1px solid gray;}\
-        QHeaderView::section {background-color: rgb(4, 116, 191);  /*蓝色*/  color: white; padding-left: 4px; font-weight:bold; border:1px solid gray;}\
-        QTableView::section {background-color: rgb(4, 116, 191);  /*蓝色*/  color: white; padding-left: 4px; font-weight:bold; border:1px solid gray;}\
-        QTableView::item{max-height:30px; text-align: center;}";
-    dataView  = new QTableView(frame_2_ext);
-    dataView->setGeometry(2, 2, 815, 805);  // 847
-    QHeaderView *HeaderV = dataView->verticalHeader();
-    HeaderV->hide();    //默认显示行头，如果你觉得不美观的话，我们可以将隐藏
-    dataView->setEditTriggers(QAbstractItemView::NoEditTriggers);       //设置表格的单元为只读属性，即不能编辑
-    dataView->setSelectionBehavior(QAbstractItemView::SelectRows);      //设置选中时为整行选中
-    dataView->setAlternatingRowColors(true);  //设置交替颜色，需要在函数属性中设置:
-    dataView->setStyleSheet(dataQss);
-    dataModel = new QStandardItemModel(frame_2_ext);
-    /*设置列字段名*/
-    dataModel->setColumnCount(5);
-    dataModel->setHeaderData(0,Qt::Horizontal, "序号");
-    dataModel->setHeaderData(1,Qt::Horizontal, "日期时间");
-    dataModel->setHeaderData(2,Qt::Horizontal, "电压");
-    dataModel->setHeaderData(3,Qt::Horizontal, "电流");
-    dataModel->setHeaderData(4,Qt::Horizontal, "功率");
-//    updateTableView();
-    // 初始化显示
-    dataView->setModel(dataModel);
-    dataView->setColumnWidth(0,70);dataView->setColumnWidth(1,230);dataView->setColumnWidth(2,160);dataView->setColumnWidth(3,160);dataView->setColumnWidth(4,160);
-    dataView->setUpdatesEnabled(true);  //恢复界面刷新
+
+// 以下屏蔽显示详细数据
+//    QString dataQss = "QHeaderView {color: black;font: bold 10pt;background-color: rgb(255, 255, 255); border:1px solid gray;}\
+//        QHeaderView::section {background-color: rgb(4, 116, 191);  /*蓝色*/  color: white; padding-left: 4px; font-weight:bold; border:1px solid gray;}\
+//        QTableView::section {background-color: rgb(4, 116, 191);  /*蓝色*/  color: white; padding-left: 4px; font-weight:bold; border:1px solid gray;}\
+//        QTableView::item{max-height:30px; text-align: center;}";
+//    dataView  = new QTableView(frame_2_ext);
+//    dataView->setGeometry(2, 2, 815, 805);  // 847
+//    QHeaderView *HeaderV = dataView->verticalHeader();
+//    HeaderV->hide();    //默认显示行头，如果你觉得不美观的话，我们可以将隐藏
+//    dataView->setEditTriggers(QAbstractItemView::NoEditTriggers);       //设置表格的单元为只读属性，即不能编辑
+//    dataView->setSelectionBehavior(QAbstractItemView::SelectRows);      //设置选中时为整行选中
+//    dataView->setAlternatingRowColors(true);  //设置交替颜色，需要在函数属性中设置:
+//    dataView->setStyleSheet(dataQss);
+//    dataModel = new QStandardItemModel(frame_2_ext);
+//    /*设置列字段名*/
+//    dataModel->setColumnCount(5);
+//    dataModel->setHeaderData(0,Qt::Horizontal, "序号");
+//    dataModel->setHeaderData(1,Qt::Horizontal, "日期时间");
+//    dataModel->setHeaderData(2,Qt::Horizontal, "电压");
+//    dataModel->setHeaderData(3,Qt::Horizontal, "电流");
+//    dataModel->setHeaderData(4,Qt::Horizontal, "功率");
+////    updateTableView();
+//    // 初始化显示
+//    dataView->setModel(dataModel);
+//    dataView->setColumnWidth(0,70);dataView->setColumnWidth(1,230);dataView->setColumnWidth(2,160);dataView->setColumnWidth(3,160);dataView->setColumnWidth(4,160);
+//    dataView->setUpdatesEnabled(true);  //恢复界面刷新
+     historyView = new HistoryView(frame_2_ext);    // 历史数据表格界面
+    historyFile = new QPushButton(frame_2_ext);
+    historyFile->setStyleSheet("QPushButton {font-family:arial; text-align:left; padding:5px; font-size:20px; border:1px solid #000000;}");
+    historyFile->setGeometry(4, 10, 650-4, 40);
+//    historyFile->setFrameShape(QFrame::NoFrame);
+    historyFile->setText("");
+    connect(historyFile, &QAbstractButton::clicked, this, &RealTime::HistoryOpen);
+    historyOpen = new QPushButton( " 加载文件", frame_2_ext);
+    historyOpen->setGeometry(652, 10, 130, 40);
+    historyOpen->setStyleSheet(bnt_qss1);
+    historyOpen->setFont(font);
+    connect(historyOpen, &QAbstractButton::clicked, this, &RealTime::HistoryOpen);
 
     QLabel *appInfo = new QLabel(frame_2_updata);
     appInfo->setGeometry(4, 5, 130, 50);
@@ -481,28 +495,28 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     frameTop->setGeometry(800, 4, 275, 30);
 //    frame->setStyleSheet("background-color:white");
     frameTop->setFrameShape(QFrame::NoFrame);
-    play = new QPushButton(QIcon(":/play.png"), "继续", frameTop);
-    play->setGeometry(0, 4, 80, 30);
+    play = new QPushButton(QIcon(":/play.png"), "继续", frame_2);
+    play->setGeometry(615, 10, 80, 30);
     play->setStyleSheet(bnt_qss1);
     play->setFont(font_2);
     play->setVisible(false);
     connect(play, &QAbstractButton::clicked, this, &RealTime::onBtnPlay);
-    pause = new QPushButton(QIcon(":/pause.png"), "暂停", frameTop);
-    pause->setGeometry(80, 4, 80, 30);
+    pause = new QPushButton(QIcon(":/pause.png"), "暂停", frame_2);
+    pause->setGeometry(695, 10, 80, 30);
     pause->setStyleSheet(bnt_qss1);
     pause->setFont(font_2);
     pause->setVisible(false);
     connect(pause, &QAbstractButton::clicked, this, &RealTime::onBtnPause);
-    download = new QPushButton(QIcon(":/save.png"), "导出", frameTop);
-    download->setGeometry(195, 4, 80, 30);
-    download->setStyleSheet(bnt_qss1);
-    download->setFont(font_2);
-    connect(download, &QAbstractButton::clicked, this, &RealTime::onBtnDownload);
+//    // 保存按键代码
+//    download = new QPushButton(QIcon(":/save.png"), "导出", frameTop);
+//    download->setGeometry(195, 4, 80, 30);
+//    download->setStyleSheet(bnt_qss1);
+//    download->setFont(font_2);
+//    connect(download, &QAbstractButton::clicked, this, &RealTime::onBtnDownload);
 
     // Can start now
 //    updatePeriod->setCurrentIndex(0);
 //    runPB->click();
-
 
 }
 
@@ -1241,7 +1255,7 @@ void RealTime::onConnectUSB()
         usb_str3->setText(m_UsbHid->str_SerialNumber);
         m_Tips->setText("");
         m_Error->setText("");
-        download->setEnabled(false);
+//        download->setEnabled(false);
         // 设置更新进度条不可见
         updataTips->setVisible(false);
         updataBar->setVisible(false);
@@ -1304,6 +1318,7 @@ void RealTime::onDisConnectUSB()
     usb_str1->setText("-");
     usb_str2->setText("-");
     usb_str3->setText("-");
+    m_DbName = "";        // 清空数据文件名称
 }
 
 void RealTime::thread_receive_finished()
@@ -1316,7 +1331,7 @@ void RealTime::thread_receive_finished()
 //        m_UsbReceiveThread->terminate();    // 关闭线程
         play->setVisible(false);
         pause->setVisible(false);
-        download->setEnabled(true);
+//        download->setEnabled(true);
 
         qDebug() << "关闭成功";
     }
@@ -1903,7 +1918,29 @@ void RealTime::writeSQL(qint64 time, double vol, double cur)
             qDebug() << "插入数据后时间" << QDateTime::currentDateTime();
             qDebug() << "m_DbData List" << m_DbData.size();
         }
-
-
-
 }
+
+void RealTime::HistoryOpen()
+{
+    QString fileName=QFileDialog::getOpenFileName(this,QString::fromLocal8Bit("历史数据"),qApp->applicationDirPath(),
+                                                  QString::fromLocal8Bit("bin File(*.db)"));//新建文件打开窗口
+    if (fileName.isEmpty())//如果未选择文件便确认，即返回
+        return;
+//    QFile file(fileName);
+//    if(!file.open(QIODevice::ReadOnly))
+//        qDebug() << file.errorString();//文件打开错误显示错误信息
+//    QByteArray arry=file.readAll();//读取文件
+//    file.close();
+    qDebug() << "打开文件：" << fileName;
+    if(m_DbName == fileName)
+    {
+        qDebug() << "不能打开当前数据";
+        QMessageBox::critical(this, "提示", "无法打开当前文件，请选择历史数据文件！");
+        return;
+    }
+    historyFile->setText(fileName);
+//    int length=arry.size();//计算长度
+//    qDebug() << length;
+    historyView->LoadingData(fileName);     // 更新表格数据
+}
+

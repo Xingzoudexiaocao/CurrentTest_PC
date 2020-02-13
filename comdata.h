@@ -10,6 +10,7 @@
 #include <QtSql/QSqlDatabase>
 #include <QtSql/QSqlQuery>
 #include <QtSql/QSqlRecord>
+#include <QtSql/QSqlQueryModel>
 
 #ifdef _MSC_VER
 #pragma execution_character_set("utf-8")
