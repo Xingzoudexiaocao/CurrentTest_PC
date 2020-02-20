@@ -131,8 +131,6 @@ HistoryView::HistoryView(QWidget *parent) : QGraphicsView(new QGraphicsScene, pa
 //    seriesMarkA->attachAxis(axisCurrentX);
 //    seriesMarkA->attachAxis(axisCurrentY);
 
-
-
     this->setMouseTracking(true);
 //    chatVoltage->setAcceptHoverEvents(true);
 //    chatVoltage->setAcceptTouchEvents(true);
@@ -141,6 +139,31 @@ HistoryView::HistoryView(QWidget *parent) : QGraphicsView(new QGraphicsScene, pa
     setRenderHint(QPainter::Antialiasing);
     scene()->addItem(chatVoltage);
     scene()->addItem(chatCurrent);
+
+    QString bnt_qss1 = "QPushButton {font-family:arial; font-size:14px; text-align:left; padding:3px 1px 3px 5px;}\
+            QPushButton:Enabled {background-color: #0066CC; color:white;}\
+            QPushButton:Disabled {background-color: #606060; color:#CCCCCC;}";
+    zoomX2 = new QPushButton(this);
+    zoomX2->setStyleSheet(bnt_qss1);
+    zoomX2->setGeometry(650, 60, 38, 20);
+    zoomX2->setText("X2");
+    connect(zoomX2,SIGNAL(clicked ()),this,SLOT(ClickZoomX2()));
+    zoomX10 = new QPushButton(this);
+    zoomX10->setStyleSheet(bnt_qss1);
+    zoomX10->setGeometry(650 + 40, 60, 38, 20);
+    zoomX10->setText("X10");
+    connect(zoomX10,SIGNAL(clicked ()),this,SLOT(ClickZoomX10()));
+    zoomD2 = new QPushButton(this);
+    zoomD2->setStyleSheet(bnt_qss1);
+    zoomD2->setGeometry(650 + 80, 60, 38, 20);
+    zoomD2->setText("D2");
+    connect(zoomD2,SIGNAL(clicked ()),this,SLOT(ClickZoomD2()));
+    zoomD10 = new QPushButton(this);
+    zoomD10->setStyleSheet(bnt_qss1);
+    zoomD10->setGeometry(650 + 120, 60, 38, 20);
+    zoomD10->setText("D10");
+    connect(zoomD10,SIGNAL(clicked ()),this,SLOT(ClickZoomD10()));
+    zoomX2->setEnabled(false); zoomX10->setEnabled(false); zoomD2->setEnabled(false); zoomD10->setEnabled(false);
 }
 
 void HistoryView::mousePressEvent(QMouseEvent *event)
@@ -294,6 +317,23 @@ void HistoryView::UptateChartVoltage(void)
 
 }
 void HistoryView::UptateChartCurrent(void)
+{
+
+}
+
+void HistoryView::ClickZoomX2()
+{
+
+}
+void HistoryView::ClickZoomX10()
+{
+
+}
+void HistoryView::ClickZoomD2()
+{
+
+}
+void HistoryView::ClickZoomD10()
 {
 
 }

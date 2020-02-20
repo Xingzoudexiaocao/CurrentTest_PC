@@ -53,9 +53,18 @@ public:
     QLineSeries *seriesMarkV;
     QLineSeries *seriesMarkA;
 
+    QPushButton *zoomX2;        // 缩放按键
+    QPushButton *zoomX10;
+    QPushButton *zoomD2;
+    QPushButton *zoomD10;
+
 signals:
 
 public slots:
+    void ClickZoomX2();
+    void ClickZoomX10();
+    void ClickZoomD2();
+    void ClickZoomD10();
 };
 
 #endif // HISTORYVIEW_H
