@@ -58,6 +58,10 @@ public:
     QPushButton *zoomD2;
     QPushButton *zoomD10;
 
+    qint64 zoomIndex;               // 当前选中点索引值
+    qint64 zoomMagnifyActual;       // 图像实际放大倍数
+    qint64 zoomMagnifyMax;          // 图像最大可以放大的倍数
+
 signals:
 
 public slots:
@@ -65,6 +69,8 @@ public slots:
     void ClickZoomX10();
     void ClickZoomD2();
     void ClickZoomD10();
+
+    void UpdateZoomKeyEnable();
 };
 
 #endif // HISTORYVIEW_H

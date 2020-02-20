@@ -240,7 +240,21 @@ void HistoryView::LoadingData(QString fileName)
         return;
     }
     QSqlQueryModel sqlModel;
-    QString   strQuery = "select * from stm32_data";
+    QString   strQuery = "select count(*) from stm32_data";        // select count(*) from table
+    sqlModel.setQuery(strQuery);
+    qint64 dataCount = sqlModel.record(0).value(0).toLongLong();
+    if(dataCount < 10000)
+    {
+        qDebug() << "数据库数据量太少！";
+        return;
+    }
+    zoomIndex = 0;              // 默认不选中数据
+    zoomMagnifyActual = 1;      // 默认放大1倍
+    zoomMagnifyMax = dataCount / 10000;     // 计算最大能够放大的倍数
+    qDebug()<<zoomIndex<<zoomMagnifyActual<<zoomMagnifyMax;
+    UpdateZoomKeyEnable();
+
+    strQuery = "select * from stm32_data";
     sqlModel.setQuery(strQuery);
     while(sqlModel.canFetchMore())
     {
@@ -336,4 +350,23 @@ void HistoryView::ClickZoomD2()
 void HistoryView::ClickZoomD10()
 {
 
+}
+void HistoryView::UpdateZoomKeyEnable()
+{
+    if(zoomMagnifyActual * 2 > zoomMagnifyMax)
+        zoomX2->setEnabled(false);
+    else
+        zoomX2->setEnabled(true);
+    if(zoomMagnifyActual * 10 > zoomMagnifyMax)
+        zoomX10->setEnabled(false);
+    else
+        zoomX10->setEnabled(true);
+    if(zoomMagnifyActual / 2 < zoomMagnifyMax)
+        zoomD2->setEnabled(false);
+    else
+        zoomD2->setEnabled(true);
+    if(zoomMagnifyActual / 10 < zoomMagnifyMax)
+        zoomD10->setEnabled(false);
+    else
+        zoomD10->setEnabled(true);
 }
