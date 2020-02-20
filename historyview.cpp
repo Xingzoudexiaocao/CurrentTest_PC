@@ -245,7 +245,7 @@ void HistoryView::LoadingData(QString fileName)
     qint64 dataCount = sqlModel.record(0).value(0).toLongLong();
     if(dataCount < 10000)
     {
-        qDebug() << "数据库数据量太少！";
+        qDebug() << "数据文件数据量太少！";
         return;
     }
     zoomIndex = 0;              // 默认不选中数据
