@@ -254,7 +254,7 @@ void HistoryView::LoadingData(QString fileName)
     qDebug()<<zoomIndex<<zoomMagnifyActual<<zoomMagnifyMax;
     UpdateZoomKeyEnable();
 
-    strQuery = "select * from stm32_data";
+    strQuery = "select * from stm32_data where (id % " + QString::number(zoomMagnifyMax / zoomMagnifyActual, 10) +" == 0)";
     sqlModel.setQuery(strQuery);
     while(sqlModel.canFetchMore())
     {
@@ -353,19 +353,19 @@ void HistoryView::ClickZoomD10()
 }
 void HistoryView::UpdateZoomKeyEnable()
 {
-    if(zoomMagnifyActual * 2 > zoomMagnifyMax)
+    if(zoomMagnifyActual + 1 > zoomMagnifyMax)
         zoomX2->setEnabled(false);
     else
         zoomX2->setEnabled(true);
-    if(zoomMagnifyActual * 10 > zoomMagnifyMax)
+    if(zoomMagnifyActual + 10 > zoomMagnifyMax)
         zoomX10->setEnabled(false);
     else
         zoomX10->setEnabled(true);
-    if(zoomMagnifyActual / 2 < zoomMagnifyMax)
+    if(zoomMagnifyActual - 1 < zoomMagnifyMax)
         zoomD2->setEnabled(false);
     else
         zoomD2->setEnabled(true);
-    if(zoomMagnifyActual / 10 < zoomMagnifyMax)
+    if(zoomMagnifyActual - 10 < zoomMagnifyMax)
         zoomD10->setEnabled(false);
     else
         zoomD10->setEnabled(true);
