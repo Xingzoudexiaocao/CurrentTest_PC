@@ -1,4 +1,4 @@
-#ifndef HISTORYVIEW_H
+﻿#ifndef HISTORYVIEW_H
 #define HISTORYVIEW_H
 
 #include <QObject>
@@ -59,6 +59,8 @@ public:
     QPushButton *zoomD10;
 
     qint64 zoomIndex;               // 当前选中点索引值
+    qint64 zoomIndexMin;               // 当前选中点最小索引值
+    qint64 zoomIndexMax;               // 当前选中点最大索引值
     qint64 zoomMagnifyActual;       // 图像实际放大倍数
     qint64 zoomMagnifyMax;          // 图像最大可以放大的倍数
 
@@ -71,6 +73,8 @@ public slots:
     void ClickZoomD10();
 
     void UpdateZoomKeyEnable();
+    void UpdateMarkLine(qlonglong index);
+    void UpdateChartData();
 };
 
 #endif // HISTORYVIEW_H

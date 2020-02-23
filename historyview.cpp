@@ -1,4 +1,4 @@
-#include "historyview.h"
+﻿#include "historyview.h"
 
 HistoryView::HistoryView(QWidget *parent) : QGraphicsView(new QGraphicsScene, parent)
 {
@@ -170,7 +170,7 @@ void HistoryView::mousePressEvent(QMouseEvent *event)
 {
 //    m_coordX->setText(QString("X: %1").arg(m_chart->mapToValue(event->pos()).x()));
 //    m_coordY->setText(QString("Y: %1").arg(m_chart->mapToValue(event->pos()).y()));
-    qlonglong m_x_V, m_x_A;
+    qlonglong m_x_A;
 
     qDebug() << "click chart view" << event->pos();
 //    chatVoltage->removeSeries(seriesMarkV);
@@ -182,7 +182,10 @@ void HistoryView::mousePressEvent(QMouseEvent *event)
 //    qDebug() << "pos[count-1] = " << seriesCurrent->points()[seriesCurrent->points().count()-1].x();
 
 //    m_x_V = chatVoltage->mapToValue(event->pos()).x();
-    m_x_A = (qlonglong)chatCurrent->mapToValue(event->pos()).x();
+    if(event->pos().y() < 425)
+        m_x_A = (qlonglong)chatVoltage->mapToValue(event->pos()).x();
+    else
+        m_x_A = (qlonglong)chatCurrent->mapToValue(event->pos()).x();
 //    QDateTime pos_x_now = QDateTime::fromMSecsSinceEpoch(m_x_A);
 //    QDateTime pos_x_min = QDateTime::fromMSecsSinceEpoch(seriesCurrent->points()[0].x());
 //    QDateTime pos_x_max = QDateTime::fromMSecsSinceEpoch(seriesCurrent->points()[seriesCurrent->points().count()-1].x());
@@ -200,29 +203,14 @@ void HistoryView::mousePressEvent(QMouseEvent *event)
         m_x_A = seriesCurrent->points()[0].x();
     if(m_x_A > seriesCurrent->points()[seriesCurrent->points().count()-1].x())
         m_x_A = seriesCurrent->points()[seriesCurrent->points().count()-1].x();
+    qDebug() << "m_x_A = " << m_x_A << QDateTime::fromMSecsSinceEpoch(m_x_A);
+    HistoryView::UpdateMarkLine(m_x_A);
 
-//    if(dec1 > 0 && dec2 < 0)
-//    {
-        qDebug() << "m_x_A = " << m_x_A << QDateTime::fromMSecsSinceEpoch(m_x_A);
-        chatCurrent->removeSeries(seriesMarkA);
-        seriesMarkA->removePoints(0, seriesMarkA->count());
-//        *seriesMarkA<<QPoint(pos_x_min.toMSecsSinceEpoch(), 0)<<QPoint(m_x_A, 0)<<QPoint(m_x_A, 100)<<QPoint(pos_x_max.toMSecsSinceEpoch(), 100);
-        seriesMarkA->append(m_x_A, 0);
-        seriesMarkA->append(m_x_A, axisCurrentY->max());
-        chatCurrent->addSeries(seriesMarkA);
-        seriesMarkA->attachAxis(axisCurrentX);
-        seriesMarkA->attachAxis(axisCurrentY);
-//    }
-
-        chatVoltage->removeSeries(seriesMarkV);
-        seriesMarkV->removePoints(0, seriesMarkV->count());
-//        *seriesMarkV<<QPoint(pos_x_min.toMSecsSinceEpoch(), 0)<<QPoint(m_x_A, 0)<<QPoint(m_x_A, 100)<<QPoint(pos_x_max.toMSecsSinceEpoch(), 100);
-        seriesMarkV->append(m_x_A, 0);
-        seriesMarkV->append(m_x_A, axisVoltageY->max());
-        chatVoltage->addSeries(seriesMarkV);
-        seriesMarkV->attachAxis(axisVoltageX);
-        seriesMarkV->attachAxis(axisVoltageY);
-
+    QSqlQueryModel sqlModel;        // 获取所选中时间对于的id值
+    QString   strQuery = "select id from stm32_data where time == " + QString::number(m_x_A, 10);        // select count(*) from table
+    sqlModel.setQuery(strQuery);
+    zoomIndex = sqlModel.record(0).value(0).toLongLong();
+    qDebug() << "zoomIndex = " << zoomIndex;
 
     QGraphicsView::mouseMoveEvent(event);
 }
@@ -248,83 +236,15 @@ void HistoryView::LoadingData(QString fileName)
         qDebug() << "数据文件数据量太少！";
         return;
     }
-    zoomIndex = 0;              // 默认不选中数据
+    zoomIndexMin = 1;
+    zoomIndexMax = dataCount;
+    zoomIndex = zoomIndexMax / 2;              // 默认
     zoomMagnifyActual = 1;      // 默认放大1倍
     zoomMagnifyMax = dataCount / 10000;     // 计算最大能够放大的倍数
     qDebug()<<zoomIndex<<zoomMagnifyActual<<zoomMagnifyMax;
     UpdateZoomKeyEnable();
 
-    strQuery = "select * from stm32_data where (id % " + QString::number(zoomMagnifyMax / zoomMagnifyActual, 10) +" == 0)";
-    sqlModel.setQuery(strQuery);
-    while(sqlModel.canFetchMore())
-    {
-        sqlModel.fetchMore();
-    }
-    qDebug()<<sqlModel.rowCount();
-    chatCurrent->removeSeries(seriesCurrent);
-    chatVoltage->removeSeries(seriesVoltage);
-    seriesCurrent->removePoints(0, seriesCurrent->points().count());
-    seriesVoltage->removePoints(0, seriesVoltage->points().count());
-//    QLineSeries *newSeries = new QLineSeries();
-//    qDebug()<<QDateTime::currentDateTime().toMSecsSinceEpoch();
-//    qDebug()<<sqlModel.record(0).value("time").toLongLong();
-//    qDebug()<<sqlModel.record(0).value("time").toDateTime().toMSecsSinceEpoch();
-//    qDebug()<<sqlModel.record(0).value("current").toDouble();
-    for(int nProvinceNum = 0; nProvinceNum < sqlModel.rowCount(); nProvinceNum++)
-    {
-        seriesCurrent->append(sqlModel.record(nProvinceNum).value("time").toLongLong(), sqlModel.record(nProvinceNum).value("current").toDouble());      //
-        seriesVoltage->append(sqlModel.record(nProvinceNum).value("time").toLongLong(), sqlModel.record(nProvinceNum).value("voltage").toDouble());
-//         newSeries->append(sqlModel.record(nProvinceNum).value("time").toLongLong(), sqlModel.record(nProvinceNum).value("current").toDouble());
-//        qDebug()<<sqlModel.record(nProvinceNum).value("time");
-//        qDebug()<<sqlModel.record(nProvinceNum).value("voltage");
-//        qDebug()<<sqlModel.record(nProvinceNum).value("current");
-    }
-//    for(int i = 0; i < 1000; i++)
-//    {
-//        seriesCurrent->append(QDateTime::currentDateTime().toMSecsSinceEpoch() + i, i);
-//    }
-//    seriesCurrent->append(QDateTime::currentDateTime().toMSecsSinceEpoch(), 2000);
-//    qDebug()<<seriesCurrent->count();
-//    qDebug()<<newSeries->count();
-    chatCurrent->addSeries(seriesCurrent);
-    chatVoltage->addSeries(seriesVoltage);
-//    chatCurrent->addSeries(newSeries);
-
-//    chatCurrent->removeAxis(axisCurrentX);
-//    chatCurrent->removeAxis(axisCurrentY);
-    axisCurrentX->setRange(QDateTime::fromMSecsSinceEpoch(0), QDateTime::fromMSecsSinceEpoch(0));
-    axisCurrentY->setRange(0, 0);
-    qDebug()<<axisCurrentY->min();
-    qDebug()<<axisCurrentY->max();
-    seriesCurrent->attachAxis(axisCurrentX);
-    seriesCurrent->attachAxis(axisCurrentY);
-    qDebug()<<axisCurrentY->min();
-    qDebug()<<axisCurrentY->max();
-    if(axisCurrentY->min() == axisCurrentY->max())
-        axisCurrentY->setRange(0, axisCurrentY->max() * 1.2);
-//    axisCurrentX = new QDateTimeAxis;
-//    axisCurrentX->setTickCount(10);
-//    axisCurrentX->setFormat("hh:mm:ss");
-//    axisCurrentX->setTitleText("Date");
-//    chatCurrent->addAxis(axisCurrentX, Qt::AlignBottom);
-//    seriesCurrent->attachAxis(axisCurrentX);
-
-//    QValueAxis *tAxisCurrentY = new QValueAxis;
-//    axisCurrentY->setLabelFormat("%.2f");
-//    axisCurrentY->setTitleText("Sunspots count");
-//    chatCurrent->addAxis(axisCurrentY, Qt::AlignLeft);
-//    seriesCurrent->attachAxis(axisCurrentY);
-
-    axisVoltageX->setRange(QDateTime::fromMSecsSinceEpoch(0), QDateTime::fromMSecsSinceEpoch(0));
-    axisVoltageY->setRange(0, 0);
-    seriesVoltage->attachAxis(axisVoltageX);
-    seriesVoltage->attachAxis(axisVoltageY);
-    if(axisVoltageY->min() == axisVoltageY->max())
-        axisVoltageY->setRange(0, axisVoltageY->max() * 1.2);
-
-    chatCurrent->update();
-    chatVoltage->update();
-    scene()->update();
+    UpdateChartData();
 }
 void HistoryView::UptateChartVoltage(void)
 {
@@ -369,4 +289,109 @@ void HistoryView::UpdateZoomKeyEnable()
         zoomD10->setEnabled(false);
     else
         zoomD10->setEnabled(true);
+}
+
+void HistoryView::UpdateMarkLine(qlonglong index)
+{
+
+    chatCurrent->removeSeries(seriesMarkA);
+    seriesMarkA->removePoints(0, seriesMarkA->count());
+    seriesMarkA->append(index, 0);
+    seriesMarkA->append(index, axisCurrentY->max());
+    chatCurrent->addSeries(seriesMarkA);
+    seriesMarkA->attachAxis(axisCurrentX);
+    seriesMarkA->attachAxis(axisCurrentY);
+
+    chatVoltage->removeSeries(seriesMarkV);
+    seriesMarkV->removePoints(0, seriesMarkV->count());
+    seriesMarkV->append(index, 0);
+    seriesMarkV->append(index, axisVoltageY->max());
+    chatVoltage->addSeries(seriesMarkV);
+    seriesMarkV->attachAxis(axisVoltageX);
+    seriesMarkV->attachAxis(axisVoltageY);
+}
+
+void HistoryView::UpdateChartData()
+{
+    QSqlQueryModel sqlModel;
+    QString strQuery = "select * from stm32_data where (id % " + QString::number(zoomMagnifyMax + 1 - zoomMagnifyActual, 10) +" == 1)";
+    sqlModel.setQuery(strQuery);
+    while(sqlModel.canFetchMore())
+    {
+        sqlModel.fetchMore();
+    }
+    qDebug()<< "Update Chart Data:" <<sqlModel.rowCount();
+    chatCurrent->removeSeries(seriesCurrent);
+    chatVoltage->removeSeries(seriesVoltage);
+    seriesCurrent->removePoints(0, seriesCurrent->points().count());
+    seriesVoltage->removePoints(0, seriesVoltage->points().count());
+//    QLineSeries *newSeries = new QLineSeries();
+//    qDebug()<<QDateTime::currentDateTime().toMSecsSinceEpoch();
+//    qDebug()<<sqlModel.record(0).value("time").toLongLong();
+//    qDebug()<<sqlModel.record(0).value("time").toDateTime().toMSecsSinceEpoch();
+//    qDebug()<<sqlModel.record(0).value("current").toDouble();
+    bool notGetIndex = true;
+    qlonglong index = 0;
+    for(int nProvinceNum = 0; nProvinceNum < sqlModel.rowCount(); nProvinceNum++)
+    {
+        seriesCurrent->append(sqlModel.record(nProvinceNum).value("time").toLongLong(), sqlModel.record(nProvinceNum).value("current").toDouble());      //
+        seriesVoltage->append(sqlModel.record(nProvinceNum).value("time").toLongLong(), sqlModel.record(nProvinceNum).value("voltage").toDouble());
+//         newSeries->append(sqlModel.record(nProvinceNum).value("time").toLongLong(), sqlModel.record(nProvinceNum).value("current").toDouble());
+        if(zoomIndex <= sqlModel.record(nProvinceNum).value("id").toLongLong() && notGetIndex)
+        {
+            notGetIndex = false;
+            index = sqlModel.record(nProvinceNum).value("time").toLongLong();
+        }
+    }
+//    for(int i = 0; i < 1000; i++)
+//    {
+//        seriesCurrent->append(QDateTime::currentDateTime().toMSecsSinceEpoch() + i, i);
+//    }
+//    seriesCurrent->append(QDateTime::currentDateTime().toMSecsSinceEpoch(), 2000);
+//    qDebug()<<seriesCurrent->count();
+//    qDebug()<<newSeries->count();
+    chatCurrent->addSeries(seriesCurrent);
+    chatVoltage->addSeries(seriesVoltage);
+//    chatCurrent->addSeries(newSeries);
+
+//    chatCurrent->removeAxis(axisCurrentX);
+//    chatCurrent->removeAxis(axisCurrentY);
+    axisCurrentX->setRange(QDateTime::fromMSecsSinceEpoch(0), QDateTime::fromMSecsSinceEpoch(0));
+    axisCurrentY->setRange(0, 0);
+//    qDebug()<<axisCurrentY->min();
+//    qDebug()<<axisCurrentY->max();
+    seriesCurrent->attachAxis(axisCurrentX);
+    seriesCurrent->attachAxis(axisCurrentY);
+//    qDebug()<<axisCurrentY->min();
+//    qDebug()<<axisCurrentY->max();
+    if(axisCurrentY->min() == axisCurrentY->max())
+        axisCurrentY->setRange(0, axisCurrentY->max() * 1.2);
+//    axisCurrentX = new QDateTimeAxis;
+//    axisCurrentX->setTickCount(10);
+//    axisCurrentX->setFormat("hh:mm:ss");
+//    axisCurrentX->setTitleText("Date");
+//    chatCurrent->addAxis(axisCurrentX, Qt::AlignBottom);
+//    seriesCurrent->attachAxis(axisCurrentX);
+
+//    QValueAxis *tAxisCurrentY = new QValueAxis;
+//    axisCurrentY->setLabelFormat("%.2f");
+//    axisCurrentY->setTitleText("Sunspots count");
+//    chatCurrent->addAxis(axisCurrentY, Qt::AlignLeft);
+//    seriesCurrent->attachAxis(axisCurrentY);
+
+    axisVoltageX->setRange(QDateTime::fromMSecsSinceEpoch(0), QDateTime::fromMSecsSinceEpoch(0));
+    axisVoltageY->setRange(0, 0);
+    seriesVoltage->attachAxis(axisVoltageX);
+    seriesVoltage->attachAxis(axisVoltageY);
+    if(axisVoltageY->min() == axisVoltageY->max())
+        axisVoltageY->setRange(0, axisVoltageY->max() * 1.2);
+
+
+//    qlonglong index = seriesCurrent->points()[seriesCurrent->points().count() / 2].x();
+    qDebug() << "index = " << index << QDateTime::fromMSecsSinceEpoch(index);
+    UpdateMarkLine(index);
+
+    chatCurrent->update();
+    chatVoltage->update();
+    scene()->update();
 }
