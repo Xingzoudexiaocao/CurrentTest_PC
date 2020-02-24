@@ -204,13 +204,20 @@ void HistoryView::mousePressEvent(QMouseEvent *event)
     if(m_x_A > seriesCurrent->points()[seriesCurrent->points().count()-1].x())
         m_x_A = seriesCurrent->points()[seriesCurrent->points().count()-1].x();
     qDebug() << "m_x_A = " << m_x_A << QDateTime::fromMSecsSinceEpoch(m_x_A);
-    HistoryView::UpdateMarkLine(m_x_A);
 
     QSqlQueryModel sqlModel;        // 获取所选中时间对于的id值
     QString   strQuery = "select id from stm32_data where time == " + QString::number(m_x_A, 10);        // select count(*) from table
     sqlModel.setQuery(strQuery);
-    zoomIndex = sqlModel.record(0).value(0).toLongLong();
+    qlonglong idRead = sqlModel.record(0).value("id").toLongLong();
+    if(idRead == 0)
+    {
+        qDebug() << "读取ID失败!" ;
+        return;
+    }
+    zoomIndex = idRead;
     qDebug() << "zoomIndex = " << zoomIndex;
+
+     HistoryView::UpdateMarkLine(m_x_A);
 
     QGraphicsView::mouseMoveEvent(event);
 }
@@ -243,7 +250,6 @@ void HistoryView::LoadingData(QString fileName)
     zoomMagnifyMax = dataCount / 10000;     // 计算最大能够放大的倍数
     qDebug()<<zoomIndex<<zoomMagnifyActual<<zoomMagnifyMax;
     UpdateZoomKeyEnable();
-
     UpdateChartData();
 }
 void HistoryView::UptateChartVoltage(void)
@@ -257,19 +263,27 @@ void HistoryView::UptateChartCurrent(void)
 
 void HistoryView::ClickZoomX2()
 {
-
+    zoomMagnifyActual += 1;
+    UpdateZoomKeyEnable();
+    UpdateChartData();
 }
 void HistoryView::ClickZoomX10()
 {
-
+    zoomMagnifyActual += 10;
+    UpdateZoomKeyEnable();
+    UpdateChartData();
 }
 void HistoryView::ClickZoomD2()
 {
-
+    zoomMagnifyActual -= 1;
+    UpdateZoomKeyEnable();
+    UpdateChartData();
 }
 void HistoryView::ClickZoomD10()
 {
-
+    zoomMagnifyActual -= 10;
+    UpdateZoomKeyEnable();
+    UpdateChartData();
 }
 void HistoryView::UpdateZoomKeyEnable()
 {
@@ -281,11 +295,11 @@ void HistoryView::UpdateZoomKeyEnable()
         zoomX10->setEnabled(false);
     else
         zoomX10->setEnabled(true);
-    if(zoomMagnifyActual - 1 < zoomMagnifyMax)
+    if(zoomMagnifyActual - 1 < 1)
         zoomD2->setEnabled(false);
     else
         zoomD2->setEnabled(true);
-    if(zoomMagnifyActual - 10 < zoomMagnifyMax)
+    if(zoomMagnifyActual - 10 < 1)
         zoomD10->setEnabled(false);
     else
         zoomD10->setEnabled(true);
@@ -313,8 +327,13 @@ void HistoryView::UpdateMarkLine(qlonglong index)
 
 void HistoryView::UpdateChartData()
 {
+    qint64 sqlIdMin = zoomIndex - (zoomMagnifyMax + 1 - zoomMagnifyActual) * 5000;
+    qint64 sqlIdMax = zoomIndex + (zoomMagnifyMax + 1 - zoomMagnifyActual) * 5000;
+    qDebug()<<"zoomMagnifyActual = "<<zoomMagnifyActual<< " zoomMagnifyMax = "<< zoomMagnifyMax;
+    qDebug()<<"sqlIdMin = "<<sqlIdMin<< " sqlIdMax = "<< sqlIdMax;
     QSqlQueryModel sqlModel;
-    QString strQuery = "select * from stm32_data where (id % " + QString::number(zoomMagnifyMax + 1 - zoomMagnifyActual, 10) +" == 1)";
+    QString strQuery = "select * from stm32_data where (id % " + QString::number(zoomMagnifyMax + 1 - zoomMagnifyActual, 10)
+            + " == 0) and id >= " + QString::number(sqlIdMin, 10) + " and id <= " + QString::number(sqlIdMax, 10) + " ";
     sqlModel.setQuery(strQuery);
     while(sqlModel.canFetchMore())
     {
