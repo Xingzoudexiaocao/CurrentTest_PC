@@ -329,6 +329,16 @@ void HistoryView::UpdateChartData()
 {
     qint64 sqlIdMin = zoomIndex - (zoomMagnifyMax + 1 - zoomMagnifyActual) * 5000;
     qint64 sqlIdMax = zoomIndex + (zoomMagnifyMax + 1 - zoomMagnifyActual) * 5000;
+    if(sqlIdMin < zoomIndexMin)
+    {
+        sqlIdMin = zoomIndexMin;
+        sqlIdMax = sqlIdMin + (zoomMagnifyMax + 1 - zoomMagnifyActual) * 10000;
+    }
+    if(sqlIdMax > zoomIndexMax)
+    {
+        sqlIdMax = zoomIndexMax;
+        sqlIdMin = sqlIdMax - (zoomMagnifyMax + 1 - zoomMagnifyActual) * 10000;
+    }
     qDebug()<<"zoomMagnifyActual = "<<zoomMagnifyActual<< " zoomMagnifyMax = "<< zoomMagnifyMax;
     qDebug()<<"sqlIdMin = "<<sqlIdMin<< " sqlIdMax = "<< sqlIdMax;
     QSqlQueryModel sqlModel;
@@ -356,9 +366,13 @@ void HistoryView::UpdateChartData()
         seriesCurrent->append(sqlModel.record(nProvinceNum).value("time").toLongLong(), sqlModel.record(nProvinceNum).value("current").toDouble());      //
         seriesVoltage->append(sqlModel.record(nProvinceNum).value("time").toLongLong(), sqlModel.record(nProvinceNum).value("voltage").toDouble());
 //         newSeries->append(sqlModel.record(nProvinceNum).value("time").toLongLong(), sqlModel.record(nProvinceNum).value("current").toDouble());
-        if(zoomIndex <= sqlModel.record(nProvinceNum).value("id").toLongLong() && notGetIndex)
+        if(zoomIndex <= sqlModel.record(nProvinceNum).value("id").toLongLong() && notGetIndex)  // 获取索引id对应的时间
         {
             notGetIndex = false;
+            index = sqlModel.record(nProvinceNum).value("time").toLongLong();
+        }
+        if(zoomIndex == zoomIndexMax && nProvinceNum == sqlModel.rowCount() - 1)    // 如果索引id为最大值，获取索引id对应的时间
+        {
             index = sqlModel.record(nProvinceNum).value("time").toLongLong();
         }
     }
