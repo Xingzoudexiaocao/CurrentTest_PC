@@ -52,6 +52,7 @@ private:
     QLabel *m_ValueB;                   // Label to display the realtime value B
     QLabel *m_ValueC;                   // Label to display the realtime value C
     QLabel *m_Power;
+    QLabel *m_Energy;
     QLabel *m_unitA;    // 电流单位
     QLabel *buf1_QL;    // 平均值显示
     QLabel *buf2_QL;

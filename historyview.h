@@ -12,6 +12,8 @@
 #include <QtCharts/QDateTimeAxis>
 #include <QtCharts/QValueAxis>
 #include "comdata.h"
+#include <QWheelEvent>
+#include <QLCDNumber>
 
 QT_BEGIN_NAMESPACE
 class QGraphicsScene;
@@ -32,11 +34,10 @@ class HistoryView : public QGraphicsView
 public:
     explicit HistoryView(QWidget *parent = nullptr);
     void LoadingData(QString fileName);
-    void UptateChartVoltage(void);
-    void UptateChartCurrent(void);
 
 protected:
     void mousePressEvent(QMouseEvent *event);
+    void wheelEvent(QWheelEvent *event);
 
 public:
     QLineSeries *seriesVoltage;
@@ -54,9 +55,7 @@ public:
     QLineSeries *seriesMarkA;
 
     QPushButton *zoomX2;        // 缩放按键
-    QPushButton *zoomX10;
     QPushButton *zoomD2;
-    QPushButton *zoomD10;
 
     qint64 zoomIndex;               // 当前选中点索引值
     qint64 zoomIndexMin;               // 当前选中点最小索引值
@@ -64,17 +63,22 @@ public:
     qint64 zoomMagnifyActual;       // 图像实际放大倍数
     qint64 zoomMagnifyMax;          // 图像最大可以放大的倍数
 
+//    QLCDNumber *testLCD;
+    QSlider *zoomSlide;
+    QLabel *unitVol;
+    QLabel *unitCur;
+    QLabel *markLabel;
 signals:
 
 public slots:
     void ClickZoomX2();
-    void ClickZoomX10();
     void ClickZoomD2();
-    void ClickZoomD10();
 
     void UpdateZoomKeyEnable();
-    void UpdateMarkLine(qlonglong index);
+    void UpdateMarkLine(qlonglong index, double vol, double cur);
     void UpdateChartData();
+    void ZoomSlideValueChanged(int value);
+
 };
 
 #endif // HISTORYVIEW_H

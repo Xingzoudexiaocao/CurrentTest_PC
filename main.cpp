@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
 //    demo.show();
 
     MainWindow w(nullptr, comD, hid);
-    w.setWindowFlags(Qt::WindowStaysOnTopHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint); // 置顶，最小化，关闭
+    w.setWindowFlags( Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint); // 置顶，最小化，关闭       Qt::WindowStaysOnTopHint |
 //    w.setWindowFlags(Qt::FramelessWindowHint);    // 无边框
 //    w.setWindowOpacity(0.5);
     w.show();

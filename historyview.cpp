@@ -143,27 +143,56 @@ HistoryView::HistoryView(QWidget *parent) : QGraphicsView(new QGraphicsScene, pa
     QString bnt_qss1 = "QPushButton {font-family:arial; font-size:14px; text-align:left; padding:3px 1px 3px 5px;}\
             QPushButton:Enabled {background-color: #0066CC; color:white;}\
             QPushButton:Disabled {background-color: #606060; color:#CCCCCC;}";
-    zoomX2 = new QPushButton(this);
-    zoomX2->setStyleSheet(bnt_qss1);
-    zoomX2->setGeometry(650, 60, 38, 20);
-    zoomX2->setText("X2");
+    zoomX2 = new QPushButton(QIcon(":/zoomin.png"), "", this);
+//    zoomX2->setStyleSheet(bnt_qss1);
+    zoomX2->setGeometry(400 + 20 + 300, 60, 20, 20);
+//    zoomX2->setText("X2");
     connect(zoomX2,SIGNAL(clicked ()),this,SLOT(ClickZoomX2()));
-    zoomX10 = new QPushButton(this);
-    zoomX10->setStyleSheet(bnt_qss1);
-    zoomX10->setGeometry(650 + 40, 60, 38, 20);
-    zoomX10->setText("X10");
-    connect(zoomX10,SIGNAL(clicked ()),this,SLOT(ClickZoomX10()));
-    zoomD2 = new QPushButton(this);
-    zoomD2->setStyleSheet(bnt_qss1);
-    zoomD2->setGeometry(650 + 80, 60, 38, 20);
-    zoomD2->setText("D2");
+
+    zoomD2 = new QPushButton(QIcon(":/zoomout.png"), "", this);
+//    zoomD2->setStyleSheet(bnt_qss1);
+    zoomD2->setGeometry(400, 60, 20, 20);
+//    zoomD2->setText("D2");
     connect(zoomD2,SIGNAL(clicked ()),this,SLOT(ClickZoomD2()));
-    zoomD10 = new QPushButton(this);
-    zoomD10->setStyleSheet(bnt_qss1);
-    zoomD10->setGeometry(650 + 120, 60, 38, 20);
-    zoomD10->setText("D10");
-    connect(zoomD10,SIGNAL(clicked ()),this,SLOT(ClickZoomD10()));
-    zoomX2->setEnabled(false); zoomX10->setEnabled(false); zoomD2->setEnabled(false); zoomD10->setEnabled(false);
+
+    zoomX2->setEnabled(false);  zoomD2->setEnabled(false);
+
+    zoomSlide = new QSlider(this);
+    zoomSlide->setGeometry(400 + 20, 60, 300, 20);
+    zoomSlide->setOrientation(Qt::Horizontal);  // 水平方向
+    zoomSlide->setMinimum(1);  // 最小值
+    zoomSlide->setMaximum(100);  // 最大值
+    zoomSlide->setSingleStep(1); // 步长
+    zoomSlide->setPageStep(10);      // 页步长
+    zoomSlide->setTickInterval(10);  // 设置刻度间隔
+    zoomSlide->setTickPosition(QSlider::TicksAbove);
+    zoomSlide->setTracking(false);      // 如果启用跟踪(默认)，滑块在拖动滑块时发出valueChanged()信号。如果禁用跟踪，则滑块仅在用户释放滑块时才发出valueChanged()信号。
+    zoomSlide->setEnabled(false);
+    connect(zoomSlide, SIGNAL(valueChanged(int)), this, SLOT(ZoomSlideValueChanged(int)));
+
+    unitVol = new QLabel(this);
+    unitVol->setStyleSheet("QLabel { text-align:center; font-size:20px; color:#00cc00; background-color:white;}");  //  padding:10px;
+    unitVol->setGeometry(20, 60, 100, 20);
+
+    unitCur = new QLabel(this);
+    unitCur->setStyleSheet("QLabel { text-align:center; font-size:20px; color:blue; background-color:white;}");  //  padding:10px;
+    unitCur->setGeometry(20, 430, 100, 20);
+
+    markLabel = new QLabel(this);
+    markLabel->setStyleSheet("QLabel { text-align:center; font-size:16px; color:#CC0000; background-color:white;}");  //  padding:10px;
+    markLabel->setGeometry(400, 430, 600, 20);
+
+//    testLCD = new QLCDNumber(this);
+//    // 设置能显示的位数
+////    testLCD->setDigitCount(25);
+//    // 设置显示的模式为十进制
+////    testLCD->setMode(QLCDNumber::Dec);
+//    // 设置显示外观
+////    testLCD->setSegmentStyle(QLCDNumber::Flat);
+//    // 设置样式
+////    testLCD->setStyleSheet("border: 1px solid green; color: green; background: silver;");
+//    testLCD->setGeometry(650, 160, 100, 50);
+//    testLCD->display("110mA");
 }
 
 void HistoryView::mousePressEvent(QMouseEvent *event)
@@ -206,9 +235,11 @@ void HistoryView::mousePressEvent(QMouseEvent *event)
     qDebug() << "m_x_A = " << m_x_A << QDateTime::fromMSecsSinceEpoch(m_x_A);
 
     QSqlQueryModel sqlModel;        // 获取所选中时间对于的id值
-    QString   strQuery = "select id from stm32_data where time == " + QString::number(m_x_A, 10);        // select count(*) from table
+    QString   strQuery = "select id, voltage, current from stm32_data where time == " + QString::number(m_x_A, 10);        // select count(*) from table
     sqlModel.setQuery(strQuery);
     qlonglong idRead = sqlModel.record(0).value("id").toLongLong();
+    double vol = sqlModel.record(0).value("voltage").toDouble();
+    double cur = sqlModel.record(0).value("current").toDouble();
     if(idRead == 0)
     {
         qDebug() << "读取ID失败!" ;
@@ -217,7 +248,7 @@ void HistoryView::mousePressEvent(QMouseEvent *event)
     zoomIndex = idRead;
     qDebug() << "zoomIndex = " << zoomIndex;
 
-     HistoryView::UpdateMarkLine(m_x_A);
+     HistoryView::UpdateMarkLine(m_x_A, vol, cur);
 
     QGraphicsView::mouseMoveEvent(event);
 }
@@ -249,63 +280,81 @@ void HistoryView::LoadingData(QString fileName)
     zoomMagnifyActual = 1;      // 默认放大1倍
     zoomMagnifyMax = dataCount / 10000;     // 计算最大能够放大的倍数
     qDebug()<<zoomIndex<<zoomMagnifyActual<<zoomMagnifyMax;
+    zoomSlide->setEnabled(true);
+    zoomSlide->setValue(zoomMagnifyActual);     // 设置滑条值为1
+    zoomSlide->setMinimum(1);  // 最小值
+    zoomSlide->setMaximum(zoomMagnifyMax);  // 最大值
+    zoomSlide->setSingleStep(1); // 步长
+    zoomSlide->setPageStep(zoomMagnifyMax / 10);      // 页步长
+    zoomSlide->setTickInterval(zoomMagnifyMax / 10);  // 设置刻度间隔
+    unitVol->setText("电压:V");
+    unitCur->setText("电流:mA");
+
     UpdateZoomKeyEnable();
     UpdateChartData();
 }
-void HistoryView::UptateChartVoltage(void)
-{
 
+void HistoryView::wheelEvent(QWheelEvent *event)
+{
+    if(zoomIndex == 0)
+        return;
+    int numDegrees = event->delta() / 8;//滚动的角度，*8就是鼠标滚动的距离
+    int numSteps = numDegrees / 15;//滚动的步数，*15就是鼠标滚动的角度
+    numSteps *= 5;       // 每一格缩放5倍
+    if(zoomMagnifyActual + numSteps > zoomMagnifyMax)
+        return;
+    if(zoomMagnifyActual + numSteps < 1)
+        return;
+//    if (event->orientation() == Qt::Horizontal) {
+////       scrollHorizontally(numSteps);       //水平滚动
+//        qDebug()<<"Horizontal：numDegrees numSteps = "<<numDegrees<<numSteps;
+//    } else {
+////       scrollVertically(numSteps);       //垂直滚动
+//        qDebug()<<"Vertical：numDegrees numSteps = "<<numDegrees<<numSteps;
+//    }
+    zoomMagnifyActual += numSteps;
+    zoomSlide->setValue(zoomMagnifyActual);
+    UpdateZoomKeyEnable();
+
+    event->accept();      //接收该事件
 }
-void HistoryView::UptateChartCurrent(void)
-{
 
+void HistoryView::ZoomSlideValueChanged(int value)
+{
+    qDebug()<<"ZoomSlideValueChanged value = "<<value;
+    zoomMagnifyActual = value;
+    UpdateZoomKeyEnable();
+    UpdateChartData();
 }
 
 void HistoryView::ClickZoomX2()
 {
     zoomMagnifyActual += 1;
+    zoomSlide->setValue(zoomMagnifyActual);
     UpdateZoomKeyEnable();
-    UpdateChartData();
 }
-void HistoryView::ClickZoomX10()
-{
-    zoomMagnifyActual += 10;
-    UpdateZoomKeyEnable();
-    UpdateChartData();
-}
+
 void HistoryView::ClickZoomD2()
 {
     zoomMagnifyActual -= 1;
+    zoomSlide->setValue(zoomMagnifyActual);
     UpdateZoomKeyEnable();
-    UpdateChartData();
 }
-void HistoryView::ClickZoomD10()
-{
-    zoomMagnifyActual -= 10;
-    UpdateZoomKeyEnable();
-    UpdateChartData();
-}
+
 void HistoryView::UpdateZoomKeyEnable()
 {
     if(zoomMagnifyActual + 1 > zoomMagnifyMax)
         zoomX2->setEnabled(false);
     else
         zoomX2->setEnabled(true);
-    if(zoomMagnifyActual + 10 > zoomMagnifyMax)
-        zoomX10->setEnabled(false);
-    else
-        zoomX10->setEnabled(true);
+
     if(zoomMagnifyActual - 1 < 1)
         zoomD2->setEnabled(false);
     else
         zoomD2->setEnabled(true);
-    if(zoomMagnifyActual - 10 < 1)
-        zoomD10->setEnabled(false);
-    else
-        zoomD10->setEnabled(true);
 }
 
-void HistoryView::UpdateMarkLine(qlonglong index)
+void HistoryView::UpdateMarkLine(qlonglong index, double vol, double cur)
 {
 
     chatCurrent->removeSeries(seriesMarkA);
@@ -323,6 +372,15 @@ void HistoryView::UpdateMarkLine(qlonglong index)
     chatVoltage->addSeries(seriesMarkV);
     seriesMarkV->attachAxis(axisVoltageX);
     seriesMarkV->attachAxis(axisVoltageY);
+
+    if(cur < 1)
+        markLabel->setText(QDateTime::fromMSecsSinceEpoch(index).toString("yyyy-MM-dd hh:mm:ss") + " 电压:" + QString::number(vol, 'f', 3) + "V 电流:"  + QString::number(cur * 1000, 'f', 3) + "uA");
+    else if(cur >= 1 && cur < 1000)
+         markLabel->setText(QDateTime::fromMSecsSinceEpoch(index).toString("yyyy-MM-dd hh:mm:ss") + " 电压:" + QString::number(vol, 'f', 3) + "V 电流:"  + QString::number(cur, 'f', 3) + "mA");
+    else if(cur >= 1000)
+         markLabel->setText(QDateTime::fromMSecsSinceEpoch(index).toString("yyyy-MM-dd hh:mm:ss") + " 电压:" + QString::number(vol, 'f', 3) + "V 电流:"  + QString::number(cur, 'f', 2) + "mA");
+
+
 }
 
 void HistoryView::UpdateChartData()
@@ -361,6 +419,8 @@ void HistoryView::UpdateChartData()
 //    qDebug()<<sqlModel.record(0).value("current").toDouble();
     bool notGetIndex = true;
     qlonglong index = 0;
+    double vol = 0;
+    double cur = 0;
     for(int nProvinceNum = 0; nProvinceNum < sqlModel.rowCount(); nProvinceNum++)
     {
         seriesCurrent->append(sqlModel.record(nProvinceNum).value("time").toLongLong(), sqlModel.record(nProvinceNum).value("current").toDouble());      //
@@ -370,10 +430,14 @@ void HistoryView::UpdateChartData()
         {
             notGetIndex = false;
             index = sqlModel.record(nProvinceNum).value("time").toLongLong();
+            vol = sqlModel.record(nProvinceNum).value("voltage").toDouble();
+            cur = sqlModel.record(nProvinceNum).value("current").toDouble();
         }
         if(zoomIndex == zoomIndexMax && nProvinceNum == sqlModel.rowCount() - 1)    // 如果索引id为最大值，获取索引id对应的时间
         {
             index = sqlModel.record(nProvinceNum).value("time").toLongLong();
+            vol = sqlModel.record(nProvinceNum).value("voltage").toDouble();
+            cur = sqlModel.record(nProvinceNum).value("current").toDouble();
         }
     }
 //    for(int i = 0; i < 1000; i++)
@@ -422,7 +486,7 @@ void HistoryView::UpdateChartData()
 
 //    qlonglong index = seriesCurrent->points()[seriesCurrent->points().count() / 2].x();
     qDebug() << "index = " << index << QDateTime::fromMSecsSinceEpoch(index);
-    UpdateMarkLine(index);
+    UpdateMarkLine(index, vol, cur);
 
     chatCurrent->update();
     chatVoltage->update();
