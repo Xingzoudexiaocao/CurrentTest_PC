@@ -121,17 +121,20 @@ void USB_Receive_Thread::HandleData(ST_REC_STRUCT *bufData)
       buf_Cur |= buf[5];
       adVol = (double)buf_Cur / (double)max_Cur * 2500;     // 获取ad采样的电压值，mv为单位
       switch (buf[27]) {
-        case 1: dataC.d = adVol / 14 / 100000; break;
-        case 2: dataC.d = adVol / 14 / 1000; break;
+        case 1: dataC.d = adVol / 12.52 / 100000; break;
+        case 2: dataC.d = adVol / 12.52 / 1000; break;
         case 3:
-          if((adVol / 14) >= 20) {
-              double dec = adVol / 14 - 20;
-              dataC.d = (dec / 1.001 + 20) / 10;  // 大于3mA电流需要减去mos管电压
-          } else {
-              dataC.d = adVol / 14 / 10;
-          }
+//          if((adVol / 14) >= 20) {
+//              double dec = adVol / 14 - 20;
+//              dataC.d = (dec / 1.001 + 20) / 10;  // 大于3mA电流需要减去mos管电压
+//          } else {
+              dataC.d = adVol / 12.52 / 10;
+//          }
           break;   // 1.003 为修正mos管电压
-        case 4: dataC.d = adVol / 14 / (0.1 + 0.0075); break;       // 0.03181358
+        case 4:
+//          dataC.d = adVol / 14 / (0.1 + 0.0075);
+          dataC.d = adVol / 12.52 / 0.1;
+          break;       // 0.03181358
         default: dataC.d = 0; break;
       }
       // 更新数据到表格数据

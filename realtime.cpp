@@ -124,37 +124,37 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
 
     m_ValueC = new QLabel(frame_3);
     m_ValueC->setStyleSheet("QLabel { text-align:center; padding:10px; font-size:56px; color:blue; background-color:white;}");
-    m_ValueC->setGeometry(2, 80, 200, 80);
+    m_ValueC->setGeometry(2, 60, 200, 80);
     m_ValueC->setFont(font_VAW);
     m_ValueC->setAlignment(Qt::AlignHCenter);
     m_ValueC->setFrameShape(QFrame::NoFrame);
     m_ValueC->setText(QString::number(0, 'f', 3));  // 初始化显示0
     m_unitA = new QLabel(frame_3);
-    m_unitA->setGeometry(6 + 190, 80, 50, 80);
+    m_unitA->setGeometry(6 + 190, 60, 50, 80);
     m_unitA->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:30px; color:blue; background-color:white;}");
     m_unitA->setText("mA");
 
     m_Power = new QLabel(frame_3);
     m_Power->setStyleSheet("QLabel { text-align:left; padding:10px; font-size:56px; color:black; background-color:white;}");
-    m_Power->setGeometry(2, 160, 200, 80);
+    m_Power->setGeometry(2, 120, 200, 80);
     m_Power->setFont(font_VAW);
     m_Power->setAlignment(Qt::AlignHCenter);
     m_Power->setFrameShape(QFrame::NoFrame);
     m_Power->setText(QString::number(0, 'f', 2));  // 初始化显示0
     QLabel *unitW = new QLabel(frame_3);
-    unitW->setGeometry(6 + 190, 160, 50, 80);
+    unitW->setGeometry(6 + 170, 120, 70, 80);
     unitW->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:30px; color:black; background-color:white;}");
     unitW->setText("W");
 
     m_Energy = new QLabel(frame_3);
     m_Energy->setStyleSheet("QLabel { text-align:left; padding:10px; font-size:56px; color:black; background-color:white;}");
-    m_Energy->setGeometry(2, 240, 200, 80);
+    m_Energy->setGeometry(2, 180, 200, 80);
     m_Energy->setFont(font_VAW);
     m_Energy->setAlignment(Qt::AlignHCenter);
     m_Energy->setFrameShape(QFrame::NoFrame);
     m_Energy->setText(QString::number(0, 'f', 2));  // 初始化显示0
     QLabel *unitE = new QLabel(frame_3);
-    unitE->setGeometry(6 + 190, 240, 50, 80);
+    unitE->setGeometry(6 + 170, 180, 70, 80);
     unitE->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:30px; color:black; background-color:white;}");
     unitE->setText("mAh");
 
