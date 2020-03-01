@@ -32,30 +32,37 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
 //    frame->setStyleSheet("background-color:white");
     frame->setFrameShape(QFrame::StyledPanel);
 
-    QString bnt_qss1 = "QPushButton {font-family:arial; text-align:left; padding:5px;}\
+    QString bnt_qss1 = "QPushButton {font-family:arial; text-align:left; padding:5px; font-size:20px;}\
             QPushButton:Enabled {background-color: #0066CC; color:white;}\
             QPushButton:Disabled {background-color: #606060; color:#CCCCCC;}";
     QFont    font ( "微软雅黑",  12,   75);
     QFont    font_2 ( "微软雅黑",  8,   50);
+    QFrame *frame_1 = new QFrame(frame);
+    frame_1->setGeometry(2, 2, 246, 115);
+    frame_1->setFrameShape(QFrame::Panel);
     // Run push button
-    connectUSB = new QPushButton(QIcon(":/play.png"), "连接设备", frame);
-    connectUSB->setGeometry(4, 8, 142, 40);
+    connectUSB = new QPushButton(QIcon(":/play.png"), "启动采集", frame_1);
+    connectUSB->setGeometry(2, 3, 120, 35);
     connectUSB->setStyleSheet(bnt_qss1);
     connectUSB->setFont(font);
     connect(connectUSB, &QAbstractButton::clicked, this, &RealTime::onConnectUSB);
     // Run push button
-    disconnectUSB = new QPushButton(QIcon(":/pause.png"), "关闭设备", frame);
-    disconnectUSB->setGeometry(4, 60, 142, 40);
+    disconnectUSB = new QPushButton(QIcon(":/pause.png"), "停止采集", frame_1);
+    disconnectUSB->setGeometry(2, 40, 120, 35);
     disconnectUSB->setStyleSheet(bnt_qss1);
     disconnectUSB->setEnabled(false);
     disconnectUSB->setFont(font);
     connect(disconnectUSB, &QAbstractButton::clicked, this, &RealTime::onDisConnectUSB);
-
+    // setting button
+    QPushButton *settingBtn = new QPushButton(QIcon(":/play.png"), "采集设置", frame_1);
+    settingBtn->setGeometry(2, 77, 120, 35);
+    settingBtn->setStyleSheet(bnt_qss1);
+    settingBtn->setFont(font);
 //    QPushButton *bbb = new QPushButton(QIcon(":/play.png"),"", frame);
 //    bbb->setGeometry(150, 8, 100, 100);
     QPixmap pixmap(":/logo.png");
-    QLabel *label = new QLabel(frame);
-    label->setGeometry(150, 8, 95, 95);
+    QLabel *label = new QLabel(frame_1);
+    label->setGeometry(125, 3, 120, 110);
 //    label->setStyleSheet("background-color:black");
     label->setPixmap(pixmap.scaled(label->size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
 
@@ -107,103 +114,130 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     QString fontName = loadFontFamilyFromTTF(":/DSDigital.ttf");    // digifaw ":/DSDigital.ttf" "C:/Windows/Fonts/Terminal.fon"
     QFont    font_VAW ( fontName,  10,   75);     // "Microsoft YaHei"
     QFrame *frame_3 = new QFrame(frame);
-    frame_3->setGeometry(0, 120, 250, 320);
-    frame_3->setFrameShape(QFrame::NoFrame);
+    frame_3->setGeometry(2, 120, 246, 285);
+    frame_3->setFrameShape(QFrame::Panel);
+    QLabel *realTimeValue = new QLabel(frame_3);
+    realTimeValue->setGeometry(0, 0, 240, 40);
+    realTimeValue->setStyleSheet("QLabel {font-family:arial; text-align:left; padding:2px; font-size:30px;}");
+    realTimeValue->setText("实时采集值：");
     // 显示瞬时电压/电流/功率
     m_ValueB = new QLabel(frame_3);
-    m_ValueB->setStyleSheet("QLabel { text-align:center; padding:10px; font-size:56px; color:#00cc00; background-color:white;}");
-    m_ValueB->setGeometry(2, 0, 200, 80);
+    m_ValueB->setStyleSheet("QLabel { text-align:center; padding:10px; font-size:56px; color:#00cc00; }");      // background-color:white;
+    m_ValueB->setGeometry(2, 30, 200, 80);
     m_ValueB->setFont(font_VAW);
     m_ValueB->setAlignment(Qt::AlignHCenter);
     m_ValueB->setFrameShape(QFrame::NoFrame);
     m_ValueB->setText(QString::number(0, 'f', 3));  // 初始化显示0
     QLabel *unitV = new QLabel(frame_3);
-    unitV->setGeometry(6 + 190, 0, 50, 80);
-    unitV->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:30px; color:#00cc00; background-color:white;}");
+    unitV->setGeometry(6 + 190, 30, 48, 80);
+    unitV->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:30px; color:#00cc00; }");
     unitV->setText("V");
 
     m_ValueC = new QLabel(frame_3);
-    m_ValueC->setStyleSheet("QLabel { text-align:center; padding:10px; font-size:56px; color:blue; background-color:white;}");
-    m_ValueC->setGeometry(2, 60, 200, 80);
+    m_ValueC->setStyleSheet("QLabel { text-align:center; padding:10px; font-size:56px; color:blue;}");
+    m_ValueC->setGeometry(2, 90, 200, 80);
     m_ValueC->setFont(font_VAW);
     m_ValueC->setAlignment(Qt::AlignHCenter);
     m_ValueC->setFrameShape(QFrame::NoFrame);
     m_ValueC->setText(QString::number(0, 'f', 3));  // 初始化显示0
     m_unitA = new QLabel(frame_3);
-    m_unitA->setGeometry(6 + 190, 60, 50, 80);
-    m_unitA->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:30px; color:blue; background-color:white;}");
+    m_unitA->setGeometry(6 + 190, 90, 48, 80);
+    m_unitA->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:30px; color:blue; }");
     m_unitA->setText("mA");
 
     m_Power = new QLabel(frame_3);
-    m_Power->setStyleSheet("QLabel { text-align:left; padding:10px; font-size:56px; color:black; background-color:white;}");
-    m_Power->setGeometry(2, 120, 200, 80);
+    m_Power->setStyleSheet("QLabel { text-align:left; padding:10px; font-size:56px; color:black;}");
+    m_Power->setGeometry(2, 150, 200, 80);
     m_Power->setFont(font_VAW);
     m_Power->setAlignment(Qt::AlignHCenter);
     m_Power->setFrameShape(QFrame::NoFrame);
     m_Power->setText(QString::number(0, 'f', 2));  // 初始化显示0
     QLabel *unitW = new QLabel(frame_3);
-    unitW->setGeometry(6 + 170, 120, 70, 80);
-    unitW->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:30px; color:black; background-color:white;}");
+    unitW->setGeometry(6 + 170, 150, 68, 80);
+    unitW->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:30px; color:black; }");
     unitW->setText("W");
 
     m_Energy = new QLabel(frame_3);
-    m_Energy->setStyleSheet("QLabel { text-align:left; padding:10px; font-size:56px; color:black; background-color:white;}");
-    m_Energy->setGeometry(2, 180, 200, 80);
+    m_Energy->setStyleSheet("QLabel { text-align:left; padding:10px; font-size:56px; color:black; }");
+    m_Energy->setGeometry(2, 210, 200, 80);
     m_Energy->setFont(font_VAW);
     m_Energy->setAlignment(Qt::AlignHCenter);
     m_Energy->setFrameShape(QFrame::NoFrame);
     m_Energy->setText(QString::number(0, 'f', 2));  // 初始化显示0
     QLabel *unitE = new QLabel(frame_3);
-    unitE->setGeometry(6 + 170, 180, 70, 80);
-    unitE->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:30px; color:black; background-color:white;}");
+    unitE->setGeometry(6 + 170, 210, 68, 80);
+    unitE->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:30px; color:black; }");
     unitE->setText("mAh");
 
     // The frame on the left side
     QFrame *frame_4 = new QFrame(frame);
-    frame_4->setGeometry(0, 460, 250, 240);
-    frame_4->setFrameShape(QFrame::NoFrame);
+    frame_4->setGeometry(2, 410, 246, 225);
+    frame_4->setFrameShape(QFrame::Panel);
     QLabel *avgValue = new QLabel(frame_4);
     avgValue->setGeometry(0, 0, 250, 40);
     avgValue->setStyleSheet("QLabel {font-family:arial; text-align:left; padding:2px; font-size:30px;}");
-    avgValue->setText("平均测量值：");
-    // Beta Value display
-    QLabel *avg_V = new QLabel(frame_4);
-    avg_V->setGeometry(0, 40, 250, 40);
-    avg_V->setStyleSheet("QLabel {font-family:arial; text-align:left; padding:2px; font-size:24px;}");
-    avg_V->setText("电压：");
+    avgValue->setText("平均采集值：");
+    // avarge voltage
     buf1_QL = new QLabel(frame_4);
-    buf1_QL->setStyleSheet("QLabel {font-family:arial; text-align:left; padding:0px; font-size:24px;}");
-    buf1_QL->setGeometry(80, 40, 250 - 80, 40);
+    buf1_QL->setStyleSheet("QLabel { text-align:center; padding:10px; font-size:56px; color:#00cc00;}");
+    buf1_QL->setGeometry(2, 30, 200, 80);
+    buf1_QL->setFont(font_VAW);
+    buf1_QL->setAlignment(Qt::AlignHCenter);
     buf1_QL->setFrameShape(QFrame::NoFrame);
-    buf1_QL->setText("-");
-    // Gamma Value display
-    QLabel *avg_A = new QLabel(frame_4);
-    avg_A->setGeometry(0, 80, 250, 40);
-    avg_A->setStyleSheet("QLabel {font-family:arial; text-align:left; padding:2px; font-size:24px;}");
-    avg_A->setText("电流：");
+    buf1_QL->setText(QString::number(0, 'f', 3));  // 初始化显示0
+    QLabel *avg_V = new QLabel(frame_4);
+    avg_V->setGeometry(6 + 190, 30, 48, 80);
+    avg_V->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:30px; color:#00cc00; }");
+    avg_V->setText("V");
+    // avarge current
     buf2_QL = new QLabel(frame_4);
-    buf2_QL->setStyleSheet("QLabel {font-family:arial; text-align:left; padding:0px; font-size:24px;}");
-    buf2_QL->setGeometry(80, 80, 250 - 80, 40);
+    buf2_QL->setStyleSheet("QLabel { text-align:center; padding:10px; font-size:56px; color:blue;}");
+    buf2_QL->setGeometry(2, 90, 200, 80);
+    buf2_QL->setFont(font_VAW);
+    buf2_QL->setAlignment(Qt::AlignHCenter);
     buf2_QL->setFrameShape(QFrame::NoFrame);
-    buf2_QL->setText("-");
-    // 平均功率
-    QLabel *avg_W = new QLabel(frame_4);
-    avg_W->setGeometry(0, 120, 250, 40);
-    avg_W->setStyleSheet("QLabel {font-family:arial; text-align:left; padding:2px; font-size:24px;}");
-    avg_W->setText("功率：");
+    buf2_QL->setText(QString::number(0, 'f', 3));  // 初始化显示0
+    QLabel *avg_A = new QLabel(frame_4);
+    avg_A->setGeometry(6 + 190, 90, 48, 80);
+    avg_A->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:30px; color:blue; }");
+    avg_A->setText("mA");
+    // avarge power
     buf3_QL = new QLabel(frame_4);
-    buf3_QL->setStyleSheet("QLabel {font-family:arial; text-align:left; padding:0px; font-size:24px;}");
-    buf3_QL->setGeometry(80, 120, 250 - 80, 40);
+    buf3_QL->setStyleSheet("QLabel { text-align:left; padding:10px; font-size:56px; color:black; }");
+    buf3_QL->setGeometry(2, 150, 200, 80);
+    buf3_QL->setFont(font_VAW);
+    buf3_QL->setAlignment(Qt::AlignHCenter);
     buf3_QL->setFrameShape(QFrame::NoFrame);
-    buf3_QL->setText("-");
+    buf3_QL->setText(QString::number(0, 'f', 2));  // 初始化显示0
+    QLabel *avg_W = new QLabel(frame_4);
+    avg_W->setGeometry(6 + 170, 150, 68, 80);
+    avg_W->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:30px; color:black; }");
+    avg_W->setText("W");
 
     QFrame *frame_6 = new QFrame(frame);
-    frame_6->setGeometry(0, 620, 250, 280);
-    frame_6->setFrameShape(QFrame::NoFrame);
-    QLabel *remainingTime = new QLabel(frame_6);
-    remainingTime->setGeometry(0, 0, 250, 40);
-    remainingTime->setStyleSheet("QLabel {font-family:arial; text-align:left; padding:2px; font-size:30px;}");
-    remainingTime->setText("剩余运行时间：");
+    frame_6->setGeometry(2, 640, 246, 205);
+    frame_6->setFrameShape(QFrame::Panel);
+    QLabel *batteryInfo = new QLabel(frame_6);
+    batteryInfo->setGeometry(0, 0, 250, 40);
+    batteryInfo->setStyleSheet("QLabel {font-family:arial; text-align:left; padding:2px; font-size:30px;}");
+    batteryInfo->setText("电池信息：");
+    QLabel *totalCapacity = new QLabel(frame_6);
+    totalCapacity->setGeometry(0, 40, 250, 40);
+    totalCapacity->setStyleSheet("QLabel {font-family:arial; text-align:left; padding:2px; font-size:24px;}");
+    totalCapacity->setText("总容量：");
+    QLabel *remainCapacity = new QLabel(frame_6);
+    remainCapacity->setGeometry(0, 80, 250, 40);
+    remainCapacity->setStyleSheet("QLabel {font-family:arial; text-align:left; padding:2px; font-size:24px;}");
+    remainCapacity->setText("剩余容量：");
+    QLabel *workingTime = new QLabel(frame_6);
+    workingTime->setGeometry(0, 120, 250, 40);
+    workingTime->setStyleSheet("QLabel {font-family:arial; text-align:left; padding:2px; font-size:24px;}");
+    workingTime->setText("运行时间：");
+    QLabel *remainTime = new QLabel(frame_6);
+    remainTime->setGeometry(0, 160, 250, 40);
+    remainTime->setStyleSheet("QLabel {font-family:arial; text-align:left; padding:2px; font-size:24px;}");
+    remainTime->setText("剩余时间：");
+
 
     QFrame *frame_5 = new QFrame(frame);
     frame_5->setGeometry(0, 560, 250, 280);
@@ -241,26 +275,26 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     usb_str3->setFrameShape(QFrame::NoFrame);
     usb_str3->setText("-");
     // 显示温度
-    m_Temp = new QLabel(frame_6);
+    m_Temp = new QLabel(frame_5);
     m_Temp->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:20px;}");
     m_Temp->setGeometry(0, 100, 250, 40);
     m_Temp->setFrameShape(QFrame::NoFrame);
     m_Temp->setFont(font);
     m_Temp->setText("设备内部温度:-");
 
-    m_Tips = new QLabel(frame_6);
+    m_Tips = new QLabel(frame_5);
     m_Tips->setStyleSheet("QLabel { text-align:left; padding:2px; color:red; font-size:18px;}");
     m_Tips->setGeometry(0, 140, 250, 20);
     m_Tips->setFrameShape(QFrame::NoFrame);
 //    m_Tips->setText("电流过大:");
-    m_Error = new QLabel(frame_6);
+    m_Error = new QLabel(frame_5);
     m_Error->setStyleSheet("QLabel { text-align:left; padding:2px; color:red; font-size:18px;}");
     m_Error->setGeometry(0, 160, 250, 20);
     m_Error->setFrameShape(QFrame::NoFrame);
 //    m_Error->setText("错误代码:");
 
     QDateTime lastTime = QDateTime::currentDateTime();
-    QLabel *linkUs = new QLabel(frame_6);
+    QLabel *linkUs = new QLabel(frame_5);
     linkUs->setGeometry(40, 190, 250, 40);
     linkUs->setStyleSheet("QLabel {font-family:castellar; text-align:left; padding:2px; font-size:20px;}");
     linkUs->setText("<a href=\"http://www.baidu.com\">© " + QString::number(lastTime.date().year()) + " 关于我们");
