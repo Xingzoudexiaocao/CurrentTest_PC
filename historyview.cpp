@@ -301,10 +301,18 @@ void HistoryView::wheelEvent(QWheelEvent *event)
     int numDegrees = event->delta() / 8;//滚动的角度，*8就是鼠标滚动的距离
     int numSteps = numDegrees / 15;//滚动的步数，*15就是鼠标滚动的角度
     numSteps *= 5;       // 每一格缩放5倍
+
+    if(zoomMagnifyActual == zoomMagnifyMax && numSteps > 0)
+        return;
+    if(zoomMagnifyActual == 1 && numSteps < 0)
+        return;
+
     if(zoomMagnifyActual + numSteps > zoomMagnifyMax)
-        return;
+        zoomMagnifyActual = zoomMagnifyMax;
     if(zoomMagnifyActual + numSteps < 1)
-        return;
+        zoomMagnifyActual = 1;
+
+
 //    if (event->orientation() == Qt::Horizontal) {
 ////       scrollHorizontally(numSteps);       //水平滚动
 //        qDebug()<<"Horizontal：numDegrees numSteps = "<<numDegrees<<numSteps;
