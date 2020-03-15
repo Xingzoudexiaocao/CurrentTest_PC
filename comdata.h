@@ -74,6 +74,7 @@ public:
     hid_device *myHandle;   // USB_HID
 
     QDateTime lastTime;     // 上次接收到数据的时间;用于判断是否更新表格为0
+    qint64 BeginTime;
     // 串口收发数据头码
     unsigned long long headerLength;
     unsigned char *headerC; //   -89, 89, 62, -67 = (0xA7, 0x59, 0x3E, 0xBD)

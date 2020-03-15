@@ -54,6 +54,7 @@ private:
     QLabel *m_Power;
     QLabel *m_Energy;
     QLabel *m_unitA;    // 电流单位
+    QLabel *m_averageA;    // 电流单位
     QLabel *buf1_QL;    // 平均值显示
     QLabel *buf2_QL;
     QLabel *buf3_QL;

@@ -197,10 +197,10 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     buf2_QL->setAlignment(Qt::AlignHCenter);
     buf2_QL->setFrameShape(QFrame::NoFrame);
     buf2_QL->setText(QString::number(0, 'f', 3));  // 初始化显示0
-    QLabel *avg_A = new QLabel(frame_4);
-    avg_A->setGeometry(6 + 190, 90, 48, 80);
-    avg_A->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:30px; color:blue; }");
-    avg_A->setText("mA");
+    m_averageA = new QLabel(frame_4);
+    m_averageA->setGeometry(6 + 190, 90, 48, 80);
+    m_averageA->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:30px; color:blue; }");
+    m_averageA->setText("mA");
     // avarge power
     buf3_QL = new QLabel(frame_4);
     buf3_QL->setStyleSheet("QLabel { text-align:left; padding:10px; font-size:56px; color:black; }");
@@ -1331,29 +1331,7 @@ void RealTime::onConnectUSB()
         connectUSB->setEnabled(false);
         disconnectUSB->setEnabled(true);
         qDebug() << "连接成功";
-        m_UsbReceiveThread->isStop = false;
-        m_UsbReceiveThread->start();   // 启动线程
-        m_ChartUpdateTimer->start(100);    // 启动更新表格
-//        m_TableUpdateTimer->start(100);    // 启动更新详细数据
-//        dataRateTimer->start(DataInterval); // 启动获取数据
-        m_ComData->ClearData();         // 清之前的数据
-        play->setVisible(true);
-        play->setEnabled(false);
-        pause->setVisible(true);
-        pause->setEnabled(true);
-        usb_str1->setText(m_UsbHid->str_Manufactured);
-        usb_str2->setText(m_UsbHid->str_Product);
-        usb_str3->setText(m_UsbHid->str_SerialNumber);
-        m_Tips->setText("");
-        m_Error->setText("");
-//        download->setEnabled(false);
-        // 设置更新进度条不可见
-//        updataTips->setVisible(false);
-//        updataBar->setVisible(false);
-        updataTips->setEnabled(false);
-        updataBar->setEnabled(false);
-        // 发送读取版本号和文件长度指令
-        send_CMD(0x08);     // 读取版本号和文件长度指令
+
         // 创建数据库文件
         QDir dir(QDir::currentPath() + "/iSCAN_Data");
         if(!dir.exists())
@@ -1383,6 +1361,31 @@ void RealTime::onConnectUSB()
                                "voltage DOUBLE NOT NULL, "
                                "current DOUBLE NOT NULL)");         //创建一个stm32_data表
             qDebug() << "新建表stm32_data";
+
+            m_DbData.clear();       // 清空所有值
+            m_UsbReceiveThread->isStop = false;
+            m_UsbReceiveThread->start();   // 启动线程
+            m_ChartUpdateTimer->start(100);    // 启动更新表格
+    //        m_TableUpdateTimer->start(100);    // 启动更新详细数据
+    //        dataRateTimer->start(DataInterval); // 启动获取数据
+            m_ComData->ClearData();         // 清之前的数据
+            play->setVisible(true);
+            play->setEnabled(false);
+            pause->setVisible(true);
+            pause->setEnabled(true);
+            usb_str1->setText(m_UsbHid->str_Manufactured);
+            usb_str2->setText(m_UsbHid->str_Product);
+            usb_str3->setText(m_UsbHid->str_SerialNumber);
+            m_Tips->setText("");
+            m_Error->setText("");
+    //        download->setEnabled(false);
+            // 设置更新进度条不可见
+    //        updataTips->setVisible(false);
+    //        updataBar->setVisible(false);
+            updataTips->setEnabled(false);
+            updataBar->setEnabled(false);
+            // 发送读取版本号和文件长度指令
+            send_CMD(0x08);     // 读取版本号和文件长度指令
    //     }
     }
     else
@@ -1579,14 +1582,16 @@ void RealTime::showVAW(double v, double mA)
         m_Power->setText(QString::number(bufPower, 'f', 2));
     }
     // 更新平均值显示
-    buf1_QL->setText(QString::number(m_ComData->d_Avg_V, 'f', 3) + "V");
+    buf1_QL->setText(QString::number(m_ComData->d_Avg_V, 'f', 3));
     if(m_ComData->d_Avg_A < 1) {
-        buf2_QL->setText(QString::number(m_ComData->d_Avg_A * 1000, 'f', 3) + "uA");
+        buf2_QL->setText(QString::number(m_ComData->d_Avg_A * 1000, 'f', 3));
+        m_averageA->setText("uA");
     } else {
-        buf2_QL->setText(QString::number(m_ComData->d_Avg_A, 'f', 3) + "mA");
+        buf2_QL->setText(QString::number(m_ComData->d_Avg_A, 'f', 3));
+        m_averageA->setText("mA");
     }
     double bufPower_2 = m_ComData->d_Avg_V * m_ComData->d_Avg_A / 1000;
-    buf3_QL->setText(QString::number(bufPower_2, 'f', 3) + "W");
+    buf3_QL->setText(QString::number(bufPower_2, 'f', 3));
 }
 
 void RealTime::linkUs(QString str)

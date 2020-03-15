@@ -106,19 +106,19 @@ HistoryView::HistoryView(QWidget *parent) : QGraphicsView(new QGraphicsScene, pa
     seriesCurrent->connect(seriesCurrent,&QLineSeries::clicked,[](const QPointF& point){
       qDebug() << "point clicked:" << point;
     });
-    seriesCurrent->connect(seriesCurrent,&QLineSeries::doubleClicked,[](const QPointF& point){
-      qDebug() << "point double clicked:" << point;
-    });
-    seriesCurrent->connect(seriesCurrent,&QLineSeries::hovered,[](const QPointF& point,bool state){
-      qDebug() << "point hovered:" << point << " state:" << (state?"光标移动到图表上":"光标从图表上移开");
-    });
-    seriesCurrent->connect(seriesCurrent,&QLineSeries::pressed,[](const QPointF& point){
-      qDebug() << "point pressed:" << point;
+//    seriesCurrent->connect(seriesCurrent,&QLineSeries::doubleClicked,[](const QPointF& point){
+//      qDebug() << "point double clicked:" << point;
+//    });
+//    seriesCurrent->connect(seriesCurrent,&QLineSeries::hovered,[](const QPointF& point,bool state){
+//      qDebug() << "point hovered:" << point << " state:" << (state?"光标移动到图表上":"光标从图表上移开");
+//    });
+//    seriesCurrent->connect(seriesCurrent,&QLineSeries::pressed,[](const QPointF& point){
+//      qDebug() << "point pressed:" << point;
 
-    });
-    seriesCurrent->connect(seriesCurrent,&QLineSeries::released,[](const QPointF& point){
-      qDebug() << "point released:" << point;
-    });
+//    });
+//    seriesCurrent->connect(seriesCurrent,&QLineSeries::released,[](const QPointF& point){
+//      qDebug() << "point released:" << point;
+//    });
 //    chartViewCurrent->connect(seriesCurrent,&QChartView,[](const QPointF& point){
 //        qDebug() << "QChartView 事件" << point;
 //      });
@@ -263,6 +263,7 @@ void HistoryView::LoadingData(QString fileName)
     if (!db.open())     // if (!db.open("admin","admin"))
     {
         qDebug() << "打开数据库文件失败！";
+        QMessageBox::critical(this, "提示", "打开数据库文件失败！");
         return;
     }
     QSqlQueryModel sqlModel;
@@ -272,6 +273,7 @@ void HistoryView::LoadingData(QString fileName)
     if(dataCount < 10000)
     {
         qDebug() << "数据文件数据量太少！";
+        QMessageBox::critical(this, "提示", "无法打开当前文件，文件数据量太少！");
         return;
     }
     zoomIndexMin = 1;

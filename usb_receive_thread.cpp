@@ -16,11 +16,21 @@ void USB_Receive_Thread::run()
     unsigned char buffer[32];
     memset(buffer, 0, 32);
 
+    m_ComData->BeginTime = QDateTime::currentDateTime().toMSecsSinceEpoch();
+    m_ComData->lastTime = QDateTime::fromMSecsSinceEpoch(m_ComData->BeginTime);      // 更新接收时间
+
     while (!isStop) {
 //        if(isStop)
 //            break;
 //        if(!isStop) {
             /* Wait up to 5 seconds for a message to arrive on endpoint 0x81. */
+//            res = libusb_claim_interface(m_UsbHid->dev_handle, 0);            //claim interface 0 (the first) of device (mine had jsut 1)
+//            if(res < 0)
+//            {
+//                qDebug()<<"Cannot Claim Interface"<<endl;
+//                return;
+//            }
+//        //    qDebug()<<"Claimed Interface"<<endl;
             res = libusb_interrupt_transfer(m_UsbHid->dev_handle, 0x81, buffer, 32, &numBytes, 100);
             if (0 == res)
             {
@@ -44,6 +54,8 @@ void USB_Receive_Thread::run()
                       ST_REC_STRUCT *tmp = new ST_REC_STRUCT();
                       memcpy(tmp, buffer, 32);
 //                      qDebug("Received %d bytes, 成功.", numBytes);
+//                      qDebug() << QDateTime::currentDateTime();
+                      m_ComData->BeginTime++;       // 时间加1ms
                       HandleData(tmp);  // 处理数据
                   }
               }
@@ -57,6 +69,13 @@ void USB_Receive_Thread::run()
             {
                 qDebug("Error receiving message.\n");
             }
+//            res = libusb_release_interface(m_UsbHid->dev_handle, 0); //release the claimed interface
+//            if(res !=0)
+//            {
+//                qDebug()<<"Cannot Release Interface"<<endl;
+//                return;
+//            }
+//        //    qDebug()<<"Released Interface"<<endl;
             res = -1;   // 置位
             numBytes = -1;
             QThread::sleep(0);
@@ -139,7 +158,8 @@ void USB_Receive_Thread::HandleData(ST_REC_STRUCT *bufData)
       }
       // 更新数据到表格数据
       // The current time
-      QDateTime now = QDateTime::currentDateTime();
+//      QDateTime now = QDateTime::currentDateTime();
+      QDateTime now = QDateTime::fromMSecsSinceEpoch(m_ComData->BeginTime);
       m_ComData->lastTime = now;      // 更新接收时间
       // We need the currentTime in millisecond resolution
       double currentTime = Chart::chartTime2(now.toTime_t())
@@ -168,11 +188,11 @@ void USB_Receive_Thread::HandleData(ST_REC_STRUCT *bufData)
 //      qDebug() << "--单次接收的数据：dataB = " << dataB.d << ", dataC =" << dataC.d  << " Time = " << QDateTime::currentDateTime();
       // 处理电流过大/过小的情况
       unsigned char tips = 0;
-      if(buf[25] == 0x01 && buf[26] == 0x01)
+      if(buf[26] == 0x01)
       {
           tips = 1;
       }
-      else if(buf[25] == 0x02 && buf[26] == 0x02)
+      else if(buf[26] == 0x02)
       {
           tips = 2;
       }
@@ -191,6 +211,7 @@ void USB_Receive_Thread::HandleData(ST_REC_STRUCT *bufData)
             {
                 emit get_USB_Data(now, 0, 0, (unsigned char)(buf_Cur - 0x80000000));    // 发送接收信号
             }
+            qDebug() << now << "错误代码cmd = " << (unsigned char)(buf_Cur - 0x80000000) << buf[7] << buf[6] << buf[5] << buf[4] ;
         }
     }
 }
