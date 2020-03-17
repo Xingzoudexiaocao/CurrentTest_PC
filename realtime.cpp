@@ -1368,7 +1368,7 @@ void RealTime::onConnectUSB()
             m_ChartUpdateTimer->start(100);    // 启动更新表格
     //        m_TableUpdateTimer->start(100);    // 启动更新详细数据
     //        dataRateTimer->start(DataInterval); // 启动获取数据
-            m_ComData->ClearData();         // 清之前的数据
+//            m_ComData->ClearData();         // 清之前的数据
             play->setVisible(true);
             play->setEnabled(false);
             pause->setVisible(true);

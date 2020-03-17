@@ -47,6 +47,12 @@ union d_And_c
     char c[8];
 };
 
+typedef enum{
+    AVERAGE_VALUE,
+    BATTERY_CAPACITY_VALUE,
+    ALL_DATA
+} SETTINGDATA;
+
 static QString compangyName = "一起努力";
 static QString productName = "精密电流测量仪";
 
@@ -69,12 +75,20 @@ public:
         data[len - 1] = newValue;
     }
     void ClearData(void);
+    bool WriteData(int);
+    bool ReadData(int);
 
 public:
     hid_device *myHandle;   // USB_HID
 
     QDateTime lastTime;     // 上次接收到数据的时间;用于判断是否更新表格为0
     qint64 BeginTime;
+    qint64 RunningCount;    // 运行时间计数
+    double AverageVolMinute[60];        // 每个一分钟平均电压值，最多60分钟
+    double AverageCurMinute[60];        // 每个一分钟平均电流值，最多60分钟
+    qint64 AverageMinuteCount;          // 每个一分钟计数
+    qint64 SettingAverageTime;          // 设定的平均值计算时间
+    qint64 SettingBatteryCapacity;      // 设定的电池容量
     // 串口收发数据头码
     unsigned long long headerLength;
     unsigned char *headerC; //   -89, 89, 62, -67 = (0xA7, 0x59, 0x3E, 0xBD)

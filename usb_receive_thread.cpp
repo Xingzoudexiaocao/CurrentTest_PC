@@ -16,8 +16,7 @@ void USB_Receive_Thread::run()
     unsigned char buffer[32];
     memset(buffer, 0, 32);
 
-    m_ComData->BeginTime = QDateTime::currentDateTime().toMSecsSinceEpoch();
-    m_ComData->lastTime = QDateTime::fromMSecsSinceEpoch(m_ComData->BeginTime);      // 更新接收时间
+    m_ComData->ClearData();         // 清之前的数据
 
     while (!isStop) {
 //        if(isStop)
@@ -55,7 +54,7 @@ void USB_Receive_Thread::run()
                       memcpy(tmp, buffer, 32);
 //                      qDebug("Received %d bytes, 成功.", numBytes);
 //                      qDebug() << QDateTime::currentDateTime();
-                      m_ComData->BeginTime++;       // 时间加1ms
+                       m_ComData->RunningCount++;       // 时间加1ms
                       HandleData(tmp);  // 处理数据
                   }
               }
@@ -159,7 +158,7 @@ void USB_Receive_Thread::HandleData(ST_REC_STRUCT *bufData)
       // 更新数据到表格数据
       // The current time
 //      QDateTime now = QDateTime::currentDateTime();
-      QDateTime now = QDateTime::fromMSecsSinceEpoch(m_ComData->BeginTime);
+      QDateTime now = QDateTime::fromMSecsSinceEpoch(m_ComData->BeginTime +  m_ComData->RunningCount);
       m_ComData->lastTime = now;      // 更新接收时间
       // We need the currentTime in millisecond resolution
       double currentTime = Chart::chartTime2(now.toTime_t())
