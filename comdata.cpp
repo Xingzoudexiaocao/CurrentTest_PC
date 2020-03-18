@@ -23,6 +23,13 @@ ComData::ComData()
 //    memset(&updataFile, 0x00, sizeof(updataFile));
     updataFileLen = 0;
 
+    if(!ReadData(IS_VERIFIED))
+    {
+        qDebug() << "读取是否校验值失败";
+        SettingIsVerified = true;     // 初始化 已校验模式
+        WriteData(IS_VERIFIED);
+    }
+    qDebug() << "SettingIsVerified = " << SettingIsVerified;
     if(!ReadData(AVERAGE_VALUE))
     {
         qDebug() << "读取平均值失败";
@@ -33,7 +40,7 @@ ComData::ComData()
     if(!ReadData(BATTERY_CAPACITY_VALUE))
     {
         qDebug() << "读取电池容量失败";
-        SettingBatteryCapacity = 5000;      // 初始化5000mAh
+        SettingBatteryCapacity = 5000.0;      // 初始化5000mAh
         WriteData(BATTERY_CAPACITY_VALUE);
     }
     qDebug() << "SettingAverageTime = " << SettingBatteryCapacity;
@@ -76,6 +83,10 @@ bool ComData::WriteData(int dataI)
 
     switch(dataI)
     {
+        case IS_VERIFIED:
+            app.setValue("is_verified_value", SettingIsVerified);
+            return 1;
+        break;
         case AVERAGE_VALUE:
             app.setValue("average_value", SettingAverageTime);
             return 1;
@@ -99,6 +110,15 @@ bool ComData::ReadData(int dataI)
 
     switch(dataI)
     {
+        case IS_VERIFIED:
+            if(app.value("is_verified_value").toString().length())
+            {
+                SettingIsVerified = app.value("is_verified_value").toBool();
+                return 1;
+            }
+            else
+                return 0;
+        break;
         case AVERAGE_VALUE:
             if(app.value("average_value").toString().length())
             {
@@ -111,7 +131,7 @@ bool ComData::ReadData(int dataI)
         case BATTERY_CAPACITY_VALUE:
             if(app.value("battery_capacity_value").toString().length())
             {
-                SettingBatteryCapacity = app.value("battery_capacity_value").toLongLong();
+                SettingBatteryCapacity = app.value("battery_capacity_value").toDouble();
                 return 1;
             }
             else

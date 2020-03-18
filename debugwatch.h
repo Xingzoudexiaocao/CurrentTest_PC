@@ -10,6 +10,7 @@
 #include "comdata.h"
 #include "usb_hid.h"
 #include <QButtonGroup>
+#include <QCheckBox>
 
 class DebugWatch : public QMainWindow
 {
@@ -27,6 +28,7 @@ private slots:
     void onBtnOFC();
     void onBtnFSC();
     void buttonGroupSlot(int);
+    void onClickBox(bool);
 
 private:
     void closeEvent ( QCloseEvent*);

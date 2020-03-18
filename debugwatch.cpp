@@ -27,6 +27,14 @@ DebugWatch::DebugWatch(QWidget *parent, ComData *comD, USB_HID *hid) : QMainWind
     btnWriteFlash->setGeometry(6, 120, 150, 40);
     btnWriteFlash->setStyleSheet("QPushButton { text-align:left; padding:5px; font-size:24px;}");
     connect(btnWriteFlash, SIGNAL(clicked(bool)), SLOT(onBtnWriteFlash()));
+    // 是否按校验值计算电流
+    QCheckBox *boxIsVerified = new QCheckBox("是否按校验值计算电流", this);
+    boxIsVerified->setGeometry(160, 120, 150, 40);
+    if(m_ComData->SettingIsVerified)
+        boxIsVerified->setChecked(true);
+    else
+        boxIsVerified->setChecked(false);
+    connect(boxIsVerified, SIGNAL(clicked(bool)), SLOT(onClickBox(bool)));
     // Run push button
     QPushButton *btnOFC = new QPushButton("校准偏移", this);
     btnOFC->setGeometry(6, 200, 150, 40);
@@ -179,4 +187,11 @@ void DebugWatch::buttonGroupSlot(int level)
     sendP[4] = level + 0x10;
     qDebug() << "Calibrate Button Group" << level;
     m_UsbHid->SendUSB(sendP, 32);   // 使用USB发送数据
+}
+
+void DebugWatch::onClickBox(bool cmd)
+{
+//    qDebug() << "测试CheckBox！" << cmd;
+    m_ComData->SettingIsVerified = cmd;     // 校验模式
+    m_ComData->WriteData(IS_VERIFIED);
 }

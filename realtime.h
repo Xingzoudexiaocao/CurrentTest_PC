@@ -27,6 +27,8 @@
 #include "usb_send_thread.h"
 #include "about.h"
 #include "historyview.h"
+#include <QSpinBox>
+#include <QLineEdit>
 
 class RealTime : public QWidget
 {
@@ -104,6 +106,9 @@ private:
 
     HistoryView *historyView;
 
+    QSpinBox *averageValue;
+    QSpinBox *batteryCapacity;
+
     void drawChart(QChartViewer *viewer, int index);           // Draw chart
     void trackLineLabel(XYChart *c, int mouseX, int index);    // Draw track cursor
     void updateControls(QChartViewer *viewer, QScrollBar *bar);      // Update other controls as viewport changes
@@ -140,6 +145,9 @@ private slots:
     void UpdataOpen();
     void UpdataSend();
     void HistoryOpen();
+
+    void slotAverageValue(int);
+    void slotBatteryValue(int);
 
 public slots:
     void m_get_USB_Data(QDateTime, double, unsigned char, unsigned char);

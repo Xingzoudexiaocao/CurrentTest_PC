@@ -48,6 +48,7 @@ union d_And_c
 };
 
 typedef enum{
+    IS_VERIFIED,
     AVERAGE_VALUE,
     BATTERY_CAPACITY_VALUE,
     ALL_DATA
@@ -87,8 +88,10 @@ public:
     double AverageVolMinute[60];        // 每个一分钟平均电压值，最多60分钟
     double AverageCurMinute[60];        // 每个一分钟平均电流值，最多60分钟
     qint64 AverageMinuteCount;          // 每个一分钟计数
+    bool SettingIsVerified;             // 是否已校验
     qint64 SettingAverageTime;          // 设定的平均值计算时间
-    qint64 SettingBatteryCapacity;      // 设定的电池容量
+    double SettingBatteryCapacity;      // 设定的电池容量
+    double UseringBatteryCapacity;      // 已使用电池容量
     // 串口收发数据头码
     unsigned long long headerLength;
     unsigned char *headerC; //   -89, 89, 62, -67 = (0xA7, 0x59, 0x3E, 0xBD)

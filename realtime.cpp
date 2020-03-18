@@ -582,6 +582,32 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     updataTips->setEnabled(false);
     updataBar->setEnabled(false);
 
+    QLabel *averageInfo = new QLabel(frame_2_updata);
+    averageInfo->setGeometry(10, 220, 300, 40);
+    averageInfo->setStyleSheet("QLabel {font-family:arial; text-align:left; padding:2px; font-size:24px;}");
+    averageInfo->setText("平均值测量时间:          分钟");
+    averageValue = new QSpinBox(frame_2_updata);
+    averageValue->setGeometry(200, 225, 60, 30);
+    averageValue->setMinimum(1);
+    averageValue->setMaximum(60);
+    averageValue->setSingleStep(1);
+    averageValue->setFont(font);
+    averageValue->setValue(m_ComData->SettingAverageTime);
+    connect(averageValue, SIGNAL(valueChanged(int)), SLOT(slotAverageValue(int)));
+
+    QLabel *batteryCapacityInfo = new QLabel(frame_2_updata);
+    batteryCapacityInfo->setGeometry(400, 220, 300, 40);
+    batteryCapacityInfo->setStyleSheet("QLabel {font-family:arial; text-align:left; padding:2px; font-size:24px;}");
+    batteryCapacityInfo->setText("电池容量:                mAh");
+    batteryCapacity = new QSpinBox(frame_2_updata);
+    batteryCapacity->setGeometry(520, 225, 100, 30);
+    batteryCapacity->setMinimum(1000);
+    batteryCapacity->setMaximum(50000);
+    batteryCapacity->setSingleStep(1000);
+    batteryCapacity->setFont(font);
+    batteryCapacity->setValue(m_ComData->SettingBatteryCapacity);
+    connect(batteryCapacity, SIGNAL(valueChanged(int)), SLOT(slotBatteryValue(int)));
+
     QFrame *frameTop = new QFrame(this);
     frameTop->setGeometry(800, 4, 275, 30);
 //    frame->setStyleSheet("background-color:white");
@@ -2044,3 +2070,14 @@ void RealTime::HistoryOpen()
     historyView->LoadingData(fileName);     // 更新表格数据
 }
 
+void RealTime::slotAverageValue(int val)
+{
+    m_ComData->SettingAverageTime = val;
+    m_ComData->WriteData(AVERAGE_VALUE);
+}
+
+void RealTime::slotBatteryValue(int val)
+{
+    m_ComData->SettingBatteryCapacity = val;
+    m_ComData->WriteData(BATTERY_CAPACITY_VALUE);
+}
