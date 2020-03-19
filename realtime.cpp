@@ -184,7 +184,8 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     buf1_QL->setFont(font_VAW);
     buf1_QL->setAlignment(Qt::AlignHCenter);
     buf1_QL->setFrameShape(QFrame::NoFrame);
-    buf1_QL->setText(QString::number(0, 'f', 3));  // 初始化显示0
+    buf1_QL->setText("-");  // 初始化显示-
+//    buf1_QL->setText(QString::number(0, 'f', 3));  // 初始化显示0
     QLabel *avg_V = new QLabel(frame_4);
     avg_V->setGeometry(6 + 190, 30, 48, 80);
     avg_V->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:30px; color:#00cc00; }");
@@ -196,7 +197,8 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     buf2_QL->setFont(font_VAW);
     buf2_QL->setAlignment(Qt::AlignHCenter);
     buf2_QL->setFrameShape(QFrame::NoFrame);
-    buf2_QL->setText(QString::number(0, 'f', 3));  // 初始化显示0
+    buf2_QL->setText("-");  // 初始化显示-
+//    buf2_QL->setText(QString::number(0, 'f', 3));  // 初始化显示0
     m_averageA = new QLabel(frame_4);
     m_averageA->setGeometry(6 + 190, 90, 48, 80);
     m_averageA->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:30px; color:blue; }");
@@ -208,7 +210,8 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     buf3_QL->setFont(font_VAW);
     buf3_QL->setAlignment(Qt::AlignHCenter);
     buf3_QL->setFrameShape(QFrame::NoFrame);
-    buf3_QL->setText(QString::number(0, 'f', 2));  // 初始化显示0
+    buf3_QL->setText("-");  // 初始化显示-
+//    buf3_QL->setText(QString::number(0, 'f', 2));  // 初始化显示0
     QLabel *avg_W = new QLabel(frame_4);
     avg_W->setGeometry(6 + 170, 150, 68, 80);
     avg_W->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:30px; color:black; }");
@@ -224,20 +227,63 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     QLabel *totalCapacity = new QLabel(frame_6);
     totalCapacity->setGeometry(0, 40, 250, 40);
     totalCapacity->setStyleSheet("QLabel {font-family:arial; text-align:left; padding:2px; font-size:24px;}");
-    totalCapacity->setText("总容量：");
+    totalCapacity->setText("总容量：             mAh");
+    bTotalCap = new QLabel(frame_6);
+    bTotalCap->setGeometry(110, 40 + 3, 80, 40);
+//    bTotalCap->setStyleSheet("QLabel {font-family:arial; text-align:left; padding:2px; font-size:24px;}");
+    bTotalCap->setStyleSheet("QLabel { text-align:left; padding:0px; font-size:30px; color:black; }");
+    bTotalCap->setFont(font_VAW);
+    bTotalCap->setAlignment(Qt::AlignLeft);
+    bTotalCap->setFrameShape(QFrame::NoFrame);
+    bTotalCap->setText(QString::number(m_ComData->SettingBatteryCapacity));
     QLabel *remainCapacity = new QLabel(frame_6);
     remainCapacity->setGeometry(0, 80, 250, 40);
     remainCapacity->setStyleSheet("QLabel {font-family:arial; text-align:left; padding:2px; font-size:24px;}");
     remainCapacity->setText("剩余容量：");
+    bRemainCap = new QLabel(frame_6);
+    bRemainCap->setGeometry(140, 80 + 3, 100, 40);
+//    bRemainCap->setStyleSheet("QLabel {font-family:arial; text-align:left; padding:2px; font-size:24px;}");
+    bRemainCap->setStyleSheet("QLabel { text-align:left; padding:0px; font-size:30px; color:black; }");
+    bRemainCap->setFont(font_VAW);
+    bRemainCap->setAlignment(Qt::AlignLeft);
+    bRemainCap->setFrameShape(QFrame::NoFrame);
+    bRemainCap->setText("100%");
     QLabel *workingTime = new QLabel(frame_6);
     workingTime->setGeometry(0, 120, 250, 40);
     workingTime->setStyleSheet("QLabel {font-family:arial; text-align:left; padding:2px; font-size:24px;}");
-    workingTime->setText("运行时间：");
+    workingTime->setText("运行时间：      时    分");
+    bRunningTimeHour = new QLabel(frame_6);
+    bRunningTimeHour->setGeometry(120 + 30, 120 + 4, 80, 40);
+    bRunningTimeHour->setStyleSheet("QLabel { text-align:left; padding:0px; font-size:30px; color:black; }");
+    bRunningTimeHour->setFont(font_VAW);
+    bRunningTimeHour->setAlignment(Qt::AlignLeft);
+    bRunningTimeHour->setFrameShape(QFrame::NoFrame);
+    bRunningTimeHour->setText("-");
+    bRunningTimeMinute = new QLabel(frame_6);
+    bRunningTimeMinute->setGeometry(190 + 15, 120 + 4, 40, 40);
+    bRunningTimeMinute->setStyleSheet("QLabel { text-align:left; padding:0px; font-size:30px; color:black; }");
+    bRunningTimeMinute->setFont(font_VAW);
+    bRunningTimeMinute->setAlignment(Qt::AlignLeft);
+    bRunningTimeMinute->setFrameShape(QFrame::NoFrame);
+    bRunningTimeMinute->setText("-");
     QLabel *remainTime = new QLabel(frame_6);
     remainTime->setGeometry(0, 160, 250, 40);
     remainTime->setStyleSheet("QLabel {font-family:arial; text-align:left; padding:2px; font-size:24px;}");
-    remainTime->setText("剩余时间：");
-
+    remainTime->setText("剩余时间：      时    分");
+    bRemainTimeHour = new QLabel(frame_6);
+    bRemainTimeHour->setGeometry(120 + 30, 160 + 4, 80, 40);
+    bRemainTimeHour->setStyleSheet("QLabel { text-align:left; padding:0px; font-size:30px; color:black; }");
+    bRemainTimeHour->setFont(font_VAW);
+    bRemainTimeHour->setAlignment(Qt::AlignLeft);
+    bRemainTimeHour->setFrameShape(QFrame::NoFrame);
+    bRemainTimeHour->setText("-");
+    bRemainTimeMinute = new QLabel(frame_6);
+    bRemainTimeMinute->setGeometry(190 + 15, 160 + 4, 40, 40);
+    bRemainTimeMinute->setStyleSheet("QLabel { text-align:left; padding:0px; font-size:30px; color:black; }");
+    bRemainTimeMinute->setFont(font_VAW);
+    bRemainTimeMinute->setAlignment(Qt::AlignLeft);
+    bRemainTimeMinute->setFrameShape(QFrame::NoFrame);
+    bRemainTimeMinute->setText("-");
 
     QFrame *frame_5 = new QFrame(frame);
     frame_5->setGeometry(0, 560, 250, 280);
@@ -526,6 +572,22 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     secondLine2->setFrameShape(QFrame::HLine);
     secondLine2->setFrameShadow(QFrame::Sunken);
     secondLine2->raise();
+
+    QFrame *ThirdLine1 = new QFrame(frame_2_updata);
+    ThirdLine1->setGeometry(QRect(5, 650, 340, 2));
+    ThirdLine1->setFrameShape(QFrame::HLine);
+    ThirdLine1->setFrameShadow(QFrame::Sunken);
+    ThirdLine1->raise();
+    QLabel *ThirdTitle = new QLabel(frame_2_updata);
+    ThirdTitle->setGeometry(360, 650-20, 100, 40);
+    ThirdTitle->setStyleSheet("QLabel {font-family:arial; text-align:left; font-size:20px;}");
+//    ThirdTitle->setAttribute(Qt::WA_TranslucentBackground);
+    ThirdTitle->setText("关于我们");    // SerialNumber
+    QFrame *ThirdLine2 = new QFrame(frame_2_updata);
+    ThirdLine2->setGeometry(QRect(450, 650, 350, 2));
+    ThirdLine2->setFrameShape(QFrame::HLine);
+    ThirdLine2->setFrameShadow(QFrame::Sunken);
+    ThirdLine2->raise();
 
     QLabel *appInfo = new QLabel(frame_2_updata);
     appInfo->setGeometry(10, 30, 130, 50);
@@ -1404,6 +1466,15 @@ void RealTime::onConnectUSB()
             usb_str3->setText(m_UsbHid->str_SerialNumber);
             m_Tips->setText("");
             m_Error->setText("");
+            buf1_QL->setText("-");  // 初始化显示-
+            buf2_QL->setText("-");  // 初始化显示-
+            buf3_QL->setText("-");  // 初始化显示-
+            bRunningTimeHour->setText("-");
+            bRunningTimeMinute->setText("-");
+            bRemainTimeHour->setText("-");
+            bRemainTimeMinute->setText("-");
+            bRemainCap->setText("100%");
+            m_Energy->setText(QString::number(0, 'f', 2));  // 初始化显示0
     //        download->setEnabled(false);
             // 设置更新进度条不可见
     //        updataTips->setVisible(false);
@@ -1580,14 +1651,6 @@ void RealTime::m_get_Version_Length(unsigned long long ver, unsigned long long l
 
 void RealTime::showVAW(double v, double mA)
 {
-    // 计算平均值
-    double sum_V = 0; double sum_A = 0;
-    for (unsigned int i = 0; i < m_ComData->d_currentIndex; i++) {
-        sum_V += m_ComData->d_dataSeriesV[i];
-        sum_A += m_ComData->d_dataSeriesA[i];
-    }
-    m_ComData->d_Avg_V = sum_V / m_ComData->d_currentIndex;
-    m_ComData->d_Avg_A = sum_A / m_ComData->d_currentIndex;
     cntDisplay++;
     if(cntDisplay >= 10)
     {
@@ -1607,6 +1670,10 @@ void RealTime::showVAW(double v, double mA)
         double bufPower = v * mA / 1000;
         m_Power->setText(QString::number(bufPower, 'f', 2));
     }
+}
+
+void RealTime::showAverage(void)
+{
     // 更新平均值显示
     buf1_QL->setText(QString::number(m_ComData->d_Avg_V, 'f', 3));
     if(m_ComData->d_Avg_A < 1) {
@@ -1618,6 +1685,7 @@ void RealTime::showVAW(double v, double mA)
     }
     double bufPower_2 = m_ComData->d_Avg_V * m_ComData->d_Avg_A / 1000;
     buf3_QL->setText(QString::number(bufPower_2, 'f', 3));
+
 }
 
 void RealTime::linkUs(QString str)
@@ -1983,6 +2051,89 @@ void RealTime::send_CMD(unsigned char cmd)
 
 void RealTime::writeSQL(qint64 time, double vol, double cur)
 {
+    static double voltageSum = 0;
+    static double currentSum = 0;
+    static qint64 countSum = 0;
+
+    static double energySum = 0;
+    static double currentSumSecond = 0;
+
+    if(m_ComData->RunningCount <= 1)
+    {
+        voltageSum = 0; currentSum = 0; countSum = 0;
+        energySum = 0; currentSumSecond = 0;
+        return;
+    }
+
+    currentSumSecond += cur / 1000;         // mA转A
+    if(0 == m_ComData->RunningCount % 1000)
+    {
+        energySum += (currentSumSecond / 1000) / 3600;
+        m_Energy->setText(QString::number(energySum, 'f', 2));
+        if(energySum >= m_ComData->SettingBatteryCapacity * 0.8)
+            energySum = m_ComData->SettingBatteryCapacity * 0.8;
+        bRemainCap->setText(QString::number((m_ComData->SettingBatteryCapacity * 0.8 - energySum) / m_ComData->SettingBatteryCapacity * 125, 'f', 2) + "%");
+    }
+
+    voltageSum += vol;  currentSum += cur;
+    if(++countSum >= 60000)
+    {
+        voltageSum /= countSum; currentSum /= countSum; countSum = 0;
+        m_ComData->AverageVolMinute[m_ComData->AverageMinuteCount] = voltageSum;
+        m_ComData->AverageCurMinute[m_ComData->AverageMinuteCount] = currentSum;
+        m_ComData->AverageMinuteCount++;
+        if(m_ComData->AverageMinuteCount >= 60)
+        {
+            m_ComData->AverageMinuteCount = 60;
+            ComData::shiftData_D(m_ComData->AverageVolMinute, sizeof(m_ComData->AverageVolMinute), voltageSum);
+            ComData::shiftData_D(m_ComData->AverageCurMinute, sizeof(m_ComData->AverageCurMinute), currentSum);
+        }
+        voltageSum = 0;  currentSum = 0;
+        // 更新平均值UI
+        if(m_ComData->SettingAverageTime <= m_ComData->AverageMinuteCount)
+        {
+            double bufV = 0, bufA = 0;
+            for (int i = m_ComData->AverageMinuteCount - m_ComData->SettingAverageTime; i < m_ComData->SettingAverageTime; i++) {
+                bufV += m_ComData->AverageVolMinute[m_ComData->AverageMinuteCount - m_ComData->SettingAverageTime + i];
+                bufA += m_ComData->AverageCurMinute[m_ComData->AverageMinuteCount - m_ComData->SettingAverageTime + i];
+            }
+            m_ComData->d_Avg_V = bufV / m_ComData->SettingAverageTime;
+            m_ComData->d_Avg_A = bufA / m_ComData->SettingAverageTime;
+            showAverage();
+        }
+        // 更新电池信息UI
+        qint64 runningMinute =  m_ComData->RunningCount / 60000;
+        bRunningTimeHour->setText(QString::number(runningMinute / 60));
+        bRunningTimeMinute->setText(QString::number(runningMinute % 60));
+        if(runningMinute % 60 < 10)
+            bRunningTimeMinute->setGeometry(190 + 15, 120 + 4, 40, 40);
+        else
+            bRunningTimeMinute->setGeometry(190, 120 + 4, 40, 40);
+        if(runningMinute / 60 >= 100)
+            bRunningTimeHour->setGeometry(120, 120 + 4, 80, 40);
+        else if(runningMinute / 60 < 10)
+            bRunningTimeHour->setGeometry(120 + 30, 120 + 4, 80, 40);
+        else
+            bRunningTimeHour->setGeometry(120 + 15, 120 + 4, 80, 40);
+        qint64 remainMinute = 0;
+        double curAvg = 0;
+        for (int i = 0; i < m_ComData->AverageMinuteCount; i++) {
+            curAvg += m_ComData->AverageCurMinute[i];
+        }
+        curAvg /= m_ComData->AverageMinuteCount;
+        remainMinute = (m_ComData->SettingBatteryCapacity * 0.8 - energySum) / curAvg * 60;
+        if(remainMinute % 60 < 10)
+            bRemainTimeMinute->setGeometry(190 + 15, 160 + 4, 40, 40);
+        else
+            bRemainTimeMinute->setGeometry(190, 160 + 4, 40, 40);
+        if(remainMinute / 60 >= 100)
+            bRemainTimeHour->setGeometry(120, 160 + 4, 80, 40);
+        else if(remainMinute / 60 < 10)
+            bRemainTimeHour->setGeometry(120 + 30, 160 + 4, 80, 40);
+        else
+            bRemainTimeHour->setGeometry(120 + 15, 160 + 4, 80, 40);
+    }
+
 //     qDebug() << "测试数据库读写。" << QDir::currentPath();
 
 //     QDateTime timeQ = QDateTime::currentDateTime();   //获取当前时间
@@ -2080,4 +2231,5 @@ void RealTime::slotBatteryValue(int val)
 {
     m_ComData->SettingBatteryCapacity = val;
     m_ComData->WriteData(BATTERY_CAPACITY_VALUE);
+    bTotalCap->setText(QString::number(m_ComData->SettingBatteryCapacity));
 }

@@ -109,6 +109,13 @@ private:
     QSpinBox *averageValue;
     QSpinBox *batteryCapacity;
 
+    QLabel *bTotalCap;          // 总容量
+    QLabel *bRemainCap;         // 剩余容量
+    QLabel *bRunningTimeHour;       // 运行时间
+    QLabel *bRunningTimeMinute;       // 运行时间
+    QLabel *bRemainTimeHour;        // 剩余时间
+    QLabel *bRemainTimeMinute;        // 剩余时间
+
     void drawChart(QChartViewer *viewer, int index);           // Draw chart
     void trackLineLabel(XYChart *c, int mouseX, int index);    // Draw track cursor
     void updateControls(QChartViewer *viewer, QScrollBar *bar);      // Update other controls as viewport changes
@@ -137,6 +144,7 @@ private slots:
 //    void onReadUSB();    // 接收数据方法
     void CreateData();
     void showVAW(double v, double mA);
+    void showAverage(void);
     void onBtnPlay();
     void onBtnPause();
     void onBtnDownload();
