@@ -18,6 +18,7 @@ ComData::ComData()
     qDebug() << "ComData构造，分配内存空间。";
 
     ClearData();
+    d_currentIndex = 1;     // 默认为1，这样会显示波形图
 
     updataFile = new unsigned char[256000];     // 最大256k
 //    memset(&updataFile, 0x00, sizeof(updataFile));
@@ -64,7 +65,7 @@ void ComData::ClearData(void)
     // 初始化平均值
     d_Avg_V = 0;
     d_Avg_A = 0;
-    d_currentIndex = 1;     // 默认为1，这样会显示波形图
+    d_currentIndex = 0;     // 清除数据为0，这样会正常显示波形图
 
     BeginTime = QDateTime::currentDateTime().toMSecsSinceEpoch();
     lastTime = QDateTime::fromMSecsSinceEpoch(BeginTime);      // 更新接收时间

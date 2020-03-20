@@ -2122,6 +2122,8 @@ void RealTime::writeSQL(qint64 time, double vol, double cur)
         }
         curAvg /= m_ComData->AverageMinuteCount;
         remainMinute = (m_ComData->SettingBatteryCapacity * 0.8 - energySum) / curAvg * 60;
+        if(remainMinute > 60000 - 1)
+            remainMinute = 60000 - 1;
         bRemainTimeHour->setText(QString::number(remainMinute / 60));
         bRemainTimeMinute->setText(QString::number(remainMinute % 60));
         if(remainMinute % 60 < 10)
