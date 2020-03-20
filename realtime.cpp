@@ -2093,7 +2093,7 @@ void RealTime::writeSQL(qint64 time, double vol, double cur)
         if(m_ComData->SettingAverageTime <= m_ComData->AverageMinuteCount)
         {
             double bufV = 0, bufA = 0;
-            for (int i = m_ComData->AverageMinuteCount - m_ComData->SettingAverageTime; i < m_ComData->SettingAverageTime; i++) {
+            for (int i = m_ComData->AverageMinuteCount - m_ComData->SettingAverageTime; i < m_ComData->AverageMinuteCount; i++) {
                 bufV += m_ComData->AverageVolMinute[m_ComData->AverageMinuteCount - m_ComData->SettingAverageTime + i];
                 bufA += m_ComData->AverageCurMinute[m_ComData->AverageMinuteCount - m_ComData->SettingAverageTime + i];
             }
@@ -2122,6 +2122,8 @@ void RealTime::writeSQL(qint64 time, double vol, double cur)
         }
         curAvg /= m_ComData->AverageMinuteCount;
         remainMinute = (m_ComData->SettingBatteryCapacity * 0.8 - energySum) / curAvg * 60;
+        bRemainTimeHour->setText(QString::number(remainMinute / 60));
+        bRemainTimeMinute->setText(QString::number(remainMinute % 60));
         if(remainMinute % 60 < 10)
             bRemainTimeMinute->setGeometry(190 + 15, 160 + 4, 40, 40);
         else
