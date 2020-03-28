@@ -2058,17 +2058,21 @@ void RealTime::writeSQL(qint64 time, double vol, double cur)
     static double energySum = 0;
     static double currentSumSecond = 0;
 
-    if(m_ComData->RunningCount <= 1)
+    qDebug() << "m_ComData->RunningCount = " << m_ComData->RunningCount;
+
+    if(m_ComData->RunningCount <= 2)
     {
+        qDebug() << "m_ComData->RunningCount清零";
         voltageSum = 0; currentSum = 0; countSum = 0;
         energySum = 0; currentSumSecond = 0;
         return;
     }
 
-    currentSumSecond += cur / 1000;         // mA转A
+    currentSumSecond += cur;         // mA
     if(0 == m_ComData->RunningCount % 1000)
     {
         energySum += (currentSumSecond / 1000) / 3600;
+        currentSumSecond = 0;
         m_Energy->setText(QString::number(energySum, 'f', 2));
         if(energySum >= m_ComData->SettingBatteryCapacity * 0.8)
             energySum = m_ComData->SettingBatteryCapacity * 0.8;
@@ -2079,8 +2083,6 @@ void RealTime::writeSQL(qint64 time, double vol, double cur)
     if(++countSum >= 60000)
     {
         voltageSum /= countSum; currentSum /= countSum; countSum = 0;
-        m_ComData->AverageVolMinute[m_ComData->AverageMinuteCount] = voltageSum;
-        m_ComData->AverageCurMinute[m_ComData->AverageMinuteCount] = currentSum;
         m_ComData->AverageMinuteCount++;
         if(m_ComData->AverageMinuteCount >= 60)
         {
@@ -2088,20 +2090,26 @@ void RealTime::writeSQL(qint64 time, double vol, double cur)
             ComData::shiftData_D(m_ComData->AverageVolMinute, sizeof(m_ComData->AverageVolMinute), voltageSum);
             ComData::shiftData_D(m_ComData->AverageCurMinute, sizeof(m_ComData->AverageCurMinute), currentSum);
         }
+        else
+        {
+            m_ComData->AverageVolMinute[m_ComData->AverageMinuteCount - 1] = voltageSum;
+            m_ComData->AverageCurMinute[m_ComData->AverageMinuteCount - 1] = currentSum;
+        }
         voltageSum = 0;  currentSum = 0;
         // 更新平均值UI
         if(m_ComData->SettingAverageTime <= m_ComData->AverageMinuteCount)
         {
             double bufV = 0, bufA = 0;
             for (int i = m_ComData->AverageMinuteCount - m_ComData->SettingAverageTime; i < m_ComData->AverageMinuteCount; i++) {
-                bufV += m_ComData->AverageVolMinute[m_ComData->AverageMinuteCount - m_ComData->SettingAverageTime + i];
-                bufA += m_ComData->AverageCurMinute[m_ComData->AverageMinuteCount - m_ComData->SettingAverageTime + i];
+                bufV += m_ComData->AverageVolMinute[i];
+                bufA += m_ComData->AverageCurMinute[i];
             }
             m_ComData->d_Avg_V = bufV / m_ComData->SettingAverageTime;
             m_ComData->d_Avg_A = bufA / m_ComData->SettingAverageTime;
             showAverage();
         }
         // 更新电池信息UI
+         qDebug() << "m_ComData->RunningCount" << m_ComData->RunningCount;
         qint64 runningMinute =  m_ComData->RunningCount / 60000;
         bRunningTimeHour->setText(QString::number(runningMinute / 60));
         bRunningTimeMinute->setText(QString::number(runningMinute % 60));
