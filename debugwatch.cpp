@@ -27,9 +27,10 @@ DebugWatch::DebugWatch(QWidget *parent, ComData *comD, USB_HID *hid) : QMainWind
     btnWriteFlash->setGeometry(6, 120, 150, 40);
     btnWriteFlash->setStyleSheet("QPushButton { text-align:left; padding:5px; font-size:24px;}");
     connect(btnWriteFlash, SIGNAL(clicked(bool)), SLOT(onBtnWriteFlash()));
+    btnWriteFlash->setEnabled(false);
     // 是否按校验值计算电流
     QCheckBox *boxIsVerified = new QCheckBox("是否按校验值计算电流", this);
-    boxIsVerified->setGeometry(160, 120, 150, 40);
+    boxIsVerified->setGeometry(160, 120, 200, 40);
     if(m_ComData->SettingIsVerified)
         boxIsVerified->setChecked(true);
     else
@@ -81,7 +82,18 @@ DebugWatch::DebugWatch(QWidget *parent, ComData *comD, USB_HID *hid) : QMainWind
     m_ButtonGroup->addButton(btnLevel2Min, 3); m_ButtonGroup->addButton(btnLevel2Max, 4);
     m_ButtonGroup->addButton(btnLevel3Min, 5); m_ButtonGroup->addButton(btnLevel3Max, 6);
     m_ButtonGroup->addButton(btnLevel4Min, 7); m_ButtonGroup->addButton(btnLevel4Max, 8);
+    btnLevel1Min->setEnabled(false); btnLevel1Max->setEnabled(false);
     connect(m_ButtonGroup,SIGNAL(buttonClicked(int)),this,SLOT(buttonGroupSlot(int)));
+
+    m_Level1Verify_Min = new QLabel(this);
+    m_Level1Verify_Max = new QLabel(this);
+    m_Level2Verify_Min = new QLabel(this);
+    m_Level2Verify_Max = new QLabel(this);
+    m_Level3Verify_Min = new QLabel(this);
+    m_Level3Verify_Max = new QLabel(this);
+    m_Level4Verify_Min = new QLabel(this);
+    m_Level4Verify_Max = new QLabel(this);
+    receive_Verify_Value();
 }
 
 DebugWatch::~DebugWatch()
@@ -194,4 +206,37 @@ void DebugWatch::onClickBox(bool cmd)
 //    qDebug() << "测试CheckBox！" << cmd;
     m_ComData->SettingIsVerified = cmd;     // 校验模式
     m_ComData->WriteData(IS_VERIFIED);
+}
+
+void DebugWatch::receive_Verify_Value(void)
+{
+    qDebug() << "接收校验数据" << m_ComData->d_verifyValue.Lelve_2_min;
+    // 更新1档提示
+    m_Level1Verify_Min->setGeometry(6, 450, 190, 40);
+    m_Level1Verify_Min->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:18px; color:red;}");
+    m_Level1Verify_Min->setText("1档最小值：" + QString::number(m_ComData->d_verifyValue.Lelve_1_min));
+    m_Level1Verify_Max->setGeometry(200, 450, 190, 40);
+    m_Level1Verify_Max->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:18px; color:red;}");
+    m_Level1Verify_Max->setText("1档最大值：" + QString::number(m_ComData->d_verifyValue.Lelve_1_max));
+    // 2
+    m_Level2Verify_Min->setGeometry(6, 480, 190, 40);
+    m_Level2Verify_Min->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:18px; color:red;}");
+    m_Level2Verify_Min->setText("2档最小值：" + QString::number(m_ComData->d_verifyValue.Lelve_2_min));
+    m_Level2Verify_Max->setGeometry(200, 480, 190, 40);
+    m_Level2Verify_Max->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:18px; color:red;}");
+    m_Level2Verify_Max->setText("2档最大值：" + QString::number(m_ComData->d_verifyValue.Lelve_2_max));
+    // 3
+    m_Level3Verify_Min->setGeometry(6, 510, 190, 40);
+    m_Level3Verify_Min->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:18px; color:red;}");
+    m_Level3Verify_Min->setText("3档最小值：" + QString::number(m_ComData->d_verifyValue.Lelve_3_min));
+    m_Level3Verify_Max->setGeometry(200, 510, 190, 40);
+    m_Level3Verify_Max->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:18px; color:red;}");
+    m_Level3Verify_Max->setText("3档最大值：" + QString::number(m_ComData->d_verifyValue.Lelve_3_max));
+    // 4
+    m_Level4Verify_Min->setGeometry(6, 540, 190, 40);
+    m_Level4Verify_Min->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:18px; color:red;}");
+    m_Level4Verify_Min->setText("4档最小值：" + QString::number(m_ComData->d_verifyValue.Lelve_4_min));
+    m_Level4Verify_Max->setGeometry(200, 540, 190, 40);
+    m_Level4Verify_Max->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:18px; color:red;}");
+    m_Level4Verify_Max->setText("4档最大值：" + QString::number(m_ComData->d_verifyValue.Lelve_4_max));
 }

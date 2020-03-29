@@ -116,6 +116,7 @@ void MainWindow::OpenDebugWindow()
         m_Debug->setGeometry(0, 0, 400, 600);
         m_Debug->show();
         connect(demo->m_UsbReceiveThread,SIGNAL(send_Level_Num(int)),m_Debug, SLOT(receive_Level_Num(int)));
+        connect(demo->m_UsbReceiveThread,SIGNAL(get_Verify_Value()),m_Debug, SLOT(receive_Verify_Value()));
         connect(m_Debug,SIGNAL(destroyed()),this, SLOT(colseDebug()));
     }
 }

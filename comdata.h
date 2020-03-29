@@ -26,6 +26,8 @@
 #define YMODEM_NAK (0x15)
 #define YMODEM_VER_LEN (0xA3)
 #define YMODEM_TIMEOUT (0x7B)
+#define YMODEM_VALID_VALUE_1 (0x56)
+#define YMODEM_VALID_VALUE_2 (0x59)
 //#define YMODEM_CAN (0x18)
 //#define YMODEM_C (0x43)
 
@@ -40,6 +42,40 @@ typedef struct DB_WRITE_STRUCT
     double vol;
     double cur;
 } DB_WRITE_STRUCT;
+
+typedef struct DB_VERIFY_STRUCT
+{
+    quint32 Lelve_1_min;
+    quint32 Lelve_1_max;
+    quint32 Lelve_2_min;
+    quint32 Lelve_2_max;
+    quint32 Lelve_3_min;
+    quint32 Lelve_3_max;
+    quint32 Lelve_4_min;
+    quint32 Lelve_4_max;
+} DB_VERIFY_STRUCT;
+
+typedef struct DB_STANDARD_STRUCT
+{
+    double Lelve_1_min;
+    double Lelve_1_max;
+    double Lelve_2_min;
+    double Lelve_2_max;
+    double Lelve_3_min;
+    double Lelve_3_max;
+    double Lelve_4_min;
+    double Lelve_4_max;
+} DB_STANDARD_STRUCT;
+
+typedef struct DB_CALCULATE_STRUCT
+{
+    double voltageSum = 0;
+    double currentSum = 0;
+    qint64 countSum = 0;
+
+    double energySum = 0;
+    double currentSumSecond = 0;
+} DB_CALCULATE_STRUCT;
 
 union d_And_c
 {
@@ -109,6 +145,9 @@ public:
     unsigned char *updataFile;
     unsigned long long updataFileLen;
 
+    DB_VERIFY_STRUCT d_verifyValue;
+    DB_STANDARD_STRUCT d_standardValue;
+    DB_CALCULATE_STRUCT d_calculateValue;
 private:
 
 

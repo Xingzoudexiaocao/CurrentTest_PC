@@ -20,6 +20,12 @@ ComData::ComData()
     ClearData();
     d_currentIndex = 1;     // 默认为1，这样会显示波形图
 
+    memset(&d_verifyValue, 0x00, sizeof(d_verifyValue));
+    d_standardValue.Lelve_1_min = 0; d_standardValue.Lelve_1_max = 0;
+    d_standardValue.Lelve_2_min = 0; d_standardValue.Lelve_2_max = 0;
+    d_standardValue.Lelve_3_min = 1.0; d_standardValue.Lelve_3_max = 14.0;      // 3档校准最小值1mA;最大值14mA
+    d_standardValue.Lelve_4_min = 0; d_standardValue.Lelve_4_max = 0;
+
     updataFile = new unsigned char[256000];     // 最大256k
 //    memset(&updataFile, 0x00, sizeof(updataFile));
     updataFileLen = 0;
@@ -73,6 +79,7 @@ void ComData::ClearData(void)
     memset(&AverageCurMinute, 0x00, sizeof(AverageCurMinute));
     AverageMinuteCount = 0;
     RunningCount = 0;
+    memset(&d_calculateValue, 0x00, sizeof(d_calculateValue));
 
 }
 

@@ -58,6 +58,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     settingBtn->setGeometry(2, 77, 120, 35);
     settingBtn->setStyleSheet(bnt_qss1);
     settingBtn->setFont(font);
+    connect(settingBtn, &QAbstractButton::clicked, this, &RealTime::onSettingBtn);
 //    QPushButton *bbb = new QPushButton(QIcon(":/play.png"),"", frame);
 //    bbb->setGeometry(150, 8, 100, 100);
     QPixmap pixmap(":/logo.png");
@@ -1482,7 +1483,8 @@ void RealTime::onConnectUSB()
             updataTips->setEnabled(false);
             updataBar->setEnabled(false);
             // 发送读取版本号和文件长度指令
-            send_CMD(0x08);     // 读取版本号和文件长度指令
+//
+            send_CMD(0x20);     // 读取各个档位的校验值
    //     }
     }
     else
@@ -2042,6 +2044,11 @@ void RealTime::upadtaTimeOut()
 
 void RealTime::send_CMD(unsigned char cmd)
 {
+    if(m_UsbHid->dev_handle == nullptr)
+    {
+        qDebug() << "USB设备未打开！";
+        return;
+    }
     unsigned char sendP[32];
     memset(sendP, 0, sizeof (sendP));
     sendP[0] = 0xa5; sendP[1] = 0xb7; sendP[2] = 0xa5; sendP[3] = 0xb7;
@@ -2051,51 +2058,35 @@ void RealTime::send_CMD(unsigned char cmd)
 
 void RealTime::writeSQL(qint64 time, double vol, double cur)
 {
-    static double voltageSum = 0;
-    static double currentSum = 0;
-    static qint64 countSum = 0;
 
-    static double energySum = 0;
-    static double currentSumSecond = 0;
-
-    qDebug() << "m_ComData->RunningCount = " << m_ComData->RunningCount;
-
-    if(m_ComData->RunningCount <= 2)
-    {
-        qDebug() << "m_ComData->RunningCount清零";
-        voltageSum = 0; currentSum = 0; countSum = 0;
-        energySum = 0; currentSumSecond = 0;
-        return;
-    }
-
-    currentSumSecond += cur;         // mA
+    m_ComData->d_calculateValue.currentSumSecond += cur;         // mA
     if(0 == m_ComData->RunningCount % 1000)
     {
-        energySum += (currentSumSecond / 1000) / 3600;
-        currentSumSecond = 0;
-        m_Energy->setText(QString::number(energySum, 'f', 2));
-        if(energySum >= m_ComData->SettingBatteryCapacity * 0.8)
-            energySum = m_ComData->SettingBatteryCapacity * 0.8;
-        bRemainCap->setText(QString::number((m_ComData->SettingBatteryCapacity * 0.8 - energySum) / m_ComData->SettingBatteryCapacity * 125, 'f', 2) + "%");
+        m_ComData->d_calculateValue.energySum += (m_ComData->d_calculateValue.currentSumSecond / 1000) / 3600;
+        m_ComData->d_calculateValue.currentSumSecond = 0;
+        m_Energy->setText(QString::number(m_ComData->d_calculateValue.energySum, 'f', 2));
+        if(m_ComData->d_calculateValue.energySum >= m_ComData->SettingBatteryCapacity * 0.8)
+            m_ComData->d_calculateValue.energySum = m_ComData->SettingBatteryCapacity * 0.8;
+        bRemainCap->setText(QString::number((m_ComData->SettingBatteryCapacity * 0.8 - m_ComData->d_calculateValue.energySum) / m_ComData->SettingBatteryCapacity * 125, 'f', 2) + "%");
     }
 
-    voltageSum += vol;  currentSum += cur;
-    if(++countSum >= 60000)
+    m_ComData->d_calculateValue.voltageSum += vol;  m_ComData->d_calculateValue.currentSum += cur;
+    if(++m_ComData->d_calculateValue.countSum >= 60000)
     {
-        voltageSum /= countSum; currentSum /= countSum; countSum = 0;
+        m_ComData->d_calculateValue.voltageSum /= m_ComData->d_calculateValue.countSum; m_ComData->d_calculateValue.currentSum /= m_ComData->d_calculateValue.countSum; m_ComData->d_calculateValue.countSum = 0;
         m_ComData->AverageMinuteCount++;
         if(m_ComData->AverageMinuteCount >= 60)
         {
             m_ComData->AverageMinuteCount = 60;
-            ComData::shiftData_D(m_ComData->AverageVolMinute, sizeof(m_ComData->AverageVolMinute), voltageSum);
-            ComData::shiftData_D(m_ComData->AverageCurMinute, sizeof(m_ComData->AverageCurMinute), currentSum);
+            ComData::shiftData_D(m_ComData->AverageVolMinute, sizeof(m_ComData->AverageVolMinute), m_ComData->d_calculateValue.voltageSum);
+            ComData::shiftData_D(m_ComData->AverageCurMinute, sizeof(m_ComData->AverageCurMinute), m_ComData->d_calculateValue.currentSum);
         }
         else
         {
-            m_ComData->AverageVolMinute[m_ComData->AverageMinuteCount - 1] = voltageSum;
-            m_ComData->AverageCurMinute[m_ComData->AverageMinuteCount - 1] = currentSum;
+            m_ComData->AverageVolMinute[m_ComData->AverageMinuteCount - 1] = m_ComData->d_calculateValue.voltageSum;
+            m_ComData->AverageCurMinute[m_ComData->AverageMinuteCount - 1] = m_ComData->d_calculateValue.currentSum;
         }
-        voltageSum = 0;  currentSum = 0;
+        m_ComData->d_calculateValue.voltageSum = 0;  m_ComData->d_calculateValue.currentSum = 0;
         // 更新平均值UI
         if(m_ComData->SettingAverageTime <= m_ComData->AverageMinuteCount)
         {
@@ -2109,7 +2100,7 @@ void RealTime::writeSQL(qint64 time, double vol, double cur)
             showAverage();
         }
         // 更新电池信息UI
-         qDebug() << "m_ComData->RunningCount" << m_ComData->RunningCount;
+//         qDebug() << "m_ComData->RunningCount" << m_ComData->RunningCount;
         qint64 runningMinute =  m_ComData->RunningCount / 60000;
         bRunningTimeHour->setText(QString::number(runningMinute / 60));
         bRunningTimeMinute->setText(QString::number(runningMinute % 60));
@@ -2129,7 +2120,7 @@ void RealTime::writeSQL(qint64 time, double vol, double cur)
             curAvg += m_ComData->AverageCurMinute[i];
         }
         curAvg /= m_ComData->AverageMinuteCount;
-        remainMinute = (m_ComData->SettingBatteryCapacity * 0.8 - energySum) / curAvg * 60;
+        remainMinute = (m_ComData->SettingBatteryCapacity * 0.8 - m_ComData->d_calculateValue.energySum) / curAvg * 60;
         if(remainMinute > 60000 - 1)
             remainMinute = 60000 - 1;
         bRemainTimeHour->setText(QString::number(remainMinute / 60));
@@ -2244,4 +2235,11 @@ void RealTime::slotBatteryValue(int val)
     m_ComData->SettingBatteryCapacity = val;
     m_ComData->WriteData(BATTERY_CAPACITY_VALUE);
     bTotalCap->setText(QString::number(m_ComData->SettingBatteryCapacity));
+}
+
+void RealTime::onSettingBtn(void)
+{
+    send_CMD(0x08);     // 读取版本号和文件长度指令
+//    tabWidget->setTabEnabled(2, false);
+    tabWidget->setCurrentIndex(2);
 }

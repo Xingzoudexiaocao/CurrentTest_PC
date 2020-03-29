@@ -157,6 +157,8 @@ private slots:
     void slotAverageValue(int);
     void slotBatteryValue(int);
 
+    void onSettingBtn(void);
+
 public slots:
     void m_get_USB_Data(QDateTime, double, unsigned char, unsigned char);
     void m_get_Version_Length(unsigned long long, unsigned long long);

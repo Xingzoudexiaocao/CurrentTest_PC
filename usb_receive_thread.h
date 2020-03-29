@@ -21,6 +21,7 @@ signals:
     void end_Thread();
     void setAckOrNak(int);
     void get_Version_Length(unsigned long long, unsigned long long);
+    void get_Verify_Value(void);
 
 protected:
     void run();

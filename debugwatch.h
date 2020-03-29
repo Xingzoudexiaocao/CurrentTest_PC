@@ -22,6 +22,7 @@ signals:
 
 public slots:
     void receive_Level_Num(int);
+    void receive_Verify_Value();
 private slots:
     void onLedOnOffChanged(int);
     void onBtnWriteFlash();
@@ -36,6 +37,15 @@ private:
     USB_HID *m_UsbHid;
 
     QLabel *m_TestInfo;         // 测试信息
+
+    QLabel *m_Level1Verify_Min;
+    QLabel *m_Level1Verify_Max;
+    QLabel *m_Level2Verify_Min;
+    QLabel *m_Level2Verify_Max;
+    QLabel *m_Level3Verify_Min;
+    QLabel *m_Level3Verify_Max;
+    QLabel *m_Level4Verify_Min;
+    QLabel *m_Level4Verify_Max;
 };
 
 #endif // DEBUGWATCH_H
