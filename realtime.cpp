@@ -1485,6 +1485,9 @@ void RealTime::onConnectUSB()
             // 发送读取版本号和文件长度指令
 //
             send_CMD(0x20);     // 读取各个档位的校验值
+            averageValue->setEnabled(false);
+            batteryCapacity->setEnabled(false);
+            tabWidget->setCurrentIndex(0);  // 跳到第一页
    //     }
     }
     else
@@ -1514,6 +1517,8 @@ void RealTime::onDisConnectUSB()
     usb_str2->setText("-");
     usb_str3->setText("-");
     m_DbName = "";        // 清空数据文件名称
+    averageValue->setEnabled(true);
+    batteryCapacity->setEnabled(true);
 }
 
 void RealTime::thread_receive_finished()
@@ -1654,7 +1659,7 @@ void RealTime::m_get_Version_Length(unsigned long long ver, unsigned long long l
 void RealTime::showVAW(double v, double mA)
 {
     cntDisplay++;
-    if(cntDisplay >= 10)
+    if(cntDisplay >= 500)
     {
         cntDisplay = 0;     // 没10个数据更新一次显示，大约100ms
         // 更新显示

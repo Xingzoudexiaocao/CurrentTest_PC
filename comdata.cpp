@@ -22,9 +22,9 @@ ComData::ComData()
 
     memset(&d_verifyValue, 0x00, sizeof(d_verifyValue));
     d_standardValue.Lelve_1_min = 0; d_standardValue.Lelve_1_max = 0;
-    d_standardValue.Lelve_2_min = 0; d_standardValue.Lelve_2_max = 0;
-    d_standardValue.Lelve_3_min = 1.0; d_standardValue.Lelve_3_max = 14.0;      // 3档校准最小值1mA;最大值14mA
-    d_standardValue.Lelve_4_min = 0; d_standardValue.Lelve_4_max = 0;
+    d_standardValue.Lelve_2_min = 0.001; d_standardValue.Lelve_2_max = 0.15;    // 2档校准最小值0.001mA;最大值0.15mA
+    d_standardValue.Lelve_3_min = 0.2; d_standardValue.Lelve_3_max = 14.0;      // 3档校准最小值0.2mA;最大值15mA
+    d_standardValue.Lelve_4_min = 16; d_standardValue.Lelve_4_max = 1700;       // 3档校准最小值18mA;最大值1700mA
 
     updataFile = new unsigned char[256000];     // 最大256k
 //    memset(&updataFile, 0x00, sizeof(updataFile));

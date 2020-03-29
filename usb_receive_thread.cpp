@@ -139,7 +139,7 @@ void USB_Receive_Thread::HandleData(ST_REC_STRUCT *bufData)
       buf_Vol |= buf[9];
       buf_Temp |= buf[10]; buf_Temp = buf_Temp << 8;        // aADCxConvertedValues[1]温度
       buf_Temp |= buf[11];
-      dataB.d = (double)buf_Vol / 4095 * 3 * 2.5 * 1.0043;  // 1.0043为修正值
+      dataB.d = (double)buf_Vol / 4096 * 3 *2.5 ;  // 1.0043为修正值  * 1.0043
       double temperature = (1.43 - ((double)buf_Temp / 4095 * 3)) / 4.3 + 25;   // 计算温度
       unsigned int buf_Cur = 0;
       unsigned int max_Cur = 0x7FFFFF;
@@ -147,50 +147,61 @@ void USB_Receive_Thread::HandleData(ST_REC_STRUCT *bufData)
       buf_Cur |= buf[7]; buf_Cur = buf_Cur << 8;
       buf_Cur |= buf[6]; buf_Cur = buf_Cur << 8;
       buf_Cur |= buf[5];
-      if(m_ComData->SettingIsVerified)
-      {
-          double stepV = 0;     // 每一个对应的电流值
-          switch (buf[27]) {
-            case 1:
-              stepV = (m_ComData->d_standardValue.Lelve_1_max - m_ComData->d_standardValue.Lelve_1_min) / ((double)m_ComData->d_verifyValue.Lelve_1_max - (double)m_ComData->d_verifyValue.Lelve_1_min);
+
+      double stepV = 0;     // 每一个对应的电流值
+      adVol = (double)buf_Cur / (double)max_Cur * 2500;     // 获取ad采样的电压值，mv为单位
+      switch (buf[27]) {
+        case 1:
+          if((m_ComData->d_verifyValue.Lelve_1_max - m_ComData->d_verifyValue.Lelve_1_min) != 0 && m_ComData->SettingIsVerified) {
+              stepV = (m_ComData->d_standardValue.Lelve_1_max - m_ComData->d_standardValue.Lelve_1_min) / ((double)(m_ComData->d_verifyValue.Lelve_1_max - m_ComData->d_verifyValue.Lelve_1_min));
               dataC.d = m_ComData->d_standardValue.Lelve_1_min + stepV * ((double)buf_Cur - (double)m_ComData->d_verifyValue.Lelve_1_min);
-              break;
-            case 2:
-              stepV = (m_ComData->d_standardValue.Lelve_2_max - m_ComData->d_standardValue.Lelve_2_min) / ((double)m_ComData->d_verifyValue.Lelve_2_max - (double)m_ComData->d_verifyValue.Lelve_2_min);
+          } else {
+              stepV = 0;
+              dataC.d = adVol / 12.52 / 100000;
+          }
+
+          break;
+        case 2:
+          if((m_ComData->d_verifyValue.Lelve_2_max - m_ComData->d_verifyValue.Lelve_2_min) != 0  && m_ComData->SettingIsVerified) {
+              stepV = (m_ComData->d_standardValue.Lelve_2_max - m_ComData->d_standardValue.Lelve_2_min) / ((double)(m_ComData->d_verifyValue.Lelve_2_max - m_ComData->d_verifyValue.Lelve_2_min));
               dataC.d = m_ComData->d_standardValue.Lelve_2_min + stepV * ((double)buf_Cur - (double)m_ComData->d_verifyValue.Lelve_2_min);
-              break;
-            case 3:
-              stepV = (m_ComData->d_standardValue.Lelve_3_max - m_ComData->d_standardValue.Lelve_3_min) / ((double)m_ComData->d_verifyValue.Lelve_3_max - (double)m_ComData->d_verifyValue.Lelve_3_min);
+          } else {
+              stepV = 0;
+              dataC.d = adVol / 12.52 / 1000;
+          }
+
+          break;
+        case 3:
+          if((m_ComData->d_verifyValue.Lelve_3_max - m_ComData->d_verifyValue.Lelve_3_min) != 0  && m_ComData->SettingIsVerified) {
+              stepV = (m_ComData->d_standardValue.Lelve_3_max - m_ComData->d_standardValue.Lelve_3_min) / ((double)(m_ComData->d_verifyValue.Lelve_3_max - m_ComData->d_verifyValue.Lelve_3_min));
               dataC.d = m_ComData->d_standardValue.Lelve_3_min + stepV * ((double)buf_Cur - (double)m_ComData->d_verifyValue.Lelve_3_min);
+          } else {
+              stepV = 0;
+  //          if((adVol / 14) >= 20) {       // 1.003 为修正mos管电压
+  //              double dec = adVol / 14 - 20;
+  //              dataC.d = (dec / 1.001 + 20) / 10;  // 大于3mA电流需要减去mos管电压
+  //          } else {
+                dataC.d = adVol / 12.5 / 10;
+  //          }
+          }
+
               break;
             case 4:
-              stepV = (m_ComData->d_standardValue.Lelve_4_max - m_ComData->d_standardValue.Lelve_4_min) / ((double)m_ComData->d_verifyValue.Lelve_4_max - (double)m_ComData->d_verifyValue.Lelve_4_min);
-              dataC.d = m_ComData->d_standardValue.Lelve_4_min + stepV * ((double)buf_Cur - (double)m_ComData->d_verifyValue.Lelve_4_min);
+              if((m_ComData->d_verifyValue.Lelve_4_max - m_ComData->d_verifyValue.Lelve_4_min) != 0  && m_ComData->SettingIsVerified) {
+                  stepV = (m_ComData->d_standardValue.Lelve_4_max - m_ComData->d_standardValue.Lelve_4_min) / ((double)(m_ComData->d_verifyValue.Lelve_4_max - m_ComData->d_verifyValue.Lelve_4_min));
+                  dataC.d = m_ComData->d_standardValue.Lelve_4_min + stepV * ((double)buf_Cur - (double)m_ComData->d_verifyValue.Lelve_4_min);
+              } else {
+                  stepV = 0;
+      //          dataC.d = adVol / 14 / (0.1 + 0.0075);
+                  dataC.d = adVol / 12.52 / 0.1;
+              }
+
               break;
             default: dataC.d = 0; break;
           }
-      }
-      else
-      {
-          adVol = (double)buf_Cur / (double)max_Cur * 2500;     // 获取ad采样的电压值，mv为单位
-          switch (buf[27]) {
-            case 1: dataC.d = adVol / 12.52 / 100000; break;
-            case 2: dataC.d = adVol / 12.52 / 1000; break;
-            case 3:
-    //          if((adVol / 14) >= 20) {
-    //              double dec = adVol / 14 - 20;
-    //              dataC.d = (dec / 1.001 + 20) / 10;  // 大于3mA电流需要减去mos管电压
-    //          } else {
-                  dataC.d = adVol / 12.52 / 10;
-    //          }
-              break;   // 1.003 为修正mos管电压
-            case 4:
-    //          dataC.d = adVol / 14 / (0.1 + 0.0075);
-              dataC.d = adVol / 12.52 / 0.1;
-              break;       // 0.03181358
-            default: dataC.d = 0; break;
-          }
-      }
+          if(dataC.d < 0)
+              dataC.d = 0;
+
       // 更新数据到表格数据
       // The current time
 //      QDateTime now = QDateTime::currentDateTime();
