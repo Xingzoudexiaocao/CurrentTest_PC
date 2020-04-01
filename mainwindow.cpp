@@ -18,8 +18,8 @@ MainWindow::MainWindow(QWidget *parent, ComData *comD, USB_HID *hid) :
 //    QTextCodec::setCodecForLocale(codec);
 //    QTextCodec::setCodecForCStrings(codec);
 
-    setFixedSize(1100, 885);
-    setGeometry(600, 100, 1100, 885);      // 设定窗口显示坐标
+    setFixedSize(1680, 950);            // 1100, 885
+    setGeometry(100, 50, 1680, 950);      // 设定窗口显示坐标
 //    setGeometry(800, 900, 1100, 885);      // 设定窗口显示坐标
     setWindowTitle(productName);
     this->grabKeyboard();       // 捕获键盘输入

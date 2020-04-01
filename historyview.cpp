@@ -24,7 +24,7 @@ HistoryView::HistoryView(QWidget *parent) : QGraphicsView(new QGraphicsScene, pa
     chatVoltage = new QChart();
     chatVoltage->addSeries(seriesVoltage);
     chatVoltage->legend()->hide();
-    chatVoltage->setGeometry(0, 50, 810, 400);
+    chatVoltage->setGeometry(0, 460, 1360, 440);
 //    chatVoltage->setTitleFont(font);
 //    chatVoltage->setTitle("电压波形图");
     //![3]
@@ -75,7 +75,7 @@ HistoryView::HistoryView(QWidget *parent) : QGraphicsView(new QGraphicsScene, pa
     chatCurrent = new QChart();
     chatCurrent->addSeries(seriesCurrent);
     chatCurrent->legend()->hide();
-    chatCurrent->setGeometry(0, 425, 810, 400);
+    chatCurrent->setGeometry(0, 50, 1360, 440);
 //    chatCurrent->setTitleFont(font);
 //    chatCurrent->setTitle("电流波形图");
     //![3]
@@ -145,20 +145,20 @@ HistoryView::HistoryView(QWidget *parent) : QGraphicsView(new QGraphicsScene, pa
             QPushButton:Disabled {background-color: #606060; color:#CCCCCC;}";
     zoomX2 = new QPushButton(QIcon(":/zoomin.png"), "", this);
 //    zoomX2->setStyleSheet(bnt_qss1);
-    zoomX2->setGeometry(400 + 20 + 300, 60, 20, 20);
+    zoomX2->setGeometry(950 + 20 + 300, 60, 20, 20);
 //    zoomX2->setText("X2");
     connect(zoomX2,SIGNAL(clicked ()),this,SLOT(ClickZoomX2()));
 
     zoomD2 = new QPushButton(QIcon(":/zoomout.png"), "", this);
 //    zoomD2->setStyleSheet(bnt_qss1);
-    zoomD2->setGeometry(400, 60, 20, 20);
+    zoomD2->setGeometry(950, 60, 20, 20);
 //    zoomD2->setText("D2");
     connect(zoomD2,SIGNAL(clicked ()),this,SLOT(ClickZoomD2()));
 
     zoomX2->setEnabled(false);  zoomD2->setEnabled(false);
 
     zoomSlide = new QSlider(this);
-    zoomSlide->setGeometry(400 + 20, 60, 300, 20);
+    zoomSlide->setGeometry(950 + 20, 60, 300, 20);
     zoomSlide->setOrientation(Qt::Horizontal);  // 水平方向
     zoomSlide->setMinimum(1);  // 最小值
     zoomSlide->setMaximum(100);  // 最大值
@@ -172,15 +172,15 @@ HistoryView::HistoryView(QWidget *parent) : QGraphicsView(new QGraphicsScene, pa
 
     unitVol = new QLabel(this);
     unitVol->setStyleSheet("QLabel { text-align:center; font-size:20px; color:#00cc00; background-color:white;}");  //  padding:10px;
-    unitVol->setGeometry(20, 60, 100, 20);
+    unitVol->setGeometry(20, 470, 100, 20);
 
     unitCur = new QLabel(this);
     unitCur->setStyleSheet("QLabel { text-align:center; font-size:20px; color:blue; background-color:white;}");  //  padding:10px;
-    unitCur->setGeometry(20, 430, 100, 20);
+    unitCur->setGeometry(20, 60, 100, 20);
 
     markLabel = new QLabel(this);
-    markLabel->setStyleSheet("QLabel { text-align:center; font-size:16px; color:#CC0000; background-color:white;}");  //  padding:10px;
-    markLabel->setGeometry(400, 430, 600, 20);
+    markLabel->setStyleSheet("QLabel { text-align:center; font-size:24px; color:#CC0000; background-color:white;}");  //  padding:10px;
+    markLabel->setGeometry(400, 470, 600, 30);
 
 //    testLCD = new QLCDNumber(this);
 //    // 设置能显示的位数
@@ -211,7 +211,7 @@ void HistoryView::mousePressEvent(QMouseEvent *event)
 //    qDebug() << "pos[count-1] = " << seriesCurrent->points()[seriesCurrent->points().count()-1].x();
 
 //    m_x_V = chatVoltage->mapToValue(event->pos()).x();
-    if(event->pos().y() < 425)
+    if(event->pos().y() > 465)
         m_x_A = (qlonglong)chatVoltage->mapToValue(event->pos()).x();
     else
         m_x_A = (qlonglong)chatCurrent->mapToValue(event->pos()).x();
@@ -298,6 +298,8 @@ void HistoryView::LoadingData(QString fileName)
 
 void HistoryView::wheelEvent(QWheelEvent *event)
 {
+    if(!zoomSlide->isEnabled())
+        return;
     if(zoomIndex == 0)
         return;
     int numDegrees = event->delta() / 8;//滚动的角度，*8就是鼠标滚动的距离
@@ -384,11 +386,11 @@ void HistoryView::UpdateMarkLine(qlonglong index, double vol, double cur)
     seriesMarkV->attachAxis(axisVoltageY);
 
     if(cur < 1)
-        markLabel->setText(QDateTime::fromMSecsSinceEpoch(index).toString("yyyy-MM-dd hh:mm:ss") + " 电压:" + QString::number(vol, 'f', 3) + "V 电流:"  + QString::number(cur * 1000, 'f', 3) + "uA");
+        markLabel->setText(QDateTime::fromMSecsSinceEpoch(index).toString("yyyy-MM-dd hh:mm:ss") + " 电流:"  + QString::number(cur * 1000, 'f', 3) + "uA" + " 电压:" + QString::number(vol, 'f', 3) + "V");
     else if(cur >= 1 && cur < 1000)
-         markLabel->setText(QDateTime::fromMSecsSinceEpoch(index).toString("yyyy-MM-dd hh:mm:ss") + " 电压:" + QString::number(vol, 'f', 3) + "V 电流:"  + QString::number(cur, 'f', 3) + "mA");
+         markLabel->setText(QDateTime::fromMSecsSinceEpoch(index).toString("yyyy-MM-dd hh:mm:ss") + " 电流:"  + QString::number(cur, 'f', 3) + "mA" + " 电压:" + QString::number(vol, 'f', 3) + "V");
     else if(cur >= 1000)
-         markLabel->setText(QDateTime::fromMSecsSinceEpoch(index).toString("yyyy-MM-dd hh:mm:ss") + " 电压:" + QString::number(vol, 'f', 3) + "V 电流:"  + QString::number(cur, 'f', 2) + "mA");
+         markLabel->setText(QDateTime::fromMSecsSinceEpoch(index).toString("yyyy-MM-dd hh:mm:ss") + " 电流:"  + QString::number(cur, 'f', 2) + "mA" + " 电压:" + QString::number(vol, 'f', 3) + "V");
 
 
 }
