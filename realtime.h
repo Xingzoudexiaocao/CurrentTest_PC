@@ -116,6 +116,9 @@ private:
     QLabel *bRemainTimeHour;        // 剩余时间
     QLabel *bRemainTimeMinute;        // 剩余时间
 
+    QTimer *SendVerifyCmd;       // 发送校验字节
+    qint16 SendVerifyCount;     // 发送校验字节计数
+
     void drawChart(QChartViewer *viewer, int index);           // Draw chart
     void trackLineLabel(XYChart *c, int mouseX, int index);    // Draw track cursor
     void updateControls(QChartViewer *viewer, QScrollBar *bar);      // Update other controls as viewport changes
@@ -158,6 +161,8 @@ private slots:
     void slotBatteryValue(int);
 
     void onSettingBtn(void);
+
+    void slotSendVerifyCmd(void);
 
 public slots:
     void m_get_USB_Data(QDateTime, double, unsigned char, unsigned char);

@@ -91,7 +91,7 @@ typedef enum{
 } SETTINGDATA;
 
 static QString compangyName = "一起努力";
-static QString productName = "精密电流测量仪";
+static QString productName = "ISCAN";            // 精密电流测量仪
 
 class ComData
 {

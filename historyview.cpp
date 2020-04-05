@@ -178,6 +178,8 @@ HistoryView::HistoryView(QWidget *parent) : QGraphicsView(new QGraphicsScene, pa
     unitCur->setStyleSheet("QLabel { text-align:center; font-size:20px; color:blue; background-color:white;}");  //  padding:10px;
     unitCur->setGeometry(20, 60, 100, 20);
 
+    unitCur->setText("电流:mA"); unitVol->setText("电压:V");
+
     markLabel = new QLabel(this);
     markLabel->setStyleSheet("QLabel { text-align:center; font-size:24px; color:#CC0000; background-color:white;}");  //  padding:10px;
     markLabel->setGeometry(400, 470, 600, 30);
@@ -193,6 +195,26 @@ HistoryView::HistoryView(QWidget *parent) : QGraphicsView(new QGraphicsScene, pa
 ////    testLCD->setStyleSheet("border: 1px solid green; color: green; background: silver;");
 //    testLCD->setGeometry(650, 160, 100, 50);
 //    testLCD->display("110mA");
+}
+
+void HistoryView::ClearData(void)
+{
+    zoomIndexMin = 1;
+    zoomIndexMax = 1;
+    zoomIndex = 1;              // 默认
+    zoomMagnifyActual = 1;      // 默认放大1倍
+    zoomMagnifyMax = 1;     // 计算最大能够放大的倍数
+    zoomSlide->setEnabled(false); zoomX2->setEnabled(false);  zoomD2->setEnabled(false);
+    markLabel->setText("");
+
+    chatCurrent->removeSeries(seriesCurrent);
+    chatVoltage->removeSeries(seriesVoltage);
+    seriesCurrent->removePoints(0, seriesCurrent->points().count());
+    seriesVoltage->removePoints(0, seriesVoltage->points().count());
+
+    chatCurrent->update();
+    chatVoltage->update();
+    scene()->update();
 }
 
 void HistoryView::mousePressEvent(QMouseEvent *event)
@@ -256,11 +278,11 @@ void HistoryView::mousePressEvent(QMouseEvent *event)
 void HistoryView::LoadingData(QString fileName)
 {
      qDebug() << "update view";
-    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName(fileName);    // QApplication::applicationDirPath() + "CONFIG.db"     不能包含字符
+    QSqlDatabase myDb = QSqlDatabase::addDatabase("QSQLITE");
+    myDb.setDatabaseName(fileName);    // QApplication::applicationDirPath() + "CONFIG.db"     不能包含字符
 //     db.setUserName("admin");
 //     db.setPassword("admin");
-    if (!db.open())     // if (!db.open("admin","admin"))
+    if (!myDb.open())     // if (!db.open("admin","admin"))
     {
         qDebug() << "打开数据库文件失败！";
         QMessageBox::critical(this, "提示", "打开数据库文件失败！");
@@ -289,8 +311,6 @@ void HistoryView::LoadingData(QString fileName)
     zoomSlide->setSingleStep(1); // 步长
     zoomSlide->setPageStep(zoomMagnifyMax / 10);      // 页步长
     zoomSlide->setTickInterval(zoomMagnifyMax / 10);  // 设置刻度间隔
-    unitVol->setText("电压:V");
-    unitCur->setText("电流:mA");
 
     UpdateZoomKeyEnable();
     UpdateChartData();
@@ -411,6 +431,7 @@ void HistoryView::UpdateChartData()
     }
     qDebug()<<"zoomMagnifyActual = "<<zoomMagnifyActual<< " zoomMagnifyMax = "<< zoomMagnifyMax;
     qDebug()<<"sqlIdMin = "<<sqlIdMin<< " sqlIdMax = "<< sqlIdMax;
+
     QSqlQueryModel sqlModel;
     QString strQuery = "select * from stm32_data where (id % " + QString::number(zoomMagnifyMax + 1 - zoomMagnifyActual, 10)
             + " == 0) and id >= " + QString::number(sqlIdMin, 10) + " and id <= " + QString::number(sqlIdMax, 10) + " ";

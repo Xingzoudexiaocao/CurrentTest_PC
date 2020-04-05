@@ -681,15 +681,13 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
 //    frame->setStyleSheet("background-color:white");
     frameTop->setFrameShape(QFrame::NoFrame);
     play = new QPushButton(QIcon(":/play.png"), "继续", frame_2);
-    play->setGeometry(615, 10, 80, 30);
+    play->setGeometry(1145, 10, 80, 30);
     play->setStyleSheet(bnt_qss1);
-    play->setFont(font_2);
     play->setVisible(false);
     connect(play, &QAbstractButton::clicked, this, &RealTime::onBtnPlay);
     pause = new QPushButton(QIcon(":/pause.png"), "暂停", frame_2);
-    pause->setGeometry(695, 10, 80, 30);
+    pause->setGeometry(1225, 10, 80, 30);
     pause->setStyleSheet(bnt_qss1);
-    pause->setFont(font_2);
     pause->setVisible(false);
     connect(pause, &QAbstractButton::clicked, this, &RealTime::onBtnPause);
 //    // 保存按键代码
@@ -703,6 +701,9 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
 //    updatePeriod->setCurrentIndex(0);
 //    runPB->click();
 
+    SendVerifyCmd = new QTimer(this);
+    connect(SendVerifyCmd, SIGNAL(timeout()), this, SLOT(slotSendVerifyCmd()));
+    SendVerifyCount = 0;
 }
 
 RealTime::~RealTime()
@@ -1489,7 +1490,11 @@ void RealTime::onConnectUSB()
             updataBar->setEnabled(false);
             // 发送读取版本号和文件长度指令
 //
-            send_CMD(0x20);     // 读取各个档位的校验值
+            historyView->ClearData();       // 清除历史数据
+
+            SendVerifyCmd->start(100);
+            SendVerifyCount = 0;
+//            send_CMD(0x20);     // 读取各个档位的校验值
             averageValue->setEnabled(false);
             batteryCapacity->setEnabled(false);
             tabWidget->setCurrentIndex(0);  // 跳到第一页
@@ -1524,6 +1529,7 @@ void RealTime::onDisConnectUSB()
     m_DbName = "";        // 清空数据文件名称
     averageValue->setEnabled(true);
     batteryCapacity->setEnabled(true);
+    historyView->ClearData();       // 清除历史数据
 }
 
 void RealTime::thread_receive_finished()
@@ -2212,6 +2218,12 @@ void RealTime::writeSQL(qint64 time, double vol, double cur)
 
 void RealTime::HistoryOpen()
 {
+    if(m_UsbHid->dev_handle != nullptr)
+    {
+        qDebug() << "USB正在运行，无法加载文件！";
+         QMessageBox::critical(this, "提示", "USB正在运行，无法加载文件！");
+        return;
+    }
     QString fileName=QFileDialog::getOpenFileName(this,QString::fromLocal8Bit("历史数据"),qApp->applicationDirPath(),
                                                   QString::fromLocal8Bit("bin File(*.db)"));//新建文件打开窗口
     if (fileName.isEmpty())//如果未选择文件便确认，即返回
@@ -2252,4 +2264,18 @@ void RealTime::onSettingBtn(void)
     send_CMD(0x08);     // 读取版本号和文件长度指令
 //    tabWidget->setTabEnabled(2, false);
     tabWidget->setCurrentIndex(2);
+}
+
+void RealTime::slotSendVerifyCmd(void)
+{
+//     qDebug() << "SendVerifyCount = " << SendVerifyCount << QTime::currentTime();
+    send_CMD(0x20);     // 读取各个档位的校验值
+    SendVerifyCount++;
+    if(SendVerifyCount >= 10)
+    {
+        SendVerifyCount = 0;
+        SendVerifyCmd->stop();
+    }
+
+
 }

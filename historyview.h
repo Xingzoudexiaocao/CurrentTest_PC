@@ -34,6 +34,7 @@ class HistoryView : public QGraphicsView
 public:
     explicit HistoryView(QWidget *parent = nullptr);
     void LoadingData(QString fileName);
+    void ClearData(void);
 
 protected:
     void mousePressEvent(QMouseEvent *event);
@@ -68,6 +69,7 @@ public:
     QLabel *unitVol;
     QLabel *unitCur;
     QLabel *markLabel;
+
 signals:
 
 public slots:
