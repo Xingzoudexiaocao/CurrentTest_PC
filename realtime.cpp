@@ -63,7 +63,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
 //    bbb->setGeometry(150, 8, 100, 100);
     QPixmap pixmap(":/logo.png");
     QLabel *label = new QLabel(frame_1);
-    label->setGeometry(155, 3, 120, 110);
+    label->setGeometry(165, 3, 110, 110);
 //    label->setStyleSheet("background-color:black");
     label->setPixmap(pixmap.scaled(label->size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
 
@@ -113,7 +113,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
 
     // The frame on the left side
     QString fontName = loadFontFamilyFromTTF(":/DSDigital.ttf");    // digifaw ":/DSDigital.ttf" "C:/Windows/Fonts/Terminal.fon"
-    QFont    font_VAW ( fontName,  10,   75);     // "Microsoft YaHei"
+    QFont    font_VAW ( fontName,  10,   100);     // "Microsoft YaHei"
     QFrame *frame_3 = new QFrame(frame);
     frame_3->setGeometry(2, 120, 296, 345);
     frame_3->setFrameShape(QFrame::Panel);
@@ -130,8 +130,8 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     m_ValueB->setFrameShape(QFrame::NoFrame);
     m_ValueB->setText(QString::number(0, 'f', 3));  // 初始化显示0
     QLabel *unitV = new QLabel(frame_3);
-    unitV->setGeometry(6 + 240, 110 + 10, 48, 80);
-    unitV->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:46px; color:#00cc00; }");
+    unitV->setGeometry(6 + 235, 110 + 10, 64, 80);
+    unitV->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:32px; color:#00cc00; }");
     unitV->setText("V");
 
     m_ValueC = new QLabel(frame_3);
@@ -142,8 +142,8 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     m_ValueC->setFrameShape(QFrame::NoFrame);
     m_ValueC->setText(QString::number(0, 'f', 3));  // 初始化显示0
     m_unitA = new QLabel(frame_3);
-    m_unitA->setGeometry(6 + 240, 35 + 10, 48, 80);
-    m_unitA->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:46px; color:blue; }");
+    m_unitA->setGeometry(6 + 235, 35 + 10, 64, 80);
+    m_unitA->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:30px; color:blue; }");
     m_unitA->setText("mA");
 
     m_Power = new QLabel(frame_3);
@@ -154,8 +154,8 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     m_Power->setFrameShape(QFrame::NoFrame);
     m_Power->setText(QString::number(0, 'f', 2));  // 初始化显示0
     QLabel *unitW = new QLabel(frame_3);
-    unitW->setGeometry(6 + 240, 190 + 5, 68, 80);
-    unitW->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:40px; color:black; }");
+    unitW->setGeometry(6 + 225, 190 + 5, 68, 80);
+    unitW->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:30px; color:black; }");
     unitW->setText("W");
 
     m_Energy = new QLabel(frame_3);
@@ -166,8 +166,8 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     m_Energy->setFrameShape(QFrame::NoFrame);
     m_Energy->setText(QString::number(0, 'f', 2));  // 初始化显示0
     QLabel *unitE = new QLabel(frame_3);
-    unitE->setGeometry(6 + 240, 250 + 5, 68, 80);
-    unitE->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:32px; color:black; }");
+    unitE->setGeometry(6 + 225, 250 + 5, 68, 80);
+    unitE->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:26px; color:black; }");
     unitE->setText("mAh");
 
     // The frame on the left side
@@ -188,7 +188,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     buf1_QL->setText("-");  // 初始化显示-
 //    buf1_QL->setText(QString::number(0, 'f', 3));  // 初始化显示0
     QLabel *avg_V = new QLabel(frame_4);
-    avg_V->setGeometry(6 + 240, 90, 48, 80);
+    avg_V->setGeometry(6 + 230, 90, 64, 80);
     avg_V->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:30px; color:#00cc00; }");
     avg_V->setText("V");
     // avarge current
@@ -201,7 +201,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     buf2_QL->setText("-");  // 初始化显示-
 //    buf2_QL->setText(QString::number(0, 'f', 3));  // 初始化显示0
     m_averageA = new QLabel(frame_4);
-    m_averageA->setGeometry(6 + 240, 30, 48, 80);
+    m_averageA->setGeometry(6 + 230, 30, 64, 80);
     m_averageA->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:30px; color:blue; }");
     m_averageA->setText("mA");
     // avarge power
@@ -214,7 +214,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     buf3_QL->setText("-");  // 初始化显示-
 //    buf3_QL->setText(QString::number(0, 'f', 2));  // 初始化显示0
     QLabel *avg_W = new QLabel(frame_4);
-    avg_W->setGeometry(6 + 240, 150, 68, 80);
+    avg_W->setGeometry(6 + 230, 150, 64, 80);
     avg_W->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:30px; color:black; }");
     avg_W->setText("W");
 
