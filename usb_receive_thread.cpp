@@ -11,6 +11,7 @@ USB_Receive_Thread::USB_Receive_Thread(QObject *parent, USB_HID *hid, ComData *c
 void USB_Receive_Thread::run()
 {
     qDebug("接收线程run: %d", this->currentThreadId());
+    int connectCount = 0;
     int res = -1;
     int numBytes = -1;
     unsigned char buffer[32];
@@ -35,6 +36,7 @@ void USB_Receive_Thread::run()
             {
               if (numBytes == 32)
               {
+                  connectCount = 0;
                   if(buffer[0] == YMODEM_ACK && buffer[1] == YMODEM_ACK && buffer[2] == YMODEM_ACK && buffer[3] == YMODEM_ACK)
                       emit setAckOrNak(YMODEM_ACK);
                   else if(buffer[0] == YMODEM_NAK && buffer[1] == YMODEM_NAK && buffer[2] == YMODEM_NAK && buffer[3] == YMODEM_NAK)
@@ -88,6 +90,11 @@ void USB_Receive_Thread::run()
             res = -1;   // 置位
             numBytes = -1;
             QThread::sleep(0);
+
+            connectCount++;
+            if(connectCount == 2000)
+                break;
+
 //            QThread::usleep(10);   // 延时100us
 //        } else {
 //            QThread::msleep(200);
@@ -209,7 +216,7 @@ void USB_Receive_Thread::HandleData(ST_REC_STRUCT *bufData)
       m_ComData->lastTime = now;      // 更新接收时间
       // We need the currentTime in millisecond resolution
       double currentTime = Chart::chartTime2(now.toTime_t())
-                           + now.time().msec() / 10 * 0.01;
+                           + ((double)now.time().msec() / 10) * 0.01;     //     / 10 * 0.01
       // After obtaining the new values, we need to update the data arrays.
       double tmp_V = round(dataB.d * 1000) / 1000;          // 对数据进行最小精度的四舍五入
 //      double tmp_V = round(adVol) / 1000;          // 对数据进行最小精度的四舍五入，测试ad1259的采样值
@@ -232,6 +239,7 @@ void USB_Receive_Thread::HandleData(ST_REC_STRUCT *bufData)
       }
       emit get_Vol_Cur_Now(now.toMSecsSinceEpoch(), dataB.d, dataC.d);
 //      qDebug() << "--单次接收的数据：dataB = " << dataB.d << ", dataC =" << dataC.d  << " Time = " << QDateTime::currentDateTime();
+//      qDebug() << "单次接收数据：" <<  QDateTime::fromMSecsSinceEpoch(m_ComData->d_timeStamps[m_ComData->d_currentIndex - 1]) << QDateTime::currentDateTime();
       // 处理电流过大/过小的情况
       unsigned char tips = 0;
       if(buf[26] == 0x01)

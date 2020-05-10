@@ -1,4 +1,4 @@
-#include "qchartviewer.h"
+﻿#include "qchartviewer.h"
 #include <time.h>
 #include <QMouseEvent>
 #include <QToolTip>

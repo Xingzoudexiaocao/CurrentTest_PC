@@ -22,6 +22,10 @@ MainWindow::MainWindow(QWidget *parent, ComData *comD, USB_HID *hid) :
     setGeometry(100, 50, 1680, 950);      // 设定窗口显示坐标
 //    setGeometry(800, 900, 1100, 885);      // 设定窗口显示坐标
     setWindowTitle(productName);
+    QIcon icon;
+    icon.addFile(QStringLiteral(":/logo.png"), QSize(), QIcon::Normal, QIcon::Off);
+    setWindowIcon(icon);
+//    setWindowIcon(QIcon(":/logo.png"));//这个路径是右键选择上图中图片，复制到路径。
     this->grabKeyboard();       // 捕获键盘输入
 
     demo = new RealTime(this, m_ComData, m_UsbHid);

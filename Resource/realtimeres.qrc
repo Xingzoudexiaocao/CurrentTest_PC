@@ -10,5 +10,6 @@
         <file>DSDigital.ttf</file>
         <file>digifaw.ttf</file>
         <file>logo_2.png</file>
+        <file>exe.ico</file>
     </qresource>
 </RCC>

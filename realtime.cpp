@@ -461,6 +461,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
 //    drawChart(m_ChartViewer, 0);
 //    drawChart(m_ChartViewer_2, 1);
 
+
     QLabel *volTitle = new QLabel(frame_2);
     volTitle->setGeometry(840 - 262, 455 - 4, 300, 30);
     volTitle->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:30px; background-color:white;}");
@@ -1148,6 +1149,7 @@ void RealTime::drawChart(QChartViewer *viewer, int index)
         viewPortDataSeriesC = DoubleArray(m_ComData->d_dataSeriesA + startIndex, noOfPoints);
     }
 
+
     //
     // At this stage, we have extracted the visible data. We can use those data to plot the chart.
     //
@@ -1221,6 +1223,7 @@ void RealTime::drawChart(QChartViewer *viewer, int index)
         }
         layer->addDataSet(viewPortDataSeriesB, 0x00cc00, buffer);
         c->yAxis()->setMinTickInc(0.1);
+        c->yAxis()->setDateScale(0, 7.5);           // 固定坐标轴0-7.5V
     }
     else if(index == 1) {
         if(m_ComData->d_currentIndex > 0) {
@@ -1233,7 +1236,8 @@ void RealTime::drawChart(QChartViewer *viewer, int index)
     //        layer->addDataSet(DoubleArray(m_ComData->d_dataSeriesA, m_ComData->d_currentIndex), 0x00ff, buffer);
         }
         layer->addDataSet(viewPortDataSeriesC, 0x0000ff, buffer);
-        c->yAxis()->setMinTickInc(0.01);
+        c->yAxis()->setMinTickInc(0.1);
+//        c->yAxis()->setDateScale(0, 10);
     }
 
     //================================================================================
@@ -1272,7 +1276,7 @@ void RealTime::drawChart(QChartViewer *viewer, int index)
     c->xAxis()->setLabelFormat("{value|hh:nn:ss}");
 
     // We make sure the tick increment must be at least 1 second.
-    c->xAxis()->setMinTickInc(1);
+    c->xAxis()->setMinTickInc(0.001);
 
     //================================================================================
     // Output the chart
@@ -1314,7 +1318,7 @@ void RealTime::trackLineLabel(XYChart *c, int mouseX, int index)
 
     // Draw a label on the x-axis to show the track line position.
     ostringstream xlabel;
-    xlabel << "<*font,bgColor=000000*> " << c->xAxis()->getFormattedLabel(xValue, "hh:nn:ss.ff")
+    xlabel << "<*font,bgColor=000000*> " << c->xAxis()->getFormattedLabel(xValue, "hh:nn:ss.fff")
         << " <*/font*>";
     TTFText *t = d->text(xlabel.str().c_str(), "arialbd.ttf", 10);
 

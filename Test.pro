@@ -12,6 +12,8 @@ QT       += sql
 QT += charts
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
+RC_FILE += exe.rc
+
 TARGET = Test
 TEMPLATE = app
 
@@ -66,7 +68,8 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 # unix|win32: LIBS += -lQt5SerialPort
 
-DISTFILES +=
+DISTFILES += \
+    exe.rc
 
 RESOURCES += \
     Resource/realtimeres.qrc

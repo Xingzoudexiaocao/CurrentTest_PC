@@ -494,8 +494,21 @@ void HistoryView::UpdateChartData()
     seriesCurrent->attachAxis(axisCurrentY);
 //    qDebug()<<axisCurrentY->min();
 //    qDebug()<<axisCurrentY->max();
-    if(axisCurrentY->min() == axisCurrentY->max())
-        axisCurrentY->setRange(0, axisCurrentY->max() * 1.2);
+//    if(axisCurrentY->min() == axisCurrentY->max())
+//        axisCurrentY->setRange(0, axisCurrentY->max() * 1.2);
+
+    if(axisCurrentY->max() - axisCurrentY->min() < 0.1)
+    {
+        qreal curYmin = axisCurrentY->min() - 0.05;
+        qreal curYmax = axisCurrentY->max() + 0.05;
+        if(curYmin < 0)
+            curYmin = 0;
+        axisCurrentY->setRange(curYmin, curYmax);
+    }
+    else
+    {
+        axisCurrentY->setRange(axisCurrentY->min() * 0.95, axisCurrentY->max() * 1.05);
+    }
 //    axisCurrentX = new QDateTimeAxis;
 //    axisCurrentX->setTickCount(10);
 //    axisCurrentX->setFormat("hh:mm:ss");
@@ -513,8 +526,12 @@ void HistoryView::UpdateChartData()
     axisVoltageY->setRange(0, 0);
     seriesVoltage->attachAxis(axisVoltageX);
     seriesVoltage->attachAxis(axisVoltageY);
-    if(axisVoltageY->min() == axisVoltageY->max())
-        axisVoltageY->setRange(0, axisVoltageY->max() * 1.2);
+//    if(axisVoltageY->min() == axisVoltageY->max())
+//        axisVoltageY->setRange(0, axisVoltageY->max() * 1.2);
+    if(axisVoltageY->max() > 7)
+        axisVoltageY->setRange(0, axisVoltageY->max() * 1.05);
+    else
+        axisVoltageY->setRange(0, 7.5);
 
 
 //    qlonglong index = seriesCurrent->points()[seriesCurrent->points().count() / 2].x();

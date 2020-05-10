@@ -47,7 +47,7 @@ private:
     static const int initialFullRange = 60;
 
     // The maximum zoom in is 10 seconds.
-    static const int zoomInLimit = 10;
+    static const int zoomInLimit = 1;
 
     QDateTime m_nextDataTime;           // Used by the random number generator to generate realtime data.
 
