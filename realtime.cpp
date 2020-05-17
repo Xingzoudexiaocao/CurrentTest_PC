@@ -1448,6 +1448,7 @@ void RealTime::onConnectUSB()
         if (!db.open())     // if (!db.open("admin","admin"))
         {
             qDebug() << "创建数据库文件失败！";
+            QMessageBox::critical(this, "提示", "创建数据库文件失败！");
             return;
         }
         QSqlQuery query("", db);
@@ -1462,6 +1463,7 @@ void RealTime::onConnectUSB()
             qDebug() << "新建表stm32_data";
 
             m_DbData.clear();       // 清空所有值
+            mDbCount = 0;
             m_UsbReceiveThread->isStop = false;
             m_UsbReceiveThread->start();   // 启动线程
             m_ChartUpdateTimer->start(100);    // 启动更新表格
@@ -1518,6 +1520,7 @@ void RealTime::onDisConnectUSB()
         QMessageBox::critical(this, "提示", "正在更新程序，请勿关闭！");
         return;
     }
+    send_CMD(0x21);
     m_UsbReceiveThread->isStop = true;
 //    m_UsbReceiveThread->terminate();    // 关闭线程
 //    m_UsbReceiveThread->wait();
@@ -1956,7 +1959,7 @@ void RealTime::UpdataOpen()
 //    length = arry.size();//计算长度
     qDebug() << "2.arry.size() = " << arry.size();
 
-    if(arry.size() > 256000)
+    if(arry.size() > 122000)
     {
         qDebug() << "升级文件过大，无法加载！";
         QMessageBox::about(this, "提示", "升级文件过大，无法加载！");
@@ -2187,18 +2190,37 @@ void RealTime::writeSQL(qint64 time, double vol, double cur)
         if(m_DbData.size() >= 10000)        // 每次写入10000个数据到数据库中
         {
             QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+
+            mDbCount++;
+            if(mDbCount > 6 * 60)    // 1个小时重新生成数据库文件
+            {
+//                mDbCount = 0;
+                m_DbName = QDir::currentPath() + "/iSCAN_Data/" + QDateTime::currentDateTime().toString("yyyy_MM_dd hh_mm_ss") + " Record.db";
+            }
+
             db.setDatabaseName(m_DbName);    // QApplication::applicationDirPath() + "CONFIG.db"     不能包含字符
        //     db.setUserName("admin");
        //     db.setPassword("admin");
             if (!db.open())     // if (!db.open("admin","admin"))
             {
                 qDebug() << "创建数据库文件失败！";
+                QMessageBox::critical(this, "提示", "创建数据库文件失败！");
                 return;
             }
             QSqlQuery query("", db);
+            if(mDbCount > 6 * 60)    // 1个小时重新生成数据库文件
+            {
+                mDbCount = 0;       // 清计数值
+                query.exec("CREATE TABLE stm32_data ("
+                                   "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                                   "time INT64 NOT NULL, "
+                                   "voltage DOUBLE NOT NULL, "
+                                   "current DOUBLE NOT NULL)");         //创建一个stm32_data表
+                qDebug() << "新建表stm32_data";
+            }
              // 开始启动事务
-              qDebug() << "插入数据前时间" << QDateTime::currentDateTime();
-              qDebug() << "m_DbData List" << m_DbData.size();
+//              qDebug() << "插入数据前时间" << QDateTime::currentDateTime();
+//              qDebug() << "m_DbData List" << m_DbData.size();
     //         bool    bsuccess = false;
     //         QTime    tmpTime;
               db.transaction();
@@ -2215,8 +2237,8 @@ void RealTime::writeSQL(qint64 time, double vol, double cur)
              // 提交事务，这个时候才是真正打开文件执行SQL语句的时候
              db.commit();
              m_DbData.clear();       // 清空所有值
-            qDebug() << "插入数据后时间" << QDateTime::currentDateTime();
-            qDebug() << "m_DbData List" << m_DbData.size();
+//            qDebug() << "插入数据后时间" << QDateTime::currentDateTime();
+//            qDebug() << "m_DbData List" << m_DbData.size();
         }
 }
 

@@ -6,7 +6,7 @@
 
 using namespace std;
 // windeployqt --qmldir  C:\Users\ThinkPad\Documents\Test Test.exe
-// windeployqt Test.exe
+// windeployqt iSCAN.exe
 
 int main(int argc, char *argv[])
 {

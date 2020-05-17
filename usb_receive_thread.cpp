@@ -11,6 +11,8 @@ USB_Receive_Thread::USB_Receive_Thread(QObject *parent, USB_HID *hid, ComData *c
 void USB_Receive_Thread::run()
 {
     qDebug("接收线程run: %d", this->currentThreadId());
+     qint64 testCnt_S = 0;
+     qint64 testTime = 0;
     int connectCount = 0;
     int res = -1;
     int numBytes = -1;
@@ -31,7 +33,7 @@ void USB_Receive_Thread::run()
 //                return;
 //            }
 //        //    qDebug()<<"Claimed Interface"<<endl;
-            res = libusb_interrupt_transfer(m_UsbHid->dev_handle, 0x81, buffer, 32, &numBytes, 100);
+            res = libusb_interrupt_transfer(m_UsbHid->dev_handle, 0x81, buffer, 32, &numBytes, 0);      // 100
             if (0 == res)
             {
               if (numBytes == 32)
@@ -67,7 +69,27 @@ void USB_Receive_Thread::run()
 //                      qDebug("Received %d bytes, 成功.", numBytes);
 //                      qDebug() << QDateTime::currentDateTime();
                        m_ComData->RunningCount++;       // 时间加1ms
-                      HandleData(tmp);  // 处理数据
+
+/*
+                       qint64 testCnt = 0;
+                       testCnt |= buffer[19]; testCnt = testCnt << 8;
+                       testCnt |= buffer[18]; testCnt = testCnt << 8;
+                       testCnt |= buffer[17]; testCnt = testCnt << 8;
+                       testCnt |= buffer[16];
+                       qint64 testUsbSendCnt = 0;
+                       testUsbSendCnt |= buffer[23]; testUsbSendCnt = testUsbSendCnt << 8;
+                       testUsbSendCnt |= buffer[22]; testUsbSendCnt = testUsbSendCnt << 8;
+                       testUsbSendCnt |= buffer[21]; testUsbSendCnt = testUsbSendCnt << 8;
+                       testUsbSendCnt |= buffer[20];
+
+                       if(testCnt - testCnt_S > 1)
+                       {
+                           testTime++;
+                           qDebug() << testTime << "__" << testCnt - testCnt_S << "testUsbSendCnt = " << testUsbSendCnt << ", testCnt =" << testCnt << " Time = " << QDateTime::currentDateTime();
+                       }
+                       testCnt_S = testCnt;
+*/
+                       HandleData(tmp);  // 处理数据
                   }
               }
               else
@@ -124,7 +146,7 @@ void USB_Receive_Thread::HandleData(ST_REC_STRUCT *bufData)
     emit send_Level_Num(buf[27]);
     if(buf[27] == 0 || buf[27] > 4)
     {
-        qDebug() << "档位不正确" << buf[27]  << buf[28] << buf[29] << buf[30] << buf[31];
+        qDebug() << "档位不正确" << buf[27]  << buf[26] << buf[25] << buf[24] << buf[23];
         return;     // 档位不正确
     }
     if(0 == memcmp(getHeader, m_ComData->headerC, m_ComData->headerLength))
@@ -154,7 +176,6 @@ void USB_Receive_Thread::HandleData(ST_REC_STRUCT *bufData)
       buf_Cur |= buf[7]; buf_Cur = buf_Cur << 8;
       buf_Cur |= buf[6]; buf_Cur = buf_Cur << 8;
       buf_Cur |= buf[5];
-
       double stepV = 0;     // 每一个对应的电流值
       adVol = (double)buf_Cur / (double)max_Cur * 2500;     // 获取ad采样的电压值，mv为单位
       switch (buf[27]) {

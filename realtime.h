@@ -74,6 +74,7 @@ private:
     int cntDisplay;
     QString m_DbName;
     QList<DB_WRITE_STRUCT> m_DbData;
+    qint64 mDbCount;        // 数据库存储次数计数值
 
     QChartViewer *m_ChartViewer;        // QChartViewer control
     QChartViewer *m_ChartViewer_2;        // QChartViewer control
