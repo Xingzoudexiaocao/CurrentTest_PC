@@ -29,8 +29,8 @@ void USB_Send_Thread::run()
     int ackValue = -1;
 
     // 设置版本号
-    memcpy(upVersion,  m_ComData->updataFile + (m_ComData->updataFileLen - 4), sizeof (sendOnce));  // 读取最后四个字节
-    memset(m_ComData->updataFile + (m_ComData->updataFileLen - 4), 0xFF, sizeof (sendOnce));    // 重置最后四个字节
+    memcpy(upVersion,  m_ComData->updataFile + (m_ComData->updataFileLen), sizeof (upVersion));  // 读取最后四个字节
+
 #ifdef appUpdataDebug
     upVersion[0] = 'V';     // 调试模式版本号为V128.128.128
     memset(upVersion + 1, 0x80, sizeof (sendOnce) - 1);

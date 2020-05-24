@@ -381,7 +381,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
             QTabBar::tab:selected{background-color: #0066CC; /*浅蓝色*/ color:white; font-weight:bold; border: 2px solid #0066CC; font-size:20px;}\
             QTabBar::tab:!selected { margin-top: 5px;}";
     tabWidget->setStyleSheet(tabBarStyle);
-
+//    connect(tabWidget, SIGNAL(tabBarClicked(2)), this, SLOT(&RealTime::onSettingBtn));
 //    QHBoxLayout *layout = new QHBoxLayout(this);
 //    layout->addWidget(tabWidget);
 
@@ -1501,6 +1501,7 @@ void RealTime::onConnectUSB()
             SendVerifyCmd->start(100);
             SendVerifyCount = 0;
 //            send_CMD(0x20);     // 读取各个档位的校验值
+            onSettingBtn();
             averageValue->setEnabled(false);
             batteryCapacity->setEnabled(false);
             tabWidget->setCurrentIndex(0);  // 跳到第一页
@@ -1944,36 +1945,40 @@ void RealTime::UpdataOpen()
 //    int length=arry.size();//计算长度    qDebug()<<length;
 
 #ifndef appUpdataDebug
-    if((arry.size() % 1024) != 0 || arry[arry.size() - 4] != 'V' || (unsigned char)arry[arry.size() - 3] < 0x80)
+    if((arry.size() % 1024) != 4 || arry[arry.size() - 4] != 'V')
     {
         qDebug() << "升级文件有误，无法加载！";
         QMessageBox::about(this, "提示", "升级文件有误，无法加载！");
         return;
     }
-#endif
-
+    for (int i = 0; i < arry.size(); i++)
+    {
+       arry.data()[i]  = (byte)((int)arry.data()[i] ^ (i % 256));
+    }
+#else
     qDebug() << "1.arry.size() = " << arry.size();
     if((arry.size() % 1024) != 0) {
             arry.insert(arry.size(), 1024 - (arry.size() % 1024), -1);
     }
 //    length = arry.size();//计算长度
     qDebug() << "2.arry.size() = " << arry.size();
+#endif
 
-    if(arry.size() > 122000)
+    if(arry.size() > 122000 + 4)
     {
         qDebug() << "升级文件过大，无法加载！";
         QMessageBox::about(this, "提示", "升级文件过大，无法加载！");
         return;
     }
     updataFile->setText(fileName);
-    updataTips->setText("当前文件：" + QString::number(arry.size()) + "字节");
+    updataTips->setText("当前文件：" + QString::number(arry.size() - 4) + "字节");
 //    updataTips->setVisible(true);
     updataTips->setEnabled(true);
-    updataBar->setMaximum(arry.size());
+    updataBar->setMaximum(arry.size() - 4);
 //    updataBar->setVisible(true);
     updataBar->setEnabled(true);
     updataBar->setValue(0);  // 当前进度
-    m_ComData->updataFileLen = (unsigned int)arry.size();     // 赋值长度
+    m_ComData->updataFileLen = (unsigned int)arry.size() - 4;     // 赋值长度,去掉最后4个字节（版本号）
 //    m_ComData->updataFile = new unsigned char[m_ComData->updataFileLen];
 //    m_ComData->updataFile = (unsigned char *)arry.data();
 //    memcpy(m_ComData->updataFile, arry.data(), m_ComData->updataFileLen);
@@ -2050,18 +2055,21 @@ void RealTime::upadataSuccess()
     m_UsbSendThread->terminate();       // 关闭发送线程
     updataBar->setValue(updataBar->maximum());  // 设为100%
     updataBar->setFormat(QString("当前进度为：%1%").arg(QString::number(100, 'f', 1)));
-    QMessageBox::about(this, "提示", "升级成功，请关闭设备并重启设备电源！");
+    onDisConnectUSB();      // 关闭USB设备
+    QMessageBox::about(this, "提示", "升级成功，请重启设备电源！");
 }
 void RealTime::updataFail()
 {
     m_UsbSendThread->isStop = true;
     m_UsbSendThread->terminate();       // 关闭发送线程
+    onDisConnectUSB();      // 关闭USB设备
     QMessageBox::about(this, "提示", "升级失败，请重新升级程序！");
 }
 void RealTime::upadtaTimeOut()
 {
     m_UsbSendThread->isStop = true;
     m_UsbSendThread->terminate();       // 关闭发送线程
+    onDisConnectUSB();      // 关闭USB设备
     QMessageBox::about(this, "提示", "升级超时，请重新升级程序！");
 }
 

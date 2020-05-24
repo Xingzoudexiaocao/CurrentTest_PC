@@ -17,7 +17,7 @@
 #endif
 
 #define isDebuf           // 是否调试模式
-#define appUpdataDebug    // APP升级部分区别，调试时用,判断是否对bin文件加密处理
+//#define appUpdataDebug    // APP升级部分区别，调试时用,判断是否对bin文件加密处理
 
 #define YMODEM_SOH (0x01)
 #define YMODEM_STX (0x02)

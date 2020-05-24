@@ -68,7 +68,7 @@ void USB_Receive_Thread::run()
                       memcpy(tmp, buffer, 32);
 //                      qDebug("Received %d bytes, 成功.", numBytes);
 //                      qDebug() << QDateTime::currentDateTime();
-                       m_ComData->RunningCount++;       // 时间加1ms
+//                       m_ComData->RunningCount++;       // 时间加1ms
 
 /*
                        qint64 testCnt = 0;
@@ -151,127 +151,147 @@ void USB_Receive_Thread::HandleData(ST_REC_STRUCT *bufData)
     }
     if(0 == memcmp(getHeader, m_ComData->headerC, m_ComData->headerLength))
     {
-        unsigned int sum = buf[5] + buf[6] + buf[7] + 0x9B;
-        if(buf[4] != (sum & 0xFF))
+        unsigned int sum_1 = buf[5] + buf[6] + buf[7] + 0x9B;
+        unsigned int sum_2 = buf[15] + buf[16] + buf[17] + 0x9B;
+        if((buf[4] != (sum_1 & 0xFF))||(buf[14] != (sum_2 & 0xFF)))
         {
             qDebug() << "校验和不正确" << buf[4] << buf[5] << buf[6] << buf[7];
+            qDebug() << "校验和不正确" << buf[14] << buf[15] << buf[16] << buf[17];
             return;     // 校验和不正确
         }
-      d_And_c dataB;
-      d_And_c dataC;
-//      memcpy(&dataB, buf + 4, sizeof(double));
-//      memcpy(&dataC, buf + 12, sizeof(double));
-      // 赋值
-      unsigned int buf_Vol = 0;
-      unsigned int buf_Temp = 0;
-      buf_Vol |= buf[8]; buf_Vol = buf_Vol << 8;            // aADCxConvertedValues[0]电压
-      buf_Vol |= buf[9];
-      buf_Temp |= buf[10]; buf_Temp = buf_Temp << 8;        // aADCxConvertedValues[1]温度
-      buf_Temp |= buf[11];
-      dataB.d = (double)buf_Vol / 4096 * 3 *2.5 ;  // 1.0043为修正值  * 1.0043
-      double temperature = (1.43 - ((double)buf_Temp / 4095 * 3)) / 4.3 + 25;   // 计算温度
-      unsigned int buf_Cur = 0;
-      unsigned int max_Cur = 0x7FFFFF;
-      double adVol = 0;     // 转换后ad采样的电压值
-      buf_Cur |= buf[7]; buf_Cur = buf_Cur << 8;
-      buf_Cur |= buf[6]; buf_Cur = buf_Cur << 8;
-      buf_Cur |= buf[5];
-      double stepV = 0;     // 每一个对应的电流值
-      adVol = (double)buf_Cur / (double)max_Cur * 2500;     // 获取ad采样的电压值，mv为单位
-      switch (buf[27]) {
-        case 1:
-          if((m_ComData->d_verifyValue.Lelve_1_max - m_ComData->d_verifyValue.Lelve_1_min) != 0 && m_ComData->SettingIsVerified) {
-              stepV = (m_ComData->d_standardValue.Lelve_1_max - m_ComData->d_standardValue.Lelve_1_min) / ((double)(m_ComData->d_verifyValue.Lelve_1_max - m_ComData->d_verifyValue.Lelve_1_min));
-              dataC.d = m_ComData->d_standardValue.Lelve_1_min + stepV * ((double)buf_Cur - (double)m_ComData->d_verifyValue.Lelve_1_min);
-          } else {
-              stepV = 0;
-              dataC.d = adVol / 12.52 / 100000;
-          }
+        for (int i = 0; i < 2; i++) {
+            m_ComData->RunningCount++;
+            d_And_c dataB;
+            d_And_c dataC;
+      //      memcpy(&dataB, buf + 4, sizeof(double));
+      //      memcpy(&dataC, buf + 12, sizeof(double));
+            // 赋值
+            unsigned int buf_Vol = 0;
+            unsigned int buf_Temp = 0;
+            if(i == 1) {
+                buf_Vol |= buf[8]; buf_Vol = buf_Vol << 8;            // aADCxConvertedValues[0]电压
+                buf_Vol |= buf[9];
+                buf_Temp |= buf[10]; buf_Temp = buf_Temp << 8;        // aADCxConvertedValues[1]温度
+                buf_Temp |= buf[11];
+            } else if(i == 0) {
+                buf_Vol |= buf[18]; buf_Vol = buf_Vol << 8;            // aADCxConvertedValues[0]电压
+                buf_Vol |= buf[19];
+                buf_Temp |= buf[20]; buf_Temp = buf_Temp << 8;        // aADCxConvertedValues[1]温度
+                buf_Temp |= buf[21];
+            }
+            dataB.d = (double)buf_Vol / 4096 * 3 *2.5 ;  // 1.0043为修正值  * 1.0043
+            double temperature = (1.43 - ((double)buf_Temp / 4095 * 3)) / 4.3 + 25;   // 计算温度
+            unsigned int buf_Cur = 0;
+            unsigned int max_Cur = 0x7FFFFF;
+            double adVol = 0;     // 转换后ad采样的电压值
+            if(i == 1) {
+                buf_Cur |= buf[7]; buf_Cur = buf_Cur << 8;
+                buf_Cur |= buf[6]; buf_Cur = buf_Cur << 8;
+                buf_Cur |= buf[5];
+            } else if(i == 0) {
+                buf_Cur |= buf[17]; buf_Cur = buf_Cur << 8;
+                buf_Cur |= buf[16]; buf_Cur = buf_Cur << 8;
+                buf_Cur |= buf[15];
+            }
+            double stepV = 0;     // 每一个对应的电流值
+            adVol = (double)buf_Cur / (double)max_Cur * 2500;     // 获取ad采样的电压值，mv为单位
+            switch (buf[27]) {
+              case 1:
+                if((m_ComData->d_verifyValue.Lelve_1_max - m_ComData->d_verifyValue.Lelve_1_min) != 0 && m_ComData->SettingIsVerified) {
+                    stepV = (m_ComData->d_standardValue.Lelve_1_max - m_ComData->d_standardValue.Lelve_1_min) / ((double)(m_ComData->d_verifyValue.Lelve_1_max - m_ComData->d_verifyValue.Lelve_1_min));
+                    dataC.d = m_ComData->d_standardValue.Lelve_1_min + stepV * ((double)buf_Cur - (double)m_ComData->d_verifyValue.Lelve_1_min);
+                } else {
+                    stepV = 0;
+                    dataC.d = adVol / 12.52 / 100000;
+                }
 
-          break;
-        case 2:
-          if((m_ComData->d_verifyValue.Lelve_2_max - m_ComData->d_verifyValue.Lelve_2_min) != 0  && m_ComData->SettingIsVerified) {
-              stepV = (m_ComData->d_standardValue.Lelve_2_max - m_ComData->d_standardValue.Lelve_2_min) / ((double)(m_ComData->d_verifyValue.Lelve_2_max - m_ComData->d_verifyValue.Lelve_2_min));
-              dataC.d = m_ComData->d_standardValue.Lelve_2_min + stepV * ((double)buf_Cur - (double)m_ComData->d_verifyValue.Lelve_2_min);
-          } else {
-              stepV = 0;
-              dataC.d = adVol / 12.52 / 1000;
-          }
+                break;
+              case 2:
+                if((m_ComData->d_verifyValue.Lelve_2_max - m_ComData->d_verifyValue.Lelve_2_min) != 0  && m_ComData->SettingIsVerified) {
+                    stepV = (m_ComData->d_standardValue.Lelve_2_max - m_ComData->d_standardValue.Lelve_2_min) / ((double)(m_ComData->d_verifyValue.Lelve_2_max - m_ComData->d_verifyValue.Lelve_2_min));
+                    dataC.d = m_ComData->d_standardValue.Lelve_2_min + stepV * ((double)buf_Cur - (double)m_ComData->d_verifyValue.Lelve_2_min);
+                } else {
+                    stepV = 0;
+                    dataC.d = adVol / 12.52 / 1000;
+                }
 
-          break;
-        case 3:
-          if((m_ComData->d_verifyValue.Lelve_3_max - m_ComData->d_verifyValue.Lelve_3_min) != 0  && m_ComData->SettingIsVerified) {
-              stepV = (m_ComData->d_standardValue.Lelve_3_max - m_ComData->d_standardValue.Lelve_3_min) / ((double)(m_ComData->d_verifyValue.Lelve_3_max - m_ComData->d_verifyValue.Lelve_3_min));
-              dataC.d = m_ComData->d_standardValue.Lelve_3_min + stepV * ((double)buf_Cur - (double)m_ComData->d_verifyValue.Lelve_3_min);
-          } else {
-              stepV = 0;
-  //          if((adVol / 14) >= 20) {       // 1.003 为修正mos管电压
-  //              double dec = adVol / 14 - 20;
-  //              dataC.d = (dec / 1.001 + 20) / 10;  // 大于3mA电流需要减去mos管电压
-  //          } else {
-                dataC.d = adVol / 12.5 / 10;
-  //          }
-          }
+                break;
+              case 3:
+                if((m_ComData->d_verifyValue.Lelve_3_max - m_ComData->d_verifyValue.Lelve_3_min) != 0  && m_ComData->SettingIsVerified) {
+                    stepV = (m_ComData->d_standardValue.Lelve_3_max - m_ComData->d_standardValue.Lelve_3_min) / ((double)(m_ComData->d_verifyValue.Lelve_3_max - m_ComData->d_verifyValue.Lelve_3_min));
+                    dataC.d = m_ComData->d_standardValue.Lelve_3_min + stepV * ((double)buf_Cur - (double)m_ComData->d_verifyValue.Lelve_3_min);
+                } else {
+                    stepV = 0;
+        //          if((adVol / 14) >= 20) {       // 1.003 为修正mos管电压
+        //              double dec = adVol / 14 - 20;
+        //              dataC.d = (dec / 1.001 + 20) / 10;  // 大于3mA电流需要减去mos管电压
+        //          } else {
+                      dataC.d = adVol / 12.5 / 10;
+        //          }
+                }
 
-              break;
-            case 4:
-              if((m_ComData->d_verifyValue.Lelve_4_max - m_ComData->d_verifyValue.Lelve_4_min) != 0  && m_ComData->SettingIsVerified) {
-                  stepV = (m_ComData->d_standardValue.Lelve_4_max - m_ComData->d_standardValue.Lelve_4_min) / ((double)(m_ComData->d_verifyValue.Lelve_4_max - m_ComData->d_verifyValue.Lelve_4_min));
-                  dataC.d = m_ComData->d_standardValue.Lelve_4_min + stepV * ((double)buf_Cur - (double)m_ComData->d_verifyValue.Lelve_4_min);
-              } else {
-                  stepV = 0;
-      //          dataC.d = adVol / 14 / (0.1 + 0.0075);
-                  dataC.d = adVol / 12.52 / 0.1;
-              }
+                    break;
+                  case 4:
+                    if((m_ComData->d_verifyValue.Lelve_4_max - m_ComData->d_verifyValue.Lelve_4_min) != 0  && m_ComData->SettingIsVerified) {
+                        stepV = (m_ComData->d_standardValue.Lelve_4_max - m_ComData->d_standardValue.Lelve_4_min) / ((double)(m_ComData->d_verifyValue.Lelve_4_max - m_ComData->d_verifyValue.Lelve_4_min));
+                        dataC.d = m_ComData->d_standardValue.Lelve_4_min + stepV * ((double)buf_Cur - (double)m_ComData->d_verifyValue.Lelve_4_min);
+                    } else {
+                        stepV = 0;
+            //          dataC.d = adVol / 14 / (0.1 + 0.0075);
+                        dataC.d = adVol / 12.52 / 0.1;
+                    }
 
-              break;
-            default: dataC.d = 0; break;
-          }
-          if(dataC.d < 0)
-              dataC.d = 0;
+                    break;
+                  default: dataC.d = 0; break;
+                }
+                if(dataC.d < 0)
+                    dataC.d = 0;
 
-      // 更新数据到表格数据
-      // The current time
-//      QDateTime now = QDateTime::currentDateTime();
-      QDateTime now = QDateTime::fromMSecsSinceEpoch(m_ComData->BeginTime +  m_ComData->RunningCount);
-      m_ComData->lastTime = now;      // 更新接收时间
-      // We need the currentTime in millisecond resolution
-      double currentTime = Chart::chartTime2(now.toTime_t())
-                           + ((double)now.time().msec() / 10) * 0.01;     //     / 10 * 0.01
-      // After obtaining the new values, we need to update the data arrays.
-      double tmp_V = round(dataB.d * 1000) / 1000;          // 对数据进行最小精度的四舍五入
-//      double tmp_V = round(adVol) / 1000;          // 对数据进行最小精度的四舍五入，测试ad1259的采样值
-      double tmp_A = round(dataC.d * 1000000) / 1000000;
-      if (m_ComData->d_currentIndex < m_ComData->DataSize)
-      {
-          // Store the new values in the current index position, and increment the index.
-          m_ComData->d_dataSeriesV[m_ComData->d_currentIndex] = tmp_V;
-          m_ComData->d_dataSeriesA[m_ComData->d_currentIndex] = tmp_A;
-          m_ComData->d_timeStamps[m_ComData->d_currentIndex] = currentTime;
-          ++m_ComData->d_currentIndex;
+            // 更新数据到表格数据
+            // The current time
+      //      QDateTime now = QDateTime::currentDateTime();
+            QDateTime now = QDateTime::fromMSecsSinceEpoch(m_ComData->BeginTime +  m_ComData->RunningCount);
+            m_ComData->lastTime = now;      // 更新接收时间
+            // We need the currentTime in millisecond resolution
+            double currentTime = Chart::chartTime2(now.toTime_t())
+                                 + ((double)now.time().msec() / 10) * 0.01;     //     / 10 * 0.01
+            // After obtaining the new values, we need to update the data arrays.
+            double tmp_V = round(dataB.d * 1000) / 1000;          // 对数据进行最小精度的四舍五入
+      //      double tmp_V = round(adVol) / 1000;          // 对数据进行最小精度的四舍五入，测试ad1259的采样值
+            double tmp_A = round(dataC.d * 1000000) / 1000000;
+            if (m_ComData->d_currentIndex < m_ComData->DataSize)
+            {
+                // Store the new values in the current index position, and increment the index.
+                m_ComData->d_dataSeriesV[m_ComData->d_currentIndex] = tmp_V;
+                m_ComData->d_dataSeriesA[m_ComData->d_currentIndex] = tmp_A;
+                m_ComData->d_timeStamps[m_ComData->d_currentIndex] = currentTime;
+                ++m_ComData->d_currentIndex;
 
-      }
-      else
-      {
-          // The data arrays are full. Shift the arrays and store the values at the end.
-          ComData::shiftData_D(m_ComData->d_dataSeriesV, m_ComData->DataSize, tmp_V);
-          ComData::shiftData_D(m_ComData->d_dataSeriesA, m_ComData->DataSize, tmp_A);
-          ComData::shiftData_D(m_ComData->d_timeStamps, m_ComData->DataSize, currentTime);
-      }
-      emit get_Vol_Cur_Now(now.toMSecsSinceEpoch(), dataB.d, dataC.d);
-//      qDebug() << "--单次接收的数据：dataB = " << dataB.d << ", dataC =" << dataC.d  << " Time = " << QDateTime::currentDateTime();
-//      qDebug() << "单次接收数据：" <<  QDateTime::fromMSecsSinceEpoch(m_ComData->d_timeStamps[m_ComData->d_currentIndex - 1]) << QDateTime::currentDateTime();
-      // 处理电流过大/过小的情况
-      unsigned char tips = 0;
-      if(buf[26] == 0x01)
-      {
-          tips = 1;
-      }
-      else if(buf[26] == 0x02)
-      {
-          tips = 2;
-      }
-      emit get_USB_Data(now, temperature, tips, 0);    // 发送接收信号
+            }
+            else
+            {
+                // The data arrays are full. Shift the arrays and store the values at the end.
+                ComData::shiftData_D(m_ComData->d_dataSeriesV, m_ComData->DataSize, tmp_V);
+                ComData::shiftData_D(m_ComData->d_dataSeriesA, m_ComData->DataSize, tmp_A);
+                ComData::shiftData_D(m_ComData->d_timeStamps, m_ComData->DataSize, currentTime);
+            }
+            emit get_Vol_Cur_Now(now.toMSecsSinceEpoch(), dataB.d, dataC.d);
+      //      qDebug() << "--单次接收的数据：dataB = " << dataB.d << ", dataC =" << dataC.d  << " Time = " << QDateTime::currentDateTime();
+      //      qDebug() << "单次接收数据：" <<  QDateTime::fromMSecsSinceEpoch(m_ComData->d_timeStamps[m_ComData->d_currentIndex - 1]) << QDateTime::currentDateTime();
+            // 处理电流过大/过小的情况
+            unsigned char tips = 0;
+            if(buf[26] == 0x01)
+            {
+                tips = 1;
+            }
+            else if(buf[26] == 0x02)
+            {
+                tips = 2;
+            }
+            emit get_USB_Data(now, temperature, tips, 0);    // 发送接收信号
+        }
+
+
     } else {
         qDebug() << "头码不正确" << buf[0] << buf[1] << buf[2] << buf[3];
         // 处理错误代码
