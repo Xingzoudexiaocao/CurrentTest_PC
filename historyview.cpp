@@ -314,6 +314,8 @@ void HistoryView::LoadingData(QString fileName)
 
     UpdateZoomKeyEnable();
     UpdateChartData();
+//    sqlModel.clear();
+//    myDb.close();
 }
 
 void HistoryView::wheelEvent(QWheelEvent *event)

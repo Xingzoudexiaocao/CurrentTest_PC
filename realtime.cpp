@@ -1463,6 +1463,7 @@ void RealTime::onConnectUSB()
             qDebug() << "新建表stm32_data";
 
             m_DbData.clear();       // 清空所有值
+            db.close();
             mDbCount = 0;
             m_UsbReceiveThread->isStop = false;
             m_UsbReceiveThread->start();   // 启动线程
@@ -2197,7 +2198,7 @@ void RealTime::writeSQL(qint64 time, double vol, double cur)
         m_DbData.append(buf);
         if(m_DbData.size() >= 10000)        // 每次写入10000个数据到数据库中
         {
-            QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+            QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "CurrentData");
 
             mDbCount++;
             if(mDbCount > 6 * 60)    // 1个小时重新生成数据库文件
@@ -2245,6 +2246,8 @@ void RealTime::writeSQL(qint64 time, double vol, double cur)
              // 提交事务，这个时候才是真正打开文件执行SQL语句的时候
              db.commit();
              m_DbData.clear();       // 清空所有值
+             db.close();
+             QSqlDatabase::removeDatabase("CurrentData");
 //            qDebug() << "插入数据后时间" << QDateTime::currentDateTime();
 //            qDebug() << "m_DbData List" << m_DbData.size();
         }
