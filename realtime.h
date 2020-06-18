@@ -180,6 +180,8 @@ public slots:
     void send_CMD(unsigned char cmd);
     void writeSQL(qint64 time, double vol, double cur);
 
+protected:
+    virtual void resizeEvent(QResizeEvent *event);
 };
 
 #endif // REALTIME_H

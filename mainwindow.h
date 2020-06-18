@@ -30,7 +30,6 @@ public:
 public Q_SLOTS:
     void colseDebug();
 private Q_SLOTS:
-    void serialPort_readyRead();
 //    void on_OpenCom_clicked();
 //    void on_SearchCom_clicked();
 //    void on_SendData_clicked();
@@ -51,6 +50,7 @@ private:
 protected:
     virtual void keyPressEvent(QKeyEvent *ev);      // 键盘事件
     virtual void keyReleaseEvent(QKeyEvent *ev);
+    virtual void resizeEvent(QResizeEvent *event);
     void OpenDebugWindow();
 
 };
