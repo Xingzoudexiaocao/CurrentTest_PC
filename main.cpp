@@ -9,7 +9,6 @@ using namespace std;
 // windeployqt iSCAN.exe
 
 void printscreeninfo(void)
-
 {
     QDesktopWidget *dwsktopwidget = QApplication::desktop();
     QRect deskrect = dwsktopwidget->availableGeometry();

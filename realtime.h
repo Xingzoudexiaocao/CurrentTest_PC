@@ -29,6 +29,7 @@
 #include "historyview.h"
 #include <QSpinBox>
 #include <QLineEdit>
+#include "sqlite_thread.h"
 
 class RealTime : public QWidget
 {
@@ -39,9 +40,10 @@ public:
 
     USB_Receive_Thread *m_UsbReceiveThread;
     USB_Send_Thread *m_UsbSendThread;
+    sqlite_thread *m_SqliteThread;
 
 signals:
-
+    void CreateSqilite(void);
 private:
     // The initial full range is set to 60 seconds of data.
     static const int initialFullRange = 60;
@@ -72,9 +74,7 @@ private:
     QStandardItemModel *dataModel;     // TableModel数据
     About *m_About;
     int cntDisplay;
-    QString m_DbName;
-    QList<DB_WRITE_STRUCT> m_DbData;
-    qint64 mDbCount;        // 数据库存储次数计数值
+
 
     QChartViewer *m_ChartViewer;        // QChartViewer control
     QChartViewer *m_ChartViewer_2;        // QChartViewer control
@@ -120,6 +120,9 @@ private:
     QTimer *SendVerifyCmd;       // 发送校验字节
     qint16 SendVerifyCount;     // 发送校验字节计数
 
+    QComboBox *FixCurrentScale;
+    double fixCurrentValue;
+
     void drawChart(QChartViewer *viewer, int index);           // Draw chart
     void trackLineLabel(XYChart *c, int mouseX, int index);    // Draw track cursor
     void updateControls(QChartViewer *viewer, QScrollBar *bar);      // Update other controls as viewport changes
@@ -164,6 +167,8 @@ private slots:
     void onSettingBtn(void);
 
     void slotSendVerifyCmd(void);
+
+    void slotFixCurrentScale(int);
 
 public slots:
     void m_get_USB_Data(QDateTime, double, unsigned char, unsigned char);

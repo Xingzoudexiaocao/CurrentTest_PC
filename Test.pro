@@ -39,6 +39,7 @@ SOURCES += \
         mainwindow.cpp \
         qchartviewer.cpp \
         realtime.cpp \
+        sqlite_thread.cpp \
         usb_hid.cpp \
         usb_receive_thread.cpp \
         usb_send_thread.cpp
@@ -52,6 +53,7 @@ HEADERS += \
         mainwindow.h \
         qchartviewer.h \
         realtime.h \
+        sqlite_thread.h \
         usb_hid.h \
         hidapi.h \
         libusb.h \

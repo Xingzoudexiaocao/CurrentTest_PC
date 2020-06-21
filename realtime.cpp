@@ -33,7 +33,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
 //    frame->setStyleSheet("background-color:white");
     frame->setFrameShape(QFrame::StyledPanel);
 
-    QString bnt_qss1 = "QPushButton {font-family:arial; text-align:left; padding:5px; font-size:20px;}\
+    QString bnt_qss1 = "QPushButton {font-family:arial; text-align:left; padding:2px; font-size:16px;}\
             QPushButton:Enabled {background-color: #0066CC; color:white;}\
             QPushButton:Disabled {background-color: #606060; color:#CCCCCC;}";
     QFont    font ( "微软雅黑",  10,   75);
@@ -463,7 +463,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
 
     m_UsbReceiveThread = new USB_Receive_Thread(this, m_UsbHid, m_ComData);    // 新建线程
 //    m_UsbReceiveThread->setPriority(QThread::IdlePriority);
-    connect(m_UsbReceiveThread,SIGNAL(get_Vol_Cur_Now(qint64, double, double)),this, SLOT(writeSQL(qint64, double, double)));
+    connect(m_UsbReceiveThread,SIGNAL(get_Vol_Cur_Now(qint64, double, double)),this, SLOT(writeSQL(qint64, double, double))); // 写数据库
     connect(m_UsbReceiveThread,SIGNAL(get_USB_Data(QDateTime, double, unsigned char, unsigned char)),this, SLOT(m_get_USB_Data(QDateTime, double, unsigned char, unsigned char)));
     connect(m_UsbReceiveThread,SIGNAL(get_Version_Length(unsigned long long, unsigned long long)),this, SLOT(m_get_Version_Length(unsigned long long, unsigned long long)));
     connect(m_UsbReceiveThread,SIGNAL(end_Thread()),this, SLOT(thread_receive_finished()));
@@ -475,6 +475,12 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     connect(m_UsbSendThread,SIGNAL(usbFail()),this, SLOT(updataFail()));
     connect(m_UsbSendThread,SIGNAL(usbTimeOut()),this, SLOT(upadtaTimeOut()));
     connect(m_UsbReceiveThread,SIGNAL(setAckOrNak(int)),m_UsbSendThread, SLOT(setAckState(int)));
+
+    m_SqliteThread = new sqlite_thread(this, m_UsbHid, m_ComData);    // 新建线程
+    connect(this,SIGNAL(CreateSqilite()),m_SqliteThread, SLOT(CreateSqlite_T()));
+    connect(m_UsbReceiveThread,SIGNAL(get_Vol_Cur_Now(qint64, double, double)),m_SqliteThread, SLOT(writeSqliteData(qint64, double, double)));  // 写数据库
+    m_SqliteThread->start();
+
     // Set up the chart update timer
     m_ChartUpdateTimer = new QTimer(this);
     connect(m_ChartUpdateTimer, SIGNAL(timeout()), SLOT(updateChart()));
@@ -707,15 +713,22 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
 //    frame->setStyleSheet("background-color:white");
     frameTop->setFrameShape(QFrame::NoFrame);
     play = new QPushButton(QIcon(":/play.png"), "继续", frame_2);
-    play->setGeometry(1145, 10, 80, 30);
+    play->setGeometry(1145 - 360, 15, 80, 25);
     play->setStyleSheet(bnt_qss1);
     play->setVisible(false);
     connect(play, &QAbstractButton::clicked, this, &RealTime::onBtnPlay);
     pause = new QPushButton(QIcon(":/pause.png"), "暂停", frame_2);
-    pause->setGeometry(1225, 10, 80, 30);
+    pause->setGeometry(1225 - 360, 15, 80, 25);
     pause->setStyleSheet(bnt_qss1);
     pause->setVisible(false);
     connect(pause, &QAbstractButton::clicked, this, &RealTime::onBtnPause);
+
+    FixCurrentScale = new QComboBox(frame_2);
+    FixCurrentScale->setGeometry(250, 20, 120, 20);
+    FixCurrentScale->addItems(QStringList() << "自动量程" << "3000mA" << "1000mA" << "100mA" << "10mA" << "1mA" << "100uA" << "10uA" << "1uA");
+    connect(FixCurrentScale, SIGNAL(currentIndexChanged(int)), this, SLOT(slotFixCurrentScale(int)));
+    fixCurrentValue = 0;
+
 //    // 保存按键代码
 //    download = new QPushButton(QIcon(":/save.png"), "导出", frameTop);
 //    download->setGeometry(195, 4, 80, 30);
@@ -1268,8 +1281,9 @@ void RealTime::drawChart(QChartViewer *viewer, int index)
     //        layer->addDataSet(DoubleArray(m_ComData->d_dataSeriesA, m_ComData->d_currentIndex), 0x00ff, buffer);
         }
         layer->addDataSet(viewPortDataSeriesC, 0x0000ff, buffer);
-        c->yAxis()->setMinTickInc(0.1);
-//        c->yAxis()->setDateScale(0, 10);
+//        c->yAxis()->setMinTickInc(0.1);
+        if(fixCurrentValue > 0)
+            c->yAxis()->setDateScale(0, fixCurrentValue);
     }
 
     //================================================================================
@@ -1463,40 +1477,8 @@ void RealTime::onConnectUSB()
         disconnectUSB->setEnabled(true);
         qDebug() << "连接成功";
 
-        // 创建数据库文件
-        QDir dir(QDir::currentPath() + "/iSCAN_Data");
-        if(!dir.exists())
-        {
-           qDebug() << "创建文件夹";
-           dir.mkdir(QDir::currentPath() + "/iSCAN_Data");  //只创建一级子目录，即必须保证上级目录存在
-        }
-        QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-        m_DbName = QDir::currentPath() + "/iSCAN_Data/" + QDateTime::currentDateTime().toString("yyyy_MM_dd hh_mm_ss") + " Record.db";
-        qDebug() << "strName = " << m_DbName;
-   //     strName = QDir::currentPath() + "/iSCAN_Data/" + "Record.db";      // 测试
-        db.setDatabaseName(m_DbName);    // QApplication::applicationDirPath() + "CONFIG.db"     不能包含字符
-   //     db.setUserName("admin");
-   //     db.setPassword("admin");
-        if (!db.open())     // if (!db.open("admin","admin"))
-        {
-            qDebug() << "创建数据库文件失败！";
-            QMessageBox::critical(this, "提示", "创建数据库文件失败！");
-            return;
-        }
-        QSqlQuery query("", db);
-   //     if(!query.exec("select count(*)  from sqlite_master where type='table' and name = 'stm32_data'"))
-   //     {
-   //         query.exec("DROP TABLE stm32_data");        //先清空一下表
-            query.exec("CREATE TABLE stm32_data ("
-                               "id INTEGER PRIMARY KEY AUTOINCREMENT, "
-                               "time INT64 NOT NULL, "
-                               "voltage DOUBLE NOT NULL, "
-                               "current DOUBLE NOT NULL)");         //创建一个stm32_data表
-            qDebug() << "新建表stm32_data";
+        emit CreateSqilite();
 
-            m_DbData.clear();       // 清空所有值
-            db.close();
-            mDbCount = 0;
             m_UsbReceiveThread->isStop = false;
             m_UsbReceiveThread->start();   // 启动线程
             m_ChartUpdateTimer->start(100);    // 启动更新表格
@@ -1567,7 +1549,7 @@ void RealTime::onDisConnectUSB()
     usb_str1->setText("-");
     usb_str2->setText("-");
     usb_str3->setText("-");
-    m_DbName = "";        // 清空数据文件名称
+
     averageValue->setEnabled(true);
     batteryCapacity->setEnabled(true);
     historyView->ClearData();       // 清除历史数据
@@ -2169,15 +2151,15 @@ void RealTime::writeSQL(qint64 time, double vol, double cur)
         bRunningTimeHour->setText(QString::number(runningMinute / 60));
         bRunningTimeMinute->setText(QString::number(runningMinute % 60));
         if(runningMinute % 60 < 10)
-            bRunningTimeMinute->setGeometry(190 + 15, 120 + 4, 40, 40);
+            bRunningTimeMinute->setGeometry(190 + 15, 90 + 4, 40, 40);
         else
-            bRunningTimeMinute->setGeometry(190, 120 + 4, 40, 40);
+            bRunningTimeMinute->setGeometry(190, 90 + 4, 40, 40);
         if(runningMinute / 60 >= 100)
-            bRunningTimeHour->setGeometry(120, 120 + 4, 80, 40);
+            bRunningTimeHour->setGeometry(120, 90 + 4, 80, 40);
         else if(runningMinute / 60 < 10)
-            bRunningTimeHour->setGeometry(120 + 30, 120 + 4, 80, 40);
+            bRunningTimeHour->setGeometry(120 + 30, 90 + 4, 80, 40);
         else
-            bRunningTimeHour->setGeometry(120 + 15, 120 + 4, 80, 40);
+            bRunningTimeHour->setGeometry(120 + 15, 90 + 4, 80, 40);
         qint64 remainMinute = 0;
         double curAvg = 0;
         for (int i = 0; i < m_ComData->AverageMinuteCount; i++) {
@@ -2190,13 +2172,13 @@ void RealTime::writeSQL(qint64 time, double vol, double cur)
         bRemainTimeHour->setText(QString::number(remainMinute / 60));
         bRemainTimeMinute->setText(QString::number(remainMinute % 60));
         if(remainMinute % 60 < 10)
-            bRemainTimeMinute->setGeometry(190 + 15, 160 + 4, 40, 40);
+            bRemainTimeMinute->setGeometry(190 + 15, 120 + 4, 40, 40);
         else
-            bRemainTimeMinute->setGeometry(190, 160 + 4, 40, 40);
+            bRemainTimeMinute->setGeometry(190, 120 + 4, 40, 40);
         if(remainMinute / 60 >= 100)
-            bRemainTimeHour->setGeometry(120, 160 + 4, 80, 40);
+            bRemainTimeHour->setGeometry(120, 120 + 4, 80, 40);
         else if(remainMinute / 60 < 10)
-            bRemainTimeHour->setGeometry(120 + 30, 160 + 4, 80, 40);
+            bRemainTimeHour->setGeometry(120 + 30, 120 + 4, 80, 40);
         else
             bRemainTimeHour->setGeometry(120 + 15, 160 + 4, 80, 40);
     }
@@ -2225,64 +2207,6 @@ void RealTime::writeSQL(qint64 time, double vol, double cur)
 //        query.exec("INSERT INTO stm32_data (ID,time,voltage,current) VALUES (20, 100, 100.01, 20000.00 )");     // 写一条指令时间8ms~9ms
 //        qDebug() << "插入数据后时间" << QDateTime::currentDateTime();
 
-        DB_WRITE_STRUCT buf;
-        buf.time = time; buf.vol = vol; buf.cur = cur;          // QDateTime::currentDateTime().toMSecsSinceEpoch()
-        m_DbData.append(buf);
-        if(m_DbData.size() >= 10000)        // 每次写入10000个数据到数据库中
-        {
-            QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "CurrentData");
-
-            mDbCount++;
-            if(mDbCount > 6 * 60)    // 1个小时重新生成数据库文件
-            {
-//                mDbCount = 0;
-                m_DbName = QDir::currentPath() + "/iSCAN_Data/" + QDateTime::currentDateTime().toString("yyyy_MM_dd hh_mm_ss") + " Record.db";
-            }
-
-            db.setDatabaseName(m_DbName);    // QApplication::applicationDirPath() + "CONFIG.db"     不能包含字符
-       //     db.setUserName("admin");
-       //     db.setPassword("admin");
-            if (!db.open())     // if (!db.open("admin","admin"))
-            {
-                qDebug() << "创建数据库文件失败！";
-                QMessageBox::critical(this, "提示", "创建数据库文件失败！");
-                return;
-            }
-            QSqlQuery query("", db);
-            if(mDbCount > 6 * 60)    // 1个小时重新生成数据库文件
-            {
-                mDbCount = 0;       // 清计数值
-                query.exec("CREATE TABLE stm32_data ("
-                                   "id INTEGER PRIMARY KEY AUTOINCREMENT, "
-                                   "time INT64 NOT NULL, "
-                                   "voltage DOUBLE NOT NULL, "
-                                   "current DOUBLE NOT NULL)");         //创建一个stm32_data表
-                qDebug() << "新建表stm32_data";
-            }
-             // 开始启动事务
-//              qDebug() << "插入数据前时间" << QDateTime::currentDateTime();
-//              qDebug() << "m_DbData List" << m_DbData.size();
-    //         bool    bsuccess = false;
-    //         QTime    tmpTime;
-              db.transaction();
-    //         tmpTime.start();
-              query.prepare("INSERT INTO stm32_data (time, voltage, current) "
-                                "VALUES (:time, :voltage, :current)");   //为每一列标题添加绑定值
-              for(int i = 0 ; i < m_DbData.size(); i++)       //从names表里获取每个名字
-              {
-                  query.bindValue(":time", m_DbData.at(i).time);                      //向绑定值里加入
-                  query.bindValue(":voltage", m_DbData.at(i).vol);      //
-                  query.bindValue(":current", m_DbData.at(i).cur);    //
-                  query.exec();               //加入库中
-               }
-             // 提交事务，这个时候才是真正打开文件执行SQL语句的时候
-             db.commit();
-             m_DbData.clear();       // 清空所有值
-             db.close();
-             QSqlDatabase::removeDatabase("CurrentData");
-//            qDebug() << "插入数据后时间" << QDateTime::currentDateTime();
-//            qDebug() << "m_DbData List" << m_DbData.size();
-        }
 }
 
 void RealTime::HistoryOpen()
@@ -2303,12 +2227,6 @@ void RealTime::HistoryOpen()
 //    QByteArray arry=file.readAll();//读取文件
 //    file.close();
     qDebug() << "打开文件：" << fileName;
-    if(m_DbName == fileName)
-    {
-        qDebug() << "不能打开当前数据";
-        QMessageBox::critical(this, "提示", "无法打开当前文件，请选择历史数据文件！");
-        return;
-    }
     historyFile->setText(fileName);
 //    int length=arry.size();//计算长度
 //    qDebug() << length;
@@ -2346,5 +2264,18 @@ void RealTime::slotSendVerifyCmd(void)
         SendVerifyCmd->stop();
     }
 
+
+}
+
+void RealTime::slotFixCurrentScale(int val)
+{
+//    qDebug() << "val = " << val;
+    double fixArr[9] = {0, 3000, 1000, 100, 10, 1, 0.1, 0.01, 0.001};
+    try {
+        fixCurrentValue = fixArr[val];
+        updateChart();      // 初始化显示表格
+    } catch (...) {
+
+    }
 
 }
