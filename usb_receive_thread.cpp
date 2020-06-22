@@ -90,6 +90,7 @@ void USB_Receive_Thread::run()
                        testCnt_S = testCnt;
 */
                        HandleData(tmp);  // 处理数据
+                       delete tmp;
                   }
               }
               else
@@ -309,4 +310,6 @@ void USB_Receive_Thread::HandleData(ST_REC_STRUCT *bufData)
             qDebug() << now << "错误代码cmd = " << (unsigned char)(buf_Cur - 0x80000000) << buf[7] << buf[6] << buf[5] << buf[4] ;
         }
     }
+
+    delete []getHeader;
 }

@@ -78,9 +78,7 @@ private:
 
     QChartViewer *m_ChartViewer;        // QChartViewer control
     QChartViewer *m_ChartViewer_2;        // QChartViewer control
-    QTimer *dataRateTimer;
     QTimer *m_ChartUpdateTimer;         // The chart update timer
-    QTimer *m_TableUpdateTimer;         // The chart update timer
     QScrollBar *m_HScrollBar;           // The scroll bar
     QScrollBar *m_HScrollBar_2;           // The scroll bar
 
@@ -132,12 +130,8 @@ private slots:
     void linkUs(QString);
     void getData();                     // Get new data values
     void updateChart();                 // Update the chart.
-    void updateTable();                 // Update the table.
-    void drawChart();                   // Draw the chart.
-    void drawChart_2();                   // Draw the chart.
     void onMouseMovePlotArea(QMouseEvent *);
     void onMouseMovePlotArea_2(QMouseEvent *);
-    void trackLineLegend(XYChart *c, int mouseX);
     void onMouseUsageChanged(int mouseUsage);       // Pointer/zoom in/zoom out button clicked
     void onSave(bool);                              // Save button clicked
     void onHScrollBarChanged(int value);            // Scrollbar changed
@@ -155,7 +149,6 @@ private slots:
     void onBtnPlay();
     void onBtnPause();
     void onBtnDownload();
-    void updateTableView();
     QString doubleToTime(double dTime);
     void UpdataOpen();
     void UpdataSend();

@@ -449,18 +449,6 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     m_ChartViewer->setMouseWheelZoomRatio(1.1);
     m_ChartViewer_2->setMouseWheelZoomRatio(1.1);
 
-    // Set up the data acquisition mechanism. In this demo, we just use a timer to get a
-    // sample every 250ms.
-    dataRateTimer = new QTimer(this);
-//    dataRateTimer->start(DataInterval);
-    connect(dataRateTimer, SIGNAL(timeout()), SLOT(getData()));
-
-//    // Set up the data acquisition mechanism. In this demo, we just use a timer to get a
-//    // sample every 1ms.
-//    QTimer *dataRateTimer_2 = new QTimer(this);
-//    dataRateTimer_2->start(DataInterval);
-//    connect(dataRateTimer_2, SIGNAL(timeout()), SLOT(CreateData()));
-
     m_UsbReceiveThread = new USB_Receive_Thread(this, m_UsbHid, m_ComData);    // 新建线程
 //    m_UsbReceiveThread->setPriority(QThread::IdlePriority);
     connect(m_UsbReceiveThread,SIGNAL(get_Vol_Cur_Now(qint64, double, double)),this, SLOT(writeSQL(qint64, double, double))); // 写数据库
@@ -484,10 +472,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     // Set up the chart update timer
     m_ChartUpdateTimer = new QTimer(this);
     connect(m_ChartUpdateTimer, SIGNAL(timeout()), SLOT(updateChart()));
-    m_TableUpdateTimer = new QTimer(this);
-    connect(m_TableUpdateTimer, SIGNAL(timeout()), SLOT(updateTable()));
     updateChart();      // 初始化显示表格
-//    updateTable();      // 初始化显示详细数据
 //    drawChart(m_ChartViewer, 0);
 //    drawChart(m_ChartViewer_2, 1);
 
@@ -514,50 +499,6 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     curShow->setText("电流：");
     curShow->setFont(font); */
 
-//    // 编辑数据显示界面
-//    QString dataQss = "QTableWidget {color:black;/*前景色：文字颜色*/ /*gridline-color:red;*//*表格中的网格线条颜色*/ background:white; alternate-background-color:rgb(211, 211, 211); border:1px solid gray;  /*边框线的宽度、颜色*/ }\
-//        QHeaderView::section {background-color: rgb(4, 116, 191);  /*蓝色*/  color: white; padding-left: 4px; font-weight:bold; border:1px solid gray;}\
-//        QTableWidget::item{max-height:30px; text-align: center;}";
-//    dataShow = new QTableWidget(frame_2_ext);
-//    dataShow->setGeometry(2, 2, 805, 805);  // 847
-//    dataShow->setStyleSheet(dataQss);
-//    dataShow->setColumnCount(4);
-//    dataShow->setColumnWidth(0,235);dataShow->setColumnWidth(1,160);dataShow->setColumnWidth(2,160);dataShow->setColumnWidth(3,160);
-//    /* 设置 tableWidget */
-//    dataShow->setHorizontalHeaderLabels(QStringList()<< "时间" << "电压" << "电流" << "功率");
-//    dataShow->setEditTriggers(QAbstractItemView::NoEditTriggers); //设置表格无法编辑
-//    dataShow->setAlternatingRowColors(true);  //设置交替颜色，需要在函数属性中设置:
-//    QHeaderView* rowHeaderView = dataShow->verticalHeader();
-//    rowHeaderView->setMinimumWidth(50);     // 默认行号最小宽度
-////    rowHeaderView->setHidden(true);     // 隐藏默认行号
-//    dataShow->setSelectionBehavior(QAbstractItemView::SelectRows);   // 选中行
-////    dataShow->setSelectionMode(QAbstractItemView::ExtendedSelection);  // 可以选中多个
-//    dataShow->setRowCount(0);   // 初始化显示0行
-//    dataShow->clearContents();//只清除工作区，不清除表头
-    //  QTableView {color:black;/*前景色：文字颜色*/ /*gridline-color:red;*//*表格中的网格线条颜色*/ background:white; alternate-background-color:rgb(211, 211, 211); border:1px solid gray;  /*边框线的宽度、颜色*/ }
-
-// 以下屏蔽显示详细数据
-//    QString dataQss = "QHeaderView {color: black;font: bold 10pt;background-color: rgb(255, 255, 255); border:1px solid gray;}\
-//        QHeaderView::section {background-color: rgb(4, 116, 191);  /*蓝色*/  color: white; padding-left: 4px; font-weight:bold; border:1px solid gray;}\
-//        QTableView::section {background-color: rgb(4, 116, 191);  /*蓝色*/  color: white; padding-left: 4px; font-weight:bold; border:1px solid gray;}\
-//        QTableView::item{max-height:30px; text-align: center;}";
-//    dataView  = new QTableView(frame_2_ext);
-//    dataView->setGeometry(2, 2, 815, 805);  // 847
-//    QHeaderView *HeaderV = dataView->verticalHeader();
-//    HeaderV->hide();    //默认显示行头，如果你觉得不美观的话，我们可以将隐藏
-//    dataView->setEditTriggers(QAbstractItemView::NoEditTriggers);       //设置表格的单元为只读属性，即不能编辑
-//    dataView->setSelectionBehavior(QAbstractItemView::SelectRows);      //设置选中时为整行选中
-//    dataView->setAlternatingRowColors(true);  //设置交替颜色，需要在函数属性中设置:
-//    dataView->setStyleSheet(dataQss);
-//    dataModel = new QStandardItemModel(frame_2_ext);
-//    /*设置列字段名*/
-//    dataModel->setColumnCount(5);
-//    dataModel->setHeaderData(0,Qt::Horizontal, "序号");
-//    dataModel->setHeaderData(1,Qt::Horizontal, "日期时间");
-//    dataModel->setHeaderData(2,Qt::Horizontal, "电压");
-//    dataModel->setHeaderData(3,Qt::Horizontal, "电流");
-//    dataModel->setHeaderData(4,Qt::Horizontal, "功率");
-////    updateTableView();
 //    // 初始化显示
 //    dataView->setModel(dataModel);
 //    dataView->setColumnWidth(0,70);dataView->setColumnWidth(1,230);dataView->setColumnWidth(2,160);dataView->setColumnWidth(3,160);dataView->setColumnWidth(4,160);
@@ -862,132 +803,6 @@ void RealTime::updateChart()
     onChartUpdateTimer(m_ChartViewer_2);
 }
 
-void RealTime::updateTable()
-{
-    updateTableView();      // 更新TableView
-}
-
-//
-// Draw chart
-//
-void RealTime::drawChart()
-{
-//    return;
-    // Create an XYChart object 600 x 270 pixels in size, with light grey (f4f4f4)
-    // background, black (000000) border, 1 pixel raised effect, and with a rounded frame.
-    XYChart *c = new XYChart(1330, 370, 0xf4f4f4, 0x000000, 1);
-//    c->setDefaultFonts("Simsun","Simsun","Simsun");
-    QColor bgColor = palette().color(backgroundRole()).rgb();
-//    bgColor = 0x00f4f4;
-    c->setRoundedFrame((bgColor.red() << 16) + (bgColor.green() << 8) + bgColor.blue());
-
-    // Set the plotarea at (55, 62) and of size 520 x 175 pixels. Use white (ffffff)
-    // background. Enable both horizontal and vertical grids by setting their colors to
-    // grey (cccccc). Set clipping mode to clip the data lines to the plot area.
-    c->setPlotArea(55, 62, 720, 275, 0xffffff, -1, -1, 0xcccccc, 0xcccccc);
-    c->setClipping();
-
-    // Add a title to the chart using 15 pts Times New Roman Bold Italic font, with a light
-    // grey (dddddd) background, black (000000) border, and a glass like raised effect.
-    c->addTitle("Chart View 1", "timesbi.ttf", 15)->setBackground(0xdddddd, 0x000000, Chart::glassEffect());
-
-    // Add a legend box at the top of the plot area with 9pts Arial Bold font. We set the
-    // legend box to the same width as the plot area and use grid layout (as opposed to
-    // flow or top/down layout). This distributes the 3 legend icons evenly on top of the
-    // plot area.
-    LegendBox *b = c->addLegend2(55, 33, 3, "arialbd.ttf", 9);
-    b->setBackground(Chart::Transparent, Chart::Transparent);
-    b->setWidth(520);
-
-    // Configure the y-axis with a 10pts Arial Bold axis title
-    c->yAxis()->setTitle("Voltage (V/mV)", "arialbd.ttf", 10);
-
-    // Configure the x-axis to auto-scale with at least 75 pixels between major tick and
-    // 15  pixels between minor ticks. This shows more minor grid lines on the chart.
-    c->xAxis()->setTickDensity(75, 15);
-
-    // Set the axes width to 2 pixels
-    c->xAxis()->setWidth(2);
-    c->yAxis()->setWidth(2);
-
-    // Now we add the data to the chart.
-    double lastTime = m_ComData->d_timeStamps[m_ComData->d_currentIndex - 1];
-//    if (lastTime != Chart::NoValue)
-//    {
-        // Set up the x-axis to show the time range in the data buffer
-        c->xAxis()->setDateScale(lastTime - DataInterval * m_ComData->d_currentIndex / 1000, lastTime);
-
-        // Set the x-axis label format
-        c->xAxis()->setLabelFormat("{value|hh:nn:ss}");
-
-        // Create a line layer to plot the lines
-        LineLayer *layer = c->addLineLayer();
-
-        // The x-coordinates are the timeStamps.
-        layer->setXData(DoubleArray(m_ComData->d_timeStamps, m_ComData->d_currentIndex));
-
-        // The 3 data series are used to draw 3 lines. Here we put the latest data values
-        // as part of the data set name, so you can see them updated in the legend box.
-//        layer->addDataSet(DoubleArray(m_dataSeriesA, m_currentIndex - 1), 0xff0000, "Alpha");
-//        layer->addDataSet(DoubleArray(m_dataSeriesB, m_currentIndex - 1), 0x00cc00, "Beta");
-//        layer->addDataSet(DoubleArray(m_dataSeriesC, m_currentIndex - 1), 0x0000ff, "Gamma");
-        char buffer[1024];
-
-        sprintf(buffer, "Hardware: <*bgColor=CCFFCC*> %.2f ", m_ComData->d_dataSeriesV[m_ComData->d_currentIndex - 1]);
-        layer->addDataSet(DoubleArray(m_ComData->d_dataSeriesV, m_ComData->d_currentIndex), 0x00cc00, buffer);
-
-        sprintf(buffer, "Services: <*bgColor=CCCCFF*> %.2f ", m_ComData->d_dataSeriesA[m_ComData->d_currentIndex - 1]);
-        layer->addDataSet(DoubleArray(m_ComData->d_dataSeriesA, m_ComData->d_currentIndex), 0x0000ff, buffer);
-//    }
-
-    // Set the chart image to the WinChartViewer
-    delete m_ChartViewer->getChart();
-    m_ChartViewer->setChart(c);
-//    delete c;
-}
-
-void RealTime::drawChart_2()
-{
-    XYChart *d = new XYChart(1330, 370, 0xf4f4f4, 0x000000, 1);
-
-    d->setPlotArea(55, 62, 720, 275, 0xffffff, -1, -1, 0xcccccc, 0xcccccc);
-    d->setClipping();
-    d->addTitle("Chart View 2", "timesbi.ttf", 15)->setBackground(0xdddddd, 0x000000, Chart::glassEffect());
-    d->yAxis()->setTitle("Current (I/uA)", "arialbd.ttf", 10);
-    d->xAxis()->setTickDensity(75, 15);
-    d->xAxis()->setWidth(2);
-    d->yAxis()->setWidth(2);
-
-    // Now we add the data to the chart.
-    double lastTime_2 = m_ComData->d_timeStamps[m_ComData->DataSize - 1];
-    if (lastTime_2 != Chart::NoValue)
-    {
-        // Set up the x-axis to show the time range in the data buffer
-        d->xAxis()->setDateScale(lastTime_2 - DataInterval * m_ComData->DataSize / 1000, lastTime_2);
-        // Set the x-axis label format
-        d->xAxis()->setLabelFormat("{value|hh:nn:ss}");
-        // Create a line layer to plot the lines
-        LineLayer *layer = d->addLineLayer();
-        // The x-coordinates are the timeStamps.
-        layer->setXData(DoubleArray(m_ComData->d_timeStamps, m_ComData->DataSize));
-        // The 3 data series are used to draw 3 lines. Here we put the latest data values
-        // as part of the data set name, so you can see them updated in the legend box.
-        // The 3 data series are used to draw 3 lines.
-//        layer->addDataSet(DoubleArray(m_dataSeriesA, m_ComData->DataSize), 0xff0000, "Alpha");
-//        layer->addDataSet(DoubleArray(m_dataSeriesB, sampleSize), 0x00cc00, "Beta");
-//        layer->addDataSet(DoubleArray(m_dataSeriesC, sampleSize), 0x0000ff, "Gamma");
-    }
-    // Include track line with legend. If the mouse is on the plot area, show the track
-    // line with legend at the mouse position; otherwise, show them for the latest data
-    // values (that is, at the rightmost position).
-    trackLineLegend(d, m_ChartViewer_2->isMouseOnPlotArea() ? m_ChartViewer_2->getPlotAreaMouseX() :
-        d->getPlotArea()->getRightX());
-
-    // Set the chart image to the WinChartViewer
-    delete m_ChartViewer_2->getChart();
-    m_ChartViewer_2->setChart(d);
-
-}
 //
 // Draw track cursor when mouse is moving over plotarea
 //
@@ -1000,72 +815,6 @@ void RealTime::onMouseMovePlotArea_2(QMouseEvent *)
 {
     trackLineLabel((XYChart *)m_ChartViewer_2->getChart(), m_ChartViewer_2->getPlotAreaMouseX(), 1);
     m_ChartViewer_2->updateDisplay();
-}
-
-//
-// Draw the track line with legend
-//
-void RealTime::trackLineLegend(XYChart *c, int mouseX)
-{
-    // Clear the current dynamic layer and get the DrawArea object to draw on it.
-    DrawArea *d = c->initDynamicLayer();
-
-    // The plot area object
-    PlotArea *plotArea = c->getPlotArea();
-
-    // Get the data x-value that is nearest to the mouse, and find its pixel coordinate.
-    double xValue = c->getNearestXValue(mouseX);
-    int xCoor = c->getXCoor(xValue);
-
-    // Draw a vertical track line at the x-position
-    d->vline(plotArea->getTopY(), plotArea->getBottomY(), xCoor, d->dashLineColor(0x000000, 0x0101));
-
-    // Container to hold the legend entries
-    vector<string> legendEntries;
-
-    // Iterate through all layers to build the legend array
-    for (int i = 0; i < c->getLayerCount(); ++i) {
-        Layer *layer = c->getLayerByZ(i);
-
-        // The data array index of the x-value
-        int xIndex = layer->getXIndexOf(xValue);
-
-        // Iterate through all the data sets in the layer
-        for (int j = 0; j < layer->getDataSetCount(); ++j) {
-            DataSet *dataSet = layer->getDataSetByZ(j);
-
-            // We are only interested in visible data sets with names
-            const char *dataName = dataSet->getDataName();
-            int color = dataSet->getDataColor();
-            if (dataName && *dataName && (color != (int)Chart::Transparent)) {
-                // Build the legend entry, consist of the legend icon, name and data value.
-                double dataValue = dataSet->getValue(xIndex);
-                ostringstream legendEntry;
-                legendEntry << "<*block*>" << dataSet->getLegendIcon() << " " << dataName << ": " <<
-                    ((dataValue == Chart::NoValue) ? "N/A" : c->formatValue(dataValue, "{value|P4}"))
-                    << "<*/*>";
-                legendEntries.push_back(legendEntry.str());
-
-                // Draw a track dot for data points within the plot area
-                int yCoor = c->getYCoor(dataSet->getPosition(xIndex), dataSet->getUseYAxis());
-                if ((yCoor >= plotArea->getTopY()) && (yCoor <= plotArea->getBottomY())) {
-                    d->circle(xCoor, yCoor, 4, 4, color, color);
-                }
-            }
-        }
-    }
-
-    // Create the legend by joining the legend entries
-    ostringstream legendText;
-    legendText << "<*block,maxWidth=" << plotArea->getWidth() << "*><*block*><*font=arialbd.ttf*>["
-        << c->xAxis()->getFormattedLabel(xValue, "hh:nn:ss") << "]<*/*>";
-    for (int i = ((int)legendEntries.size()) - 1; i >= 0; --i)
-        legendText << "        " << legendEntries[i];
-
-    // Display the legend on the top of the plot area
-    TTFText *t = d->text(legendText.str().c_str(), "arial.ttf", 8);
-    t->draw(plotArea->getLeftX() + 5, plotArea->getTopY() - 3, 0x000000, Chart::BottomLeft);
-    t->destroy();
 }
 
 //
@@ -1482,8 +1231,6 @@ void RealTime::onConnectUSB()
             m_UsbReceiveThread->isStop = false;
             m_UsbReceiveThread->start();   // 启动线程
             m_ChartUpdateTimer->start(100);    // 启动更新表格
-    //        m_TableUpdateTimer->start(100);    // 启动更新详细数据
-    //        dataRateTimer->start(DataInterval); // 启动获取数据
 //            m_ComData->ClearData();         // 清之前的数据
             play->setVisible(true);
             play->setEnabled(false);
@@ -1544,8 +1291,6 @@ void RealTime::onDisConnectUSB()
     m_UsbSendThread->terminate();       // 关闭发送线程
 
     m_ChartUpdateTimer->stop();     // 关闭更新表格
-//    m_TableUpdateTimer->stop();    // 关闭更新详细数据
-    dataRateTimer->stop();      // 关闭获取数据
     usb_str1->setText("-");
     usb_str2->setText("-");
     usb_str3->setText("-");
@@ -1783,7 +1528,6 @@ void RealTime::onBtnPlay()
     play->setEnabled(false);
     pause->setEnabled(true);
     m_ChartUpdateTimer->start(100);    // 启动更新表格
-//    m_TableUpdateTimer->start(100);    // 启动更新详细数据
 }
 void RealTime::onBtnPause()
 {
@@ -1801,7 +1545,6 @@ void RealTime::onBtnPause()
     play->setEnabled(true);
     pause->setEnabled(false);
     m_ChartUpdateTimer->stop();    // 关闭更新表格
-//    m_TableUpdateTimer->stop();    // 关闭更新详细数据
 }
 void RealTime::onBtnDownload()
 {
@@ -1841,84 +1584,6 @@ void RealTime::onBtnDownload()
     file.close();
     QMessageBox::about(this,"提示","导入数据到文件'data.txt'成功！");
 }
-void RealTime::updateTableView()
-{
-    if(m_ComData->d_currentIndex <= 1)
-    {
-        return;
-    }
-   dataView->setUpdatesEnabled(false);  //暂停界面刷新
-   int row = dataView->currentIndex().row();    // 获取选中的行号
-
-   /*设置行字段名*/
-   int rowCount = (int)m_ComData->d_currentIndex;
-   if(rowCount <= 1000)
-   {
-       dataModel->setRowCount(rowCount);        // 设置行
-       for (int i = 0; i < rowCount; i++) {
-           QString v = QString::number(m_ComData->d_dataSeriesV[i], 'f', 3) + "V";
-           QString a;
-           if(m_ComData->d_dataSeriesA[i] < 1) {
-               a = QString::number(m_ComData->d_dataSeriesA[i] * 1000, 'f', 3) + "uA";
-           } else {
-               a = QString::number(m_ComData->d_dataSeriesA[i], 'f', 3) + "mA";
-           }
-           QStandardItem *item[5];
-    //       item[1]->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter); //文本对齐格式
-           item[0] = new QStandardItem(QString::number(i + 1));
-           item[0]->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter); //文本对齐格式
-           dataModel->setItem(i, 0, item[0]);
-           item[1] = new QStandardItem(doubleToTime(m_ComData->d_timeStamps[i]));
-           item[1]->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter); //文本对齐格式
-           dataModel->setItem(i, 1, item[1]);
-           item[2] = new QStandardItem(v);
-           item[2]->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter); //文本对齐格式
-           dataModel->setItem(i, 2, item[2]);
-           item[3] = new QStandardItem(a);
-           item[3]->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter); //文本对齐格式
-           dataModel->setItem(i, 3, item[3]);
-           item[4] = new QStandardItem(QString::number(m_ComData->d_dataSeriesV[i] * m_ComData->d_dataSeriesA[i], 'f', 3) + "W");
-           item[4]->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter); //文本对齐格式
-           dataModel->setItem(i, 4, item[4]);
-       }
-   }
-   else
-   {
-       dataModel->setRowCount(1000);        // 设置行
-       for (int i = 0; i < 1000; i++) {
-           QString v = QString::number(m_ComData->d_dataSeriesV[rowCount - 1000 + i], 'f', 3) + "V";
-           QString a;
-           if(m_ComData->d_dataSeriesA[i] < 1) {
-               a = QString::number(m_ComData->d_dataSeriesA[rowCount - 1000 + i] * 1000, 'f', 3) + "uA";
-           } else {
-               a = QString::number(m_ComData->d_dataSeriesA[rowCount - 1000 + i], 'f', 3) + "mA";
-           }
-           QStandardItem *item[5];
-           item[0] = new QStandardItem(QString::number(i + 1));
-           item[0]->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter); //文本对齐格式
-           dataModel->setItem(i, 0, item[0]);
-           item[1] = new QStandardItem(doubleToTime(m_ComData->d_timeStamps[rowCount - 1000 + i]));
-           item[1]->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter); //文本对齐格式
-           dataModel->setItem(i, 1, item[1]);
-           item[2] = new QStandardItem(v);
-           item[2]->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter); //文本对齐格式
-           dataModel->setItem(i, 2, item[2]);
-           item[3] = new QStandardItem(a);
-           item[3]->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter); //文本对齐格式
-           dataModel->setItem(i, 3, item[3]);
-           item[4] = new QStandardItem(QString::number(m_ComData->d_dataSeriesV[rowCount - 1000 + i] * m_ComData->d_dataSeriesA[rowCount - 1000 + i], 'f', 3) + "W");
-           item[4]->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter); //文本对齐格式
-           dataModel->setItem(i, 4, item[4]);
-       }
-   }
-
-   dataView->setModel(dataModel);
-   dataView->setColumnWidth(0,70);dataView->setColumnWidth(1,230);dataView->setColumnWidth(2,160);dataView->setColumnWidth(3,160);dataView->setColumnWidth(4,160);
-   dataView->setUpdatesEnabled(true);  //恢复界面刷新
-
-   QModelIndex index = dataModel->index(row,0);//选中行第一列的内容
-   dataView->setCurrentIndex(index);
-}
 
 QString RealTime::doubleToTime(double dTime)
 {
@@ -1928,8 +1593,9 @@ QString RealTime::doubleToTime(double dTime)
     double dec = dTime - m_ComData->d_timeStamps[m_ComData->d_currentIndex - 1];
 //    *dt = dt->addSecs((qint64)floor(dec));
     *dt = dt->addMSecs((qint64)round(dec * 1000));
-
-    return dt->toString("yyyy-MM-dd hh:mm:ss");
+    QString ret = dt->toString("yyyy-MM-dd hh:mm:ss");
+    delete dt;
+    return ret;
 }
 
 void RealTime::UpdataOpen()
