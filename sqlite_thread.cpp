@@ -13,7 +13,7 @@ void sqlite_thread::run()
 {
     qDebug("数据库操作run: %d", this->currentThreadId());
     while (!isStop) {
-
+        this->sleep(1);
     }
 }
 
@@ -67,7 +67,7 @@ void sqlite_thread::writeSqliteData(qint64 time, double vol, double cur)
     if(m_DbData.size() >= 10000)        // 每次写入10000个数据到数据库中
     {
         mDbCount++;
-        if(mDbCount > 6 * 30 - 1)    // 1个小时重新生成数据库文件
+        if(mDbCount > 6 * 60 - 1)    // 1个小时重新生成数据库文件
         {
 //                mDbCount = 0;
             m_DbName = QDir::currentPath() + "/iSCAN_Data/" + QDateTime::currentDateTime().toString("yyyy_MM_dd hh_mm_ss") + " Record.db";
@@ -83,7 +83,7 @@ void sqlite_thread::writeSqliteData(qint64 time, double vol, double cur)
             return;
         }
         QSqlQuery query(m_DbName, db);
-        if(mDbCount > 6 * 30 - 1)    // 1个小时重新生成数据库文件
+        if(mDbCount > 6 * 60 - 1)    // 1个小时重新生成数据库文件
         {
             mDbCount = 0;       // 清计数值
             query.exec("CREATE TABLE stm32_data ("

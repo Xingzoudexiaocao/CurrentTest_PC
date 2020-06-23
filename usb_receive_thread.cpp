@@ -127,6 +127,7 @@ void USB_Receive_Thread::run()
 //            this->wait();
 //            break;
 //        }
+            this->usleep(100);
     }
     emit end_Thread();      // 发送信号
     this->quit();
