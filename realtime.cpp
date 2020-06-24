@@ -31,33 +31,48 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     frame->setGeometry(0, 0, 264, 777);
 //    frame->setFixedSize(300, 910);
 //    frame->setStyleSheet("background-color:white");
-    frame->setFrameShape(QFrame::StyledPanel);
+    frame->setFrameShape(QFrame::NoFrame);
 
     QString bnt_qss1 = "QPushButton {font-family:arial; text-align:left; padding:2px; font-size:16px;}\
             QPushButton:Enabled {background-color: #0066CC; color:white;}\
             QPushButton:Disabled {background-color: #606060; color:#CCCCCC;}";
+    QString bnt_qss2 = "QPushButton{background-color: #0066CC;color:white; border:1px solid black; font-family:arial; text-align:left; padding:2px; font-size:16px;\
+            border-top-left-radius:8px;         \
+            border-top-right-radius:8px;        \
+            border-bottom-left-radius:8px;     \
+            border-bottom-right-radius:8px }   \
+        QPushButton:hover{background-color: #00FF00;}  \
+        QPushButton:pressed{background-color: #FF0000;}\
+        QPushButton:disabled{background-color: #606060; color:#CCCCCC;}";
+    QString frame_qss = "QFrame#FrameQss {border:1px solid black;\
+            border-top-left-radius:4px;         \
+            border-top-right-radius:4px;        \
+            border-bottom-left-radius:4px;      \
+            border-bottom-right-radius:4px}";
     QFont    font ( "微软雅黑",  10,   75);
     QFont    font_2 ( "微软雅黑",  8,   50);
     QFrame *frame_1 = new QFrame(frame);
     frame_1->setGeometry(2, 2, 260, 100);
-    frame_1->setFrameShape(QFrame::Panel);
+//    frame_1->setFrameShape(QFrame::Panel);
+    frame_1->setObjectName("FrameQss");
+    frame_1->setStyleSheet(frame_qss);
     // Run push button
     connectUSB = new QPushButton(QIcon(":/play.png"), "启动采集", frame_1);
     connectUSB->setGeometry(2, 3, 130, 30);
-    connectUSB->setStyleSheet(bnt_qss1);
-    connectUSB->setFont(font);
+    connectUSB->setStyleSheet(bnt_qss2);
+//    connectUSB->setFont(font);
     connect(connectUSB, &QAbstractButton::clicked, this, &RealTime::onConnectUSB);
     // Run push button
     disconnectUSB = new QPushButton(QIcon(":/pause.png"), "停止采集", frame_1);
     disconnectUSB->setGeometry(2, 35, 130, 30);
-    disconnectUSB->setStyleSheet(bnt_qss1);
+    disconnectUSB->setStyleSheet(bnt_qss2);
     disconnectUSB->setEnabled(false);
     disconnectUSB->setFont(font);
     connect(disconnectUSB, &QAbstractButton::clicked, this, &RealTime::onDisConnectUSB);
     // setting button
     QPushButton *settingBtn = new QPushButton(QIcon(":/play.png"), "采集设置", frame_1);
     settingBtn->setGeometry(2, 67, 130, 30);
-    settingBtn->setStyleSheet(bnt_qss1);
+    settingBtn->setStyleSheet(bnt_qss2);
     settingBtn->setFont(font);
     connect(settingBtn, &QAbstractButton::clicked, this, &RealTime::onSettingBtn);
 //    QPushButton *bbb = new QPushButton(QIcon(":/play.png"),"", frame);
@@ -65,7 +80,6 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     QPixmap pixmap(":/logo.png");
     QLabel *label = new QLabel(frame_1);
     label->setGeometry(150, 3, 100, 95);
-//    label->setStyleSheet("background-color:black");
     label->setPixmap(pixmap.scaled(label->size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
 
 
@@ -117,7 +131,9 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     QFont    font_VAW ( fontName,  10,   100);     // "Microsoft YaHei"
     QFrame *frame_3 = new QFrame(frame);
     frame_3->setGeometry(2, 105, 260, 280);
-    frame_3->setFrameShape(QFrame::Panel);
+//    frame_3->setFrameShape(QFrame::Panel);
+    frame_3->setObjectName("FrameQss");
+    frame_3->setStyleSheet(frame_qss);
     QLabel *realTimeValue = new QLabel(frame_3);
     realTimeValue->setGeometry(0, 2, 250, 30);
     realTimeValue->setStyleSheet("QLabel {font-family:arial; text-align:left; padding:2px; font-size:24px;}");
@@ -174,7 +190,9 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     // The frame on the left side
     QFrame *frame_4 = new QFrame(frame);
     frame_4->setGeometry(2, 390, 260, 220);
-    frame_4->setFrameShape(QFrame::Panel);
+//    frame_4->setFrameShape(QFrame::Panel);
+    frame_4->setObjectName("FrameQss");
+    frame_4->setStyleSheet(frame_qss);
     QLabel *avgValue = new QLabel(frame_4);
     avgValue->setGeometry(0, 2, 250, 30);
     avgValue->setStyleSheet("QLabel {font-family:arial; text-align:left; padding:2px; font-size:24px;}");
@@ -221,7 +239,9 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
 
     QFrame *frame_6 = new QFrame(frame);
     frame_6->setGeometry(2, 615, 260, 160);
-    frame_6->setFrameShape(QFrame::Panel);
+//    frame_6->setFrameShape(QFrame::Panel);
+    frame_6->setObjectName("FrameQss");
+    frame_6->setStyleSheet(frame_qss);
     QLabel *batteryInfo = new QLabel(frame_6);
     batteryInfo->setGeometry(0, 2, 250, 30);
     batteryInfo->setStyleSheet("QLabel {font-family:arial; text-align:left; padding:2px; font-size:24px;}");
@@ -360,14 +380,14 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
 //    connect(readUSB, SIGNAL(clicked(bool)), SLOT(onReadUSB()));
 
     // The frame on the left side
-    QFrame *frame_2 = new QFrame();     // 波形显示界面
+    QFrame *frame_2 = new QFrame(this);     // 波形显示界面
     frame_2->setGeometry(0, 0, 1000, 780);
 //    frame_2->setFrameShape(QFrame::StyledPanel);
-    QFrame *frame_2_ext = new QFrame();     // 数据显示界面
+    QFrame *frame_2_ext = new QFrame(this);     // 数据显示界面
     frame_2_ext->setGeometry(0, 0, 1000, 780);
 //    frame_2_ext->setBackgroundRole(QPalette::shadow());
 //    frame_2_ext->setFrameShape(QFrame::StyledPanel);
-    QFrame *frame_2_updata = new QFrame();     // 更新程序界面
+    frame_2_updata = new QFrame(this);     // 更新程序界面
     frame_2_updata->setGeometry(0, 0, 1000, 780);
 //    frame_2_updata->setBackgroundRole(QPalette::shadow());
 //    frame_2_updata->setFrameShape(QFrame::StyledPanel);
@@ -376,12 +396,14 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     tabWidget->setGeometry(265, 0, 1000, 780);
     tabWidget->addTab(frame_2, "最新数据");
     tabWidget->addTab(frame_2_ext, "历史数据");
-    tabWidget->addTab(frame_2_updata, "设置");
+//    tabWidget->addTab(frame_2_updata, "设置");
     QString tabBarStyle = "QTabWidget::tab-bar{ alignment:left;}\
             QTabBar::tab{border-color: #805533; background-color: rgb(96, 96, 96); /*灰色*/ color:white; width:150px; min-height:10px; border: 2px solid #FFFFFF; padding:5px;}\
             QTabBar::tab:selected{background-color: #0066CC; /*浅蓝色*/ color:white; font-weight:bold; border: 2px solid #0066CC; font-size:20px;}\
             QTabBar::tab:!selected { margin-top: 5px;}";
     tabWidget->setStyleSheet(tabBarStyle);
+//    tabWidget->removeTab(tabWidget->count()-1);
+    frame_2_updata->setVisible(false);
 //    connect(tabWidget, SIGNAL(tabBarClicked(2)), this, SLOT(&RealTime::onSettingBtn));
 //    QHBoxLayout *layout = new QHBoxLayout(this);
 //    layout->addWidget(tabWidget);
@@ -466,6 +488,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
 
     m_SqliteThread = new sqlite_thread(this, m_UsbHid, m_ComData);    // 新建线程
     connect(this,SIGNAL(CreateSqilite()),m_SqliteThread, SLOT(CreateSqlite_T()));
+    connect(m_SqliteThread,SIGNAL(emitQBoxTip(QString)),this, SLOT(slotQBoxTip(QString)));
     connect(m_UsbReceiveThread,SIGNAL(get_Vol_Cur_Now(qint64, double, double)),m_SqliteThread, SLOT(writeSqliteData(qint64, double, double)));  // 写数据库
     m_SqliteThread->start();
 
@@ -1916,6 +1939,9 @@ void RealTime::onSettingBtn(void)
 {
     send_CMD(0x08);     // 读取版本号和文件长度指令
 //    tabWidget->setTabEnabled(2, false);
+    frame_2_updata->setVisible(true);
+    if(tabWidget->count() < 3)
+        tabWidget->addTab(frame_2_updata, "设置");
     tabWidget->setCurrentIndex(2);
 }
 
@@ -1944,4 +1970,9 @@ void RealTime::slotFixCurrentScale(int val)
 
     }
 
+}
+
+void RealTime::slotQBoxTip(QString str)
+{
+    QMessageBox::critical(this, "提示", str);
 }

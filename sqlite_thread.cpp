@@ -28,7 +28,7 @@ void sqlite_thread::CreateSqlite_T(void)
        dir.mkdir(QDir::currentPath() + "/iSCAN_Data");  //只创建一级子目录，即必须保证上级目录存在
     }
     m_DbName = QDir::currentPath() + "/iSCAN_Data/" + QDateTime::currentDateTime().toString("yyyy_MM_dd hh_mm_ss") + " Record.db";
-    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", m_DbName);
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "CurrentData");
     qDebug() << "strName = " << m_DbName;
 //     strName = QDir::currentPath() + "/iSCAN_Data/" + "Record.db";      // 测试
     db.setDatabaseName(m_DbName);    // QApplication::applicationDirPath() + "CONFIG.db"     不能包含字符
@@ -37,10 +37,11 @@ void sqlite_thread::CreateSqlite_T(void)
     if (!db.open())     // if (!db.open("admin","admin"))
     {
         qDebug() << "创建数据库文件失败！";
+        emit emitQBoxTip("创建数据库文件失败！");
 //        QMessageBox::critical(this, "提示", "创建数据库文件失败！");
         return;
     }
-    QSqlQuery query(m_DbName, db);
+    QSqlQuery query("", db);
 //     if(!query.exec("select count(*)  from sqlite_master where type='table' and name = 'stm32_data'"))
 //     {
 //         query.exec("DROP TABLE stm32_data");        //先清空一下表
@@ -54,6 +55,7 @@ void sqlite_thread::CreateSqlite_T(void)
         m_DbData.clear();       // 清空所有值
         query.clear();
         db.close();
+        QSqlDatabase::removeDatabase("CurrentData");
         mDbCount = 0;
 
 }
@@ -72,17 +74,18 @@ void sqlite_thread::writeSqliteData(qint64 time, double vol, double cur)
 //                mDbCount = 0;
             m_DbName = QDir::currentPath() + "/iSCAN_Data/" + QDateTime::currentDateTime().toString("yyyy_MM_dd hh_mm_ss") + " Record.db";
         }
-        QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", m_DbName);
+        QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "CurrentData");
         db.setDatabaseName(m_DbName);    // QApplication::applicationDirPath() + "CONFIG.db"     不能包含字符
    //     db.setUserName("admin");
    //     db.setPassword("admin");
         if (!db.open())     // if (!db.open("admin","admin"))
         {
             qDebug() << "创建数据库文件失败！";
+            emit emitQBoxTip("创建数据库文件失败！");
 //            QMessageBox::critical(this, "提示", "创建数据库文件失败！");
             return;
         }
-        QSqlQuery query(m_DbName, db);
+        QSqlQuery query("", db);
         if(mDbCount > 6 * 60 - 1)    // 1个小时重新生成数据库文件
         {
             mDbCount = 0;       // 清计数值

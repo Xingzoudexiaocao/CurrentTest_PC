@@ -21,6 +21,7 @@ public:
     explicit sqlite_thread(QObject *parent = nullptr, USB_HID *hid = nullptr, ComData *comD = nullptr);
 
 signals:
+    void emitQBoxTip(QString);
 
 protected:
     void run();

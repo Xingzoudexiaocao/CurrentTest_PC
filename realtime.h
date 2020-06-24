@@ -69,6 +69,7 @@ private:
     QLabel *m_Tips;
     QLabel *m_Error;
 
+    QFrame *frame_2_updata;
     QTabWidget * tabWidget;     // Tab界面
     QTableView *dataView;       // TableView数据
     QStandardItemModel *dataModel;     // TableModel数据
@@ -177,6 +178,8 @@ public slots:
 
     void send_CMD(unsigned char cmd);
     void writeSQL(qint64 time, double vol, double cur);
+
+    void slotQBoxTip(QString);
 
 protected:
     virtual void resizeEvent(QResizeEvent *event);
