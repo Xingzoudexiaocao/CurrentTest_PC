@@ -11,5 +11,15 @@
         <file>digifaw.ttf</file>
         <file>logo_2.png</file>
         <file>exe.ico</file>
+        <file>ButtonHover.png</file>
+        <file>ButtonNormal.png</file>
+        <file>ButtonPressed.png</file>
+        <file>play_red.png</file>
+        <file>setting.png</file>
+        <file>setting_blue.png</file>
+        <file>setting_red.png</file>
+        <file>Laihuziti.ttf</file>
+        <file>ZhuoJianGanLanJianTi.ttf</file>
+        <file>SanariFontH001.ttf</file>
     </qresource>
 </RCC>

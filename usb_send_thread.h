@@ -1,4 +1,4 @@
-#ifndef USB_SEND_THREAD_H
+﻿#ifndef USB_SEND_THREAD_H
 #define USB_SEND_THREAD_H
 
 #include <QObject>
@@ -48,6 +48,8 @@ class USB_Send_Thread : public QThread
     Q_OBJECT
 public:
     explicit USB_Send_Thread(QObject *parent = nullptr, USB_HID *hid = nullptr, ComData *comD = nullptr);
+    ~USB_Send_Thread();
+
     static unsigned short YModemCRC(unsigned char *buf, int len)
     {
         register int counter;

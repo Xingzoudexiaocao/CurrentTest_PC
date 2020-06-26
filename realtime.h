@@ -27,6 +27,7 @@
 #include "usb_send_thread.h"
 #include "about.h"
 #include "historyview.h"
+#include "historydetail.h"
 #include <QSpinBox>
 #include <QLineEdit>
 #include "sqlite_thread.h"
@@ -44,6 +45,7 @@ public:
 
 signals:
     void CreateSqilite(void);
+    void SignalsTest(void);
 private:
     // The initial full range is set to 60 seconds of data.
     static const int initialFullRange = 60;
@@ -104,7 +106,8 @@ private:
     QPushButton *historyFile;
     QPushButton *historyOpen;
 
-    HistoryView *historyView;
+//    HistoryView *historyView;
+    HistoryDetail *historyDetail;
 
     QSpinBox *averageValue;
     QSpinBox *batteryCapacity;
@@ -169,6 +172,7 @@ public slots:
     void m_get_Version_Length(unsigned long long, unsigned long long);
     void thread_receive_finished();
     void thread_send_finished();
+    void thread_sqlite_finished();
     void aboutClose(void);
 
     void updataProgressBar(unsigned long);

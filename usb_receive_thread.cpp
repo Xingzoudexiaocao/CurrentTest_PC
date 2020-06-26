@@ -7,7 +7,10 @@ USB_Receive_Thread::USB_Receive_Thread(QObject *parent, USB_HID *hid, ComData *c
     m_ComData = comD;
     isStop = false;
 }
+USB_Receive_Thread::~USB_Receive_Thread()
+{
 
+}
 void USB_Receive_Thread::run()
 {
     qDebug("接收线程run: %d", this->currentThreadId());
@@ -127,7 +130,6 @@ void USB_Receive_Thread::run()
 //            this->wait();
 //            break;
 //        }
-            this->usleep(100);
     }
     emit end_Thread();      // 发送信号
     this->quit();

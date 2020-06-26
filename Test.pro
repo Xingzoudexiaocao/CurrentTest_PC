@@ -34,6 +34,7 @@ SOURCES += \
         about.cpp \
         comdata.cpp \
         debugwatch.cpp \
+        historydetail.cpp \
         historyview.cpp \
         main.cpp \
         mainwindow.cpp \
@@ -49,6 +50,7 @@ HEADERS += \
         about.h \
         comdata.h \
         debugwatch.h \
+        historydetail.h \
         historyview.h \
         mainwindow.h \
         qchartviewer.h \

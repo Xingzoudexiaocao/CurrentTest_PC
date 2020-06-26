@@ -13,6 +13,7 @@ class USB_Receive_Thread : public QThread
     Q_OBJECT
 public:
     explicit USB_Receive_Thread(QObject *parent = nullptr, USB_HID *hid = nullptr, ComData *comD = nullptr);
+    ~USB_Receive_Thread();
 
 signals:
     void send_Level_Num(int);   // 发送档位信息

@@ -8,7 +8,10 @@ USB_Send_Thread::USB_Send_Thread(QObject *parent, USB_HID *hid, ComData *comD) :
     isStop = true;
     this->AckState = -1;
 }
+USB_Send_Thread::~USB_Send_Thread()
+{
 
+}
 void USB_Send_Thread::run()
 {
     qDebug("发送线程run: %d", this->currentThreadId());
