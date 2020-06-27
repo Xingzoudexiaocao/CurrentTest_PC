@@ -2,12 +2,13 @@
 
 HistoryView::HistoryView(QWidget *parent) : QGraphicsView(new QGraphicsScene, parent)
 {
+    qDebug() << "HistoryView构造函数。";
     setDragMode(QGraphicsView::NoDrag);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     //![1]
-    seriesVoltage = new QLineSeries();
+    seriesVoltage = new QLineSeries(this);
     //![1]
 
     //![2]
@@ -30,14 +31,14 @@ HistoryView::HistoryView(QWidget *parent) : QGraphicsView(new QGraphicsScene, pa
     //![3]
 
     //![4]
-    axisVoltageX = new QDateTimeAxis;
+    axisVoltageX = new QDateTimeAxis(this);
     axisVoltageX->setTickCount(10);
     axisVoltageX->setFormat("hh:mm:ss");
 //    axisVoltageX->setTitleText("Date");
     chatVoltage->addAxis(axisVoltageX, Qt::AlignBottom);
     seriesVoltage->attachAxis(axisVoltageX);
 
-    axisVoltageY = new QValueAxis;
+    axisVoltageY = new QValueAxis(this);
     axisVoltageY->setTickCount(11);
     axisVoltageY->setLabelFormat("%.3f");
 //    axisVoltageY->setLabelsAngle(270);
@@ -54,7 +55,7 @@ HistoryView::HistoryView(QWidget *parent) : QGraphicsView(new QGraphicsScene, pa
 //    //![5]
 
     //![1]
-    seriesCurrent = new QLineSeries();
+    seriesCurrent = new QLineSeries(this);
     //![1]
 
     //![2]
@@ -81,14 +82,14 @@ HistoryView::HistoryView(QWidget *parent) : QGraphicsView(new QGraphicsScene, pa
     //![3]
 
     //![4]
-    axisCurrentX = new QDateTimeAxis;
+    axisCurrentX = new QDateTimeAxis(this);
     axisCurrentX->setTickCount(10);
     axisCurrentX->setFormat("hh:mm:ss");
 //    axisVoltageX->setTitleText("Date");
     chatCurrent->addAxis(axisCurrentX, Qt::AlignBottom);
     seriesCurrent->attachAxis(axisCurrentX);
 
-    axisCurrentY = new QValueAxis;
+    axisCurrentY = new QValueAxis(this);
     axisCurrentY->setTickCount(11);
     axisCurrentY->setLabelFormat("%.3f");
 //    axisCurrentY->setLabelsAngle(270);
@@ -122,8 +123,8 @@ HistoryView::HistoryView(QWidget *parent) : QGraphicsView(new QGraphicsScene, pa
 //    chartViewCurrent->connect(seriesCurrent,&QChartView,[](const QPointF& point){
 //        qDebug() << "QChartView 事件" << point;
 //      });
-    seriesMarkV = new QLineSeries();
-    seriesMarkA = new QLineSeries();
+    seriesMarkV = new QLineSeries(this);
+    seriesMarkA = new QLineSeries(this);
     seriesMarkV->setColor("#CC0000");
     seriesMarkA->setColor("#CC0000");
     chatVoltage->addSeries(seriesMarkV);
@@ -195,6 +196,13 @@ HistoryView::HistoryView(QWidget *parent) : QGraphicsView(new QGraphicsScene, pa
 ////    testLCD->setStyleSheet("border: 1px solid green; color: green; background: silver;");
 //    testLCD->setGeometry(650, 160, 100, 50);
 //    testLCD->display("110mA");
+}
+
+HistoryView::~HistoryView()
+{
+    qDebug() << "HistoryView析构函数。";
+    delete chatVoltage;
+    delete chatCurrent;
 }
 
 void HistoryView::ClearData(void)

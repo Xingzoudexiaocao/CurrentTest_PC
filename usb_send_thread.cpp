@@ -10,7 +10,7 @@ USB_Send_Thread::USB_Send_Thread(QObject *parent, USB_HID *hid, ComData *comD) :
 }
 USB_Send_Thread::~USB_Send_Thread()
 {
-
+    qDebug() << "USB_Send_Thread析构函数。";
 }
 void USB_Send_Thread::run()
 {

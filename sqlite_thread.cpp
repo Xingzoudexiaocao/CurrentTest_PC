@@ -10,7 +10,7 @@ sqlite_thread::sqlite_thread(QObject *parent, USB_HID *hid, ComData *comD) : QTh
 }
 sqlite_thread::~sqlite_thread()
 {
-
+    qDebug() << "sqlite_thread析构函数。";
 }
 void sqlite_thread::run()
 {
@@ -75,7 +75,7 @@ void sqlite_thread::run()
              }
              QSqlDatabase::removeDatabase(ConnectName);
              mDbCount++;
-             if(mDbCount >= 6 * 60 - 3)    // 1个小时重新生成数据库文件
+             if(mDbCount >= 6 * 60 - 6)    // 1个小时重新生成数据库文件
              {
                  mDbCount = 0;
                  m_DbName = QDir::currentPath() + "/iSCAN_Data/" + QDateTime::currentDateTime().toString("yyyy_MM_dd hh_mm_ss") + " Record.db";
@@ -144,8 +144,35 @@ void sqlite_thread::CreateSqlite_T(void)
 
 void sqlite_thread::writeSqliteData(qint64 time, double vol, double cur)
 {
+    static long long s_Count = 0;
 //    qDebug("测试数据", this->currentThreadId());
     DB_WRITE_STRUCT buf;
     buf.time = time; buf.vol = vol; buf.cur = cur;          // QDateTime::currentDateTime().toMSecsSinceEpoch()
     m_DbData.append(buf);
+
+    m_ComData->d_calculateValue.currentSumSecond += cur;         // mA
+    m_ComData->d_calculateValue.voltageSum += vol;  m_ComData->d_calculateValue.currentSum += cur;
+    s_Count++;
+    if(s_Count >= 1000 * m_ComData->SettingAverageTime)
+    {
+        s_Count = 0;
+        // 计算消耗的能量
+        m_ComData->d_calculateValue.energySum += ((m_ComData->d_calculateValue.currentSumSecond / 1000) / 3600);
+        m_ComData->d_calculateValue.currentSumSecond = 0;
+        if(m_ComData->d_calculateValue.energySum >= m_ComData->SettingBatteryCapacity)
+            m_ComData->d_calculateValue.energySum = m_ComData->SettingBatteryCapacity;
+        emit show_Energy();
+        // 更新平均值UI
+        m_ComData->d_Avg_V = m_ComData->d_calculateValue.voltageSum / m_ComData->RunningCount;
+        m_ComData->d_Avg_A = m_ComData->d_calculateValue.currentSum / m_ComData->RunningCount;
+        emit show_Average();
+
+        // 更新电池信息UI
+//         qDebug() << "m_ComData->RunningCount" << m_ComData->RunningCount;
+        qint64 runningMinute =  m_ComData->RunningCount / 60000;
+        qint64 remainMinute = 0;
+        remainMinute = (m_ComData->SettingBatteryCapacity - m_ComData->d_calculateValue.energySum) / m_ComData->d_Avg_A * 60;
+        emit show_time(runningMinute, remainMinute);
+
+    }
 }

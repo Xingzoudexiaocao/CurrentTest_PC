@@ -106,7 +106,7 @@ private:
     QPushButton *historyFile;
     QPushButton *historyOpen;
 
-//    HistoryView *historyView;
+    HistoryView *historyView;
     HistoryDetail *historyDetail;
 
     QSpinBox *averageValue;
@@ -149,7 +149,6 @@ private slots:
 //    void onReadUSB();    // 接收数据方法
     void CreateData();
     void showVAW(double v, double mA);
-    void showAverage(void);
     void onBtnPlay();
     void onBtnPause();
     void onBtnDownload();
@@ -184,6 +183,10 @@ public slots:
     void writeSQL(qint64 time, double vol, double cur);
 
     void slotQBoxTip(QString);
+
+    void slotShowEnergy(void);
+    void showAverage(void);
+    void slotShowTime(qint64 runningT, qint64 remainT);
 
 protected:
     virtual void resizeEvent(QResizeEvent *event);

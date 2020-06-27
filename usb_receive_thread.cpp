@@ -9,6 +9,7 @@ USB_Receive_Thread::USB_Receive_Thread(QObject *parent, USB_HID *hid, ComData *c
 }
 USB_Receive_Thread::~USB_Receive_Thread()
 {
+    qDebug() << "USB_Receive_Thread析构函数。";
 
 }
 void USB_Receive_Thread::run()

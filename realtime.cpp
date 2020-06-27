@@ -218,7 +218,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     buf1_QL->setText("-");  // 初始化显示-
 //    buf1_QL->setText(QString::number(0, 'f', 3));  // 初始化显示0
     QLabel *avg_V = new QLabel(frame_4);
-    avg_V->setGeometry(200, 20 + 60, 64, 70);
+    avg_V->setGeometry(200, 20 + 70, 64, 70);
     avg_V->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:28px; color:#00cc00; }");
     avg_V->setText("V");
     // avarge current
@@ -231,7 +231,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     buf2_QL->setText("-");  // 初始化显示-
 //    buf2_QL->setText(QString::number(0, 'f', 3));  // 初始化显示0
     m_averageA = new QLabel(frame_4);
-    m_averageA->setGeometry(200, 20, 64, 70);
+    m_averageA->setGeometry(200, 20 + 10, 64, 70);
     m_averageA->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:28px; color:blue; }");
     m_averageA->setText("mA");
     // avarge power
@@ -244,7 +244,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     buf3_QL->setText("-");  // 初始化显示-
 //    buf3_QL->setText(QString::number(0, 'f', 2));  // 初始化显示0
     QLabel *avg_W = new QLabel(frame_4);
-    avg_W->setGeometry(200, 140, 64, 70);
+    avg_W->setGeometry(200, 140 + 10, 64, 70);
     avg_W->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:28px; color:black; }");
     avg_W->setText("W");
 
@@ -495,7 +495,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
 
     m_UsbReceiveThread = new USB_Receive_Thread(this, m_UsbHid, m_ComData);    // 新建线程
 //    m_UsbReceiveThread->setPriority(QThread::IdlePriority);
-    connect(m_UsbReceiveThread,SIGNAL(get_Vol_Cur_Now(qint64, double, double)),this, SLOT(writeSQL(qint64, double, double))); // 写数据库
+//    connect(m_UsbReceiveThread,SIGNAL(get_Vol_Cur_Now(qint64, double, double)),this, SLOT(writeSQL(qint64, double, double))); // 写数据库
     connect(m_UsbReceiveThread,SIGNAL(get_USB_Data(QDateTime, double, unsigned char, unsigned char)),this, SLOT(m_get_USB_Data(QDateTime, double, unsigned char, unsigned char)));
     connect(m_UsbReceiveThread,SIGNAL(get_Version_Length(unsigned long long, unsigned long long)),this, SLOT(m_get_Version_Length(unsigned long long, unsigned long long)));
     connect(m_UsbReceiveThread,SIGNAL(end_Thread()),this, SLOT(thread_receive_finished()));
@@ -510,6 +510,9 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
 
     m_SqliteThread = new sqlite_thread(this, m_UsbHid, m_ComData);    // 新建线程
     connect(m_SqliteThread,SIGNAL(end_Thread()),this, SLOT(thread_sqlite_finished()));
+    connect(m_SqliteThread,SIGNAL(show_Energy()),this, SLOT(slotShowEnergy()));
+    connect(m_SqliteThread,SIGNAL(show_Average()),this, SLOT(showAverage()));
+    connect(m_SqliteThread,SIGNAL(show_time(qint64, qint64)),this, SLOT(slotShowTime(qint64, qint64)));
     connect(this,SIGNAL(CreateSqilite()),m_SqliteThread, SLOT(CreateSqlite_T()));
     connect(m_SqliteThread,SIGNAL(emitQBoxTip(QString)),this, SLOT(slotQBoxTip(QString)));
     connect(m_UsbReceiveThread,SIGNAL(get_Vol_Cur_Now(qint64, double, double)),m_SqliteThread, SLOT(writeSqliteData(qint64, double, double)));  // 写数据库
@@ -548,11 +551,11 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
 //    dataView->setModel(dataModel);
 //    dataView->setColumnWidth(0,70);dataView->setColumnWidth(1,230);dataView->setColumnWidth(2,160);dataView->setColumnWidth(3,160);dataView->setColumnWidth(4,160);
 //    dataView->setUpdatesEnabled(true);  //恢复界面刷新
-//     historyView = new HistoryView(frame_2_ext);    // 历史数据表格界面
-//     historyView->setGeometry(0, 0, 1000, 780);
-    historyDetail = new HistoryDetail(frame_2_ext);
-    historyDetail->setGeometry(0, 0, 1000, 780);
-    connect(this,SIGNAL(SignalsTest()),historyDetail, SLOT(ReceiveTest()));
+     historyView = new HistoryView(frame_2_ext);    // 历史数据表格界面
+     historyView->setGeometry(0, 0, 1000, 780);
+//    historyDetail = new HistoryDetail(frame_2_ext);
+//    historyDetail->setGeometry(0, 0, 1000, 780);
+//    connect(this,SIGNAL(SignalsTest()),historyDetail, SLOT(ReceiveTest()));
     emit SignalsTest();
     historyFile = new QPushButton(frame_2_ext);
     historyFile->setStyleSheet("QPushButton {font-family:arial; text-align:left; padding:5px; font-size:18px; border:1px solid #000000;}");
@@ -686,7 +689,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     averageInfo->setGeometry(10, 220, 400, 40);
     averageInfo->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:24px;}");
     averageInfo->setFont(font_2);
-    averageInfo->setText("平均值测量时间:        分钟");
+    averageInfo->setText("平均值更新时间:        秒");
     averageValue = new QSpinBox(frame_setting);
     averageValue->setGeometry(200, 225, 80, 30);
     averageValue->setMinimum(1);
@@ -755,6 +758,9 @@ RealTime::~RealTime()
     delete m_ChartViewer->getChart();
     delete m_ChartViewer_2->getChart();
 
+    delete m_UsbReceiveThread;
+    delete m_UsbSendThread;
+    delete m_SqliteThread;
 //    delete m_About;
 //    delete m_UsbHid;
 //    if(m_ComData != nullptr)
@@ -1323,7 +1329,8 @@ void RealTime::onConnectUSB()
             updataBar->setEnabled(false);
             // 发送读取版本号和文件长度指令
 //
-//            historyView->ClearData();       // 清除历史数据
+            historyView->ClearData();       // 清除历史数据
+//            historyDetail->ClearData();
 
             SendVerifyCmd->start(100);
             SendVerifyCount = 0;
@@ -1363,7 +1370,8 @@ void RealTime::onDisConnectUSB()
 
     averageValue->setEnabled(true);
     batteryCapacity->setEnabled(true);
-//    historyView->ClearData();       // 清除历史数据
+    historyView->ClearData();       // 清除历史数据
+//    historyDetail->ClearData();
 }
 
 void RealTime::thread_receive_finished()
@@ -1530,6 +1538,11 @@ void RealTime::showVAW(double v, double mA)
     }
 }
 
+void RealTime::slotShowEnergy(void)
+{
+    m_Energy->setText(QString::number(m_ComData->d_calculateValue.energySum, 'f', 2));
+    bRemainCap->setText(QString::number((m_ComData->SettingBatteryCapacity - m_ComData->d_calculateValue.energySum) / m_ComData->SettingBatteryCapacity * 100, 'f', 2) + "%");
+}
 void RealTime::showAverage(void)
 {
     // 更新平均值显示
@@ -1544,6 +1557,36 @@ void RealTime::showAverage(void)
     double bufPower_2 = m_ComData->d_Avg_V * m_ComData->d_Avg_A / 1000;
     buf3_QL->setText(QString::number(bufPower_2, 'f', 3));
 
+}
+void RealTime::slotShowTime(qint64 runningT, qint64 remainT)
+{
+    bRunningTimeHour->setText(QString::number(runningT / 60));
+    bRunningTimeMinute->setText(QString::number(runningT % 60));
+    if(runningT % 60 < 10)
+        bRunningTimeMinute->setGeometry(197 + 15, 90 + 8, 40, 40);
+    else
+        bRunningTimeMinute->setGeometry(197, 90 + 8, 40, 40);
+    if(runningT / 60 >= 100)
+        bRunningTimeHour->setGeometry(120, 90 + 8, 80, 40);
+    else if(runningT / 60 < 10)
+        bRunningTimeHour->setGeometry(120 + 30, 90 + 8, 80, 40);
+    else
+        bRunningTimeHour->setGeometry(120 + 15, 90 + 8, 80, 40);
+
+    if(remainT > 60000 - 1)
+        remainT = 60000 - 1;
+    bRemainTimeHour->setText(QString::number(remainT / 60));
+    bRemainTimeMinute->setText(QString::number(remainT % 60));
+    if(remainT % 60 < 10)
+        bRemainTimeMinute->setGeometry(197 + 15, 120 + 8, 40, 40);
+    else
+        bRemainTimeMinute->setGeometry(197, 120 + 8, 40, 40);
+    if(remainT / 60 >= 100)
+        bRemainTimeHour->setGeometry(120, 120 + 8, 80, 40);
+    else if(remainT / 60 < 10)
+        bRemainTimeHour->setGeometry(120 + 30, 120 + 8, 80, 40);
+    else
+        bRemainTimeHour->setGeometry(120 + 15, 160 + 8, 80, 40);
 }
 
 void RealTime::linkUs(QString str)
@@ -1843,6 +1886,13 @@ void RealTime::send_CMD(unsigned char cmd)
 void RealTime::writeSQL(qint64 time, double vol, double cur)
 {
 
+
+}
+
+/*
+void RealTime::writeSQL(qint64 time, double vol, double cur)
+{
+
     m_ComData->d_calculateValue.currentSumSecond += cur;         // mA
     if(0 == m_ComData->RunningCount % 1000)
     {
@@ -1946,7 +1996,7 @@ void RealTime::writeSQL(qint64 time, double vol, double cur)
 //        qDebug() << "插入数据后时间" << QDateTime::currentDateTime();
 
 }
-
+*/
 void RealTime::HistoryOpen()
 {
     if(m_UsbHid->dev_handle != nullptr)
@@ -1955,7 +2005,8 @@ void RealTime::HistoryOpen()
          QMessageBox::critical(this, "提示", "USB正在运行，无法加载文件！");
         return;
     }
-    QString fileName=QFileDialog::getOpenFileName(this,QString::fromLocal8Bit("历史数据"),qApp->applicationDirPath(),
+    qDebug() << qApp->applicationDirPath();
+    QString fileName=QFileDialog::getOpenFileName(this,QString::fromLocal8Bit("历史数据"),qApp->applicationDirPath() + "/iSCAN_Data",
                                                   QString::fromLocal8Bit("bin File(*.db)"));//新建文件打开窗口
     if (fileName.isEmpty())//如果未选择文件便确认，即返回
         return;
@@ -1968,7 +2019,8 @@ void RealTime::HistoryOpen()
     historyFile->setText(fileName);
 //    int length=arry.size();//计算长度
 //    qDebug() << length;
-//    historyView->LoadingData(fileName);     // 更新表格数据
+    historyView->LoadingData(fileName);     // 更新表格数据
+//    historyDetail->LoadingData(fileName);
 }
 
 void RealTime::slotAverageValue(int val)

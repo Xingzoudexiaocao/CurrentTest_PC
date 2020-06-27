@@ -33,6 +33,7 @@ class HistoryView : public QGraphicsView
     Q_OBJECT
 public:
     explicit HistoryView(QWidget *parent = nullptr);
+    ~HistoryView();
     void LoadingData(QString fileName);
     void ClearData(void);
 
