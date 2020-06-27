@@ -29,7 +29,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 CONFIG += c++11
-
+CONFIG += resources_big
 SOURCES += \
         about.cpp \
         comdata.cpp \
@@ -78,23 +78,23 @@ DISTFILES += \
 RESOURCES += \
     Resource/realtimeres.qrc
 
-win32:CONFIG(release, debug|release):LIBS += -L$$PWD/lib64/ -lchartdir60
-else:win32:CONFIG(debug, debug|release):LIBS += -L$$PWD/lib64/ -lchartdir60
-else:unix: LIBS += -L$$PWD/lib64/ -lchartdir60
+win32:CONFIG(release, debug|release):LIBS += -L$$PWD/lib32/ -lchartdir60
+else:win32:CONFIG(debug, debug|release):LIBS += -L$$PWD/lib32/ -lchartdir60
+else:unix: LIBS += -L$$PWD/lib32/ -lchartdir60
 
-INCLUDEPATH += $$PWD/lib64
-DEPENDPATH += $$PWD/lib64
+INCLUDEPATH += $$PWD/lib32
+DEPENDPATH += $$PWD/lib32
 
-#win32:CONFIG(release, debug|release): LIBS += -L$$PWD/lib64/ -lhidapi
-#else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/lib64/ -lhidapi
-#else:unix: LIBS += -L$$PWD/lib64/ -lhidapi
+#win32:CONFIG(release, debug|release): LIBS += -L$$PWD/lib32/ -lhidapi
+#else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/lib32/ -lhidapi
+#else:unix: LIBS += -L$$PWD/lib32/ -lhidapi
 
-INCLUDEPATH += $$PWD/lib64
-DEPENDPATH += $$PWD/lib64
+INCLUDEPATH += $$PWD/lib32
+DEPENDPATH += $$PWD/lib32
 
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/lib64/ -llibusb-1.0
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/lib64/ -llibusb-1.0
-else:unix: LIBS += -L$$PWD/lib64/ -llibusb-1.0
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/lib32/ -llibusb-1.0
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/lib32/ -llibusb-1.0
+else:unix: LIBS += -L$$PWD/lib32/ -llibusb-1.0
 
-INCLUDEPATH += $$PWD/lib64
-DEPENDPATH += $$PWD/lib64
+INCLUDEPATH += $$PWD/lib32
+DEPENDPATH += $$PWD/lib32

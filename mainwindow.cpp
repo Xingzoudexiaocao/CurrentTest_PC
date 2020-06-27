@@ -18,9 +18,9 @@ MainWindow::MainWindow(QWidget *parent, ComData *comD, USB_HID *hid) :
 //    QTextCodec::setCodecForLocale(codec);
 //    QTextCodec::setCodecForCStrings(codec);
 
-    resize(1280, 800);
-    setMinimumSize(1000, 700);
-//    setFixedSize(1680, 950);            // 1100, 885        // 设定之后不能拉伸
+//    resize(1280, 800);
+//    setMinimumSize(1000, 700);
+    setFixedSize(1280, 800);            // 1100, 885        // 设定之后不能拉伸
 //    setGeometry(100, 50, 1680, 1250);      // 设定窗口显示坐标           100, 50, 1680, 950
 //    setGeometry(800, 900, 1100, 885);      // 设定窗口显示坐标
     setWindowTitle(productName);

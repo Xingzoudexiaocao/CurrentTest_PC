@@ -21,7 +21,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     m_About = nullptr;
     cntDisplay = 0;
 
-    setGeometry(8, 20, 1280, 800);
+    setGeometry(8, 10, 1280, 800);
 //    setFixedSize(1090, 850);
 ////    setMinimumSize(200,200);
 //    setWindowTitle("Simple Realtime Chart");
@@ -91,7 +91,6 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     label->setGeometry(150, 3, 100, 95);
     label->setPixmap(pixmap.scaled(label->size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
 
-
 //    // Pointer push button
 //    QPushButton *pointerPB = new QPushButton(QIcon(":/pointer.png"), "Pointer", frame);
 //    pointerPB->setGeometry(4, 64, 112, 28);
@@ -145,7 +144,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     frame_3->setStyleSheet(frame_qss);
     QLabel *realTimeValue = new QLabel(frame_3);
     realTimeValue->setGeometry(0, 2, 250, 30);
-    realTimeValue->setStyleSheet("QLabel {color:#0000FF; text-align:left; padding:2px; font-size:24px;}");
+    realTimeValue->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:24px;}");
     realTimeValue->setFont(font);
     realTimeValue->setText("实时采集值：");
     // 显示瞬时电压/电流/功率
@@ -205,13 +204,13 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     frame_4->setStyleSheet(frame_qss);
     QLabel *avgValue = new QLabel(frame_4);
     avgValue->setGeometry(0, 2, 250, 30);
-    avgValue->setStyleSheet("QLabel {color:#0000FF; text-align:left; padding:2px; font-size:24px;}");
+    avgValue->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:24px;}");
     avgValue->setFont(font);
     avgValue->setText("平均采集值：");
     // avarge voltage
     buf1_QL = new QLabel(frame_4);
     buf1_QL->setStyleSheet("QLabel { text-align:center; padding:10px; font-size:64px; color:#00cc00;}");
-    buf1_QL->setGeometry(-25, 20 + 60, 250, 70);
+    buf1_QL->setGeometry(-25, 20 + 60, 250, 80);
     buf1_QL->setFont(font_VAW);
     buf1_QL->setAlignment(Qt::AlignHCenter);
     buf1_QL->setFrameShape(QFrame::NoFrame);
@@ -224,7 +223,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     // avarge current
     buf2_QL = new QLabel(frame_4);
     buf2_QL->setStyleSheet("QLabel { text-align:center; padding:10px; font-size:64px; color:blue;}");
-    buf2_QL->setGeometry(-25, 20, 250, 70);
+    buf2_QL->setGeometry(-25, 20, 250, 80);
     buf2_QL->setFont(font_VAW);
     buf2_QL->setAlignment(Qt::AlignHCenter);
     buf2_QL->setFrameShape(QFrame::NoFrame);
@@ -237,7 +236,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     // avarge power
     buf3_QL = new QLabel(frame_4);
     buf3_QL->setStyleSheet("QLabel { text-align:left; padding:10px; font-size:64px; color:black; }");
-    buf3_QL->setGeometry(-25, 140, 250, 70);
+    buf3_QL->setGeometry(-25, 140, 250, 80);
     buf3_QL->setFont(font_VAW);
     buf3_QL->setAlignment(Qt::AlignHCenter);
     buf3_QL->setFrameShape(QFrame::NoFrame);
@@ -255,7 +254,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     frame_6->setStyleSheet(frame_qss);
     QLabel *batteryInfo = new QLabel(frame_6);
     batteryInfo->setGeometry(0, 2, 250, 30);
-    batteryInfo->setStyleSheet("QLabel {color:#0000FF; text-align:left; padding:2px; font-size:24px;}");
+    batteryInfo->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:24px;}");
     batteryInfo->setFont(font);
     batteryInfo->setText("电池信息：");
     QLabel *totalCapacity = new QLabel(frame_6);
@@ -476,22 +475,24 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     frameLayout->addWidget(m_ChartViewer);
     frameLayout->addWidget(m_HScrollBar);
     frameLayout->setMargin(0);  */
-
-    onHScrollBarChanged(1); // 初始化显示表格
-    onHScrollBarChanged_2(1);
+//    qDebug() << "RealTime 完成控件初始化";
+//    onHScrollBarChanged(1); // 初始化显示表格        // 这两行不要，加上这两行会出现程序无法正常开启
+//    onHScrollBarChanged_2(1);
 //    onMouseMovePlotArea(nullptr);
 //    m_ChartViewer_2->updateDisplay();
-
+//    qDebug() << "RealTime 完成ScrollBar初始化";
     // Initially set the mouse to drag to scroll mode.
     onMouseUsageChanged( Chart::MouseUsageScroll);      // 初始化表格鼠标事件的选中和缩放问题
-
+//    qDebug() << "RealTime 完成鼠标事件初始化";
     // Set m_nextDataTime to the current time. It is used by the real time random number
     // generator so it knows what timestamp should be used for the next data point.
     m_nextDataTime = QDateTime::currentDateTime();
-
+//    qDebug() << "RealTime 完成QDateTime初始化";
     // Enable mouse wheel zooming by setting the zoom ratio to 1.1 per wheel event
     m_ChartViewer->setMouseWheelZoomRatio(1.1);
     m_ChartViewer_2->setMouseWheelZoomRatio(1.1);
+
+//    qDebug() << "RealTime 到了完成表格";
 
     m_UsbReceiveThread = new USB_Receive_Thread(this, m_UsbHid, m_ComData);    // 新建线程
 //    m_UsbReceiveThread->setPriority(QThread::IdlePriority);
@@ -499,6 +500,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     connect(m_UsbReceiveThread,SIGNAL(get_USB_Data(QDateTime, double, unsigned char, unsigned char)),this, SLOT(m_get_USB_Data(QDateTime, double, unsigned char, unsigned char)));
     connect(m_UsbReceiveThread,SIGNAL(get_Version_Length(unsigned long long, unsigned long long)),this, SLOT(m_get_Version_Length(unsigned long long, unsigned long long)));
     connect(m_UsbReceiveThread,SIGNAL(end_Thread()),this, SLOT(thread_receive_finished()));
+
     m_UsbSendThread = new USB_Send_Thread(this, m_UsbHid, m_ComData);    // 新建线程
 //    m_UsbSendThread->setPriority(QThread::IdlePriority);
     connect(m_UsbSendThread,SIGNAL(end_Thread()),this, SLOT(thread_send_finished()));
