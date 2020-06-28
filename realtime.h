@@ -53,6 +53,8 @@ private:
     // The maximum zoom in is 10 seconds.
     static const int zoomInLimit = 1;
 
+    QFont    font;
+    QFont    font_2;
     QDateTime m_nextDataTime;           // Used by the random number generator to generate realtime data.
 
     QLabel *m_ValueB;                   // Label to display the realtime value B
@@ -125,8 +127,12 @@ private:
     QComboBox *FixCurrentScale;
     double fixCurrentValue;
 
+    unsigned long long T1_Cur_Index;        // T1起始索引
+    unsigned long long T2_Cur_Index;        // T2起始索引
+
     void drawChart(QChartViewer *viewer, int index);           // Draw chart
     void trackLineLabel(XYChart *c, int mouseX, int index);    // Draw track cursor
+    void trackLineLabel_T1Or2(XYChart *c, int mouseX, int index, int T1Or2);
     void updateControls(QChartViewer *viewer, QScrollBar *bar);      // Update other controls as viewport changes
 private slots:
 //    void onUpdatePeriodChanged(QString);// The chart update timer interval has changed.
@@ -134,6 +140,8 @@ private slots:
     void linkUs(QString);
     void getData();                     // Get new data values
     void updateChart();                 // Update the chart.
+    void onMouseClick(QMouseEvent *);
+    void onMouseClick_2(QMouseEvent *);
     void onMouseMovePlotArea(QMouseEvent *);
     void onMouseMovePlotArea_2(QMouseEvent *);
     void onMouseUsageChanged(int mouseUsage);       // Pointer/zoom in/zoom out button clicked

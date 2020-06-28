@@ -58,8 +58,11 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     QStringList fontFamilies_2 = QFontDatabase::applicationFontFamilies(fontId_2);
 //    qDebug() << "fontId = " << fontId << " fontFamilies= " << fontFamilies.at(0);
 //    qDebug() << "fontId_2 = " << fontId_2 << " fontFamilies_2= " << fontFamilies_2.at(0);
-    QFont    font ( fontFamilies.at(0));   //
-    QFont    font_2 ( fontFamilies_2.at(0));   //
+//    QFont    font ( fontFamilies.at(0));   //
+    font.setFamily(fontFamilies.at(0));
+//    QFont    font_2 ( fontFamilies_2.at(0));   //
+    font_2.setFamily(fontFamilies_2.at(0));
+
     QFrame *frame_1 = new QFrame(frame);
     frame_1->setGeometry(2, 2, 260, 100);
 //    frame_1->setFrameShape(QFrame::Panel);
@@ -450,6 +453,8 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     connect(m_ChartViewer, SIGNAL(viewPortChanged()), SLOT(onViewPortChanged()));
     connect(m_ChartViewer, SIGNAL(mouseMovePlotArea(QMouseEvent*)),
         SLOT(onMouseMovePlotArea(QMouseEvent*)));
+    connect(m_ChartViewer, SIGNAL(clicked(QMouseEvent*)),
+        SLOT(onMouseClick(QMouseEvent*)));
 
     // Horizontal scroll bar
     m_HScrollBar = new QScrollBar(Qt::Horizontal, frame_2);
@@ -462,6 +467,8 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     connect(m_ChartViewer_2, SIGNAL(viewPortChanged()), SLOT(onViewPortChanged_2()));
     connect(m_ChartViewer_2, SIGNAL(mouseMovePlotArea(QMouseEvent*)),
         SLOT(onMouseMovePlotArea_2(QMouseEvent*)));
+    connect(m_ChartViewer_2, SIGNAL(clicked(QMouseEvent*)),
+        SLOT(onMouseClick_2(QMouseEvent*)));
 
     // Horizontal scroll bar
     m_HScrollBar_2 = new QScrollBar(Qt::Horizontal, frame_2);
@@ -492,7 +499,16 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     m_ChartViewer->setMouseWheelZoomRatio(1.1);
     m_ChartViewer_2->setMouseWheelZoomRatio(1.1);
 
-//    qDebug() << "RealTime 到了完成表格";
+    // Set up the chart update timer
+    m_ChartUpdateTimer = new QTimer(this);
+    connect(m_ChartUpdateTimer, SIGNAL(timeout()), SLOT(updateChart()));
+    qDebug() << "RealTime 到了完成updateChart之前";
+//    m_ChartViewer->setChart(new XYChart(1345 - 360 + 10, 425 - 40));
+//    m_ChartViewer_2->setChart(new XYChart(1345 - 360 + 10, 425 - 40));
+//    drawChart(m_ChartViewer, 0);
+//    drawChart(m_ChartViewer_2, 1);
+    updateChart();      // 初始化显示表格
+    qDebug() << "RealTime 到了完成updateChart";
 
     m_UsbReceiveThread = new USB_Receive_Thread(this, m_UsbHid, m_ComData);    // 新建线程
 //    m_UsbReceiveThread->setPriority(QThread::IdlePriority);
@@ -520,12 +536,6 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     connect(m_UsbReceiveThread,SIGNAL(get_Vol_Cur_Now(qint64, double, double)),m_SqliteThread, SLOT(writeSqliteData(qint64, double, double)));  // 写数据库
 //    m_SqliteThread->start();
 
-    // Set up the chart update timer
-    m_ChartUpdateTimer = new QTimer(this);
-    connect(m_ChartUpdateTimer, SIGNAL(timeout()), SLOT(updateChart()));
-    updateChart();      // 初始化显示表格
-//    drawChart(m_ChartViewer, 0);
-//    drawChart(m_ChartViewer_2, 1);
 
     QLabel *volTitle = new QLabel(frame_2);
     volTitle->setGeometry(840 - 420, 455 - 4 - 66 - 5, 300, 30);
@@ -877,6 +887,17 @@ void RealTime::updateChart()
 //
 // Draw track cursor when mouse is moving over plotarea
 //
+void RealTime::onMouseClick(QMouseEvent *)
+{
+    qDebug() << "鼠标点击事件" << m_ChartViewer->getPlotAreaMouseX();
+//    trackLineLabel_T1Or2((XYChart *)m_ChartViewer->getChart(), m_ChartViewer->getPlotAreaMouseX(), 0, 0);
+//    m_ChartViewer->updateDisplay();
+}
+void RealTime::onMouseClick_2(QMouseEvent *)
+{
+//    trackLineLabel_T1Or2((XYChart *)m_ChartViewer_2->getChart(), m_ChartViewer_2->getPlotAreaMouseX(), 1, 0);
+//    m_ChartViewer_2->updateDisplay();
+}
 void RealTime::onMouseMovePlotArea(QMouseEvent *)
 {
     trackLineLabel((XYChart *)m_ChartViewer->getChart(), m_ChartViewer->getPlotAreaMouseX(), 0);
@@ -1148,6 +1169,32 @@ void RealTime::drawChart(QChartViewer *viewer, int index)
     // Output the chart
     //================================================================================
 
+    if(m_ComData->d_currentIndex > 2000)
+        c->xAxis()->addMark(m_ComData->d_timeStamps[1000], 0xFF0000, "T1 = 70")->setLineWidth(1);
+
+
+//    T1_Cur_Index = 1000;
+//    T2_Cur_Index = 2000;
+//    if(m_ComData->d_currentIndex > 2000 && index == 1 && m_ComData->d_currentIndex < 10000)
+//    {
+//        LineLayer *layer_T1 = c->addLineLayer();
+//        layer_T1->setLineWidth(2);
+//        layer_T1->setFastLineMode();
+
+//        DoubleArray T1_XArr;
+//        DoubleArray T1_YArr;
+//        T1_XArr = DoubleArray(m_ComData->d_timeStamps + 1000, 2);
+//        double buf[2] = {0, 0.00008};      //
+//        T1_YArr = DoubleArray(buf, 2);
+//        qDebug() << "显示T1_XArr" << QString::number(T1_XArr[0]) << QString::number(T1_XArr[1]);
+//        qDebug() << "显示T1_YArr" << QString::number(T1_YArr[0]) << QString::number(T1_YArr[1]);
+
+//        layer_T1->setXData(T1_XArr);
+//        char buffer[1024];
+//        layer_T1->addDataSet(T1_YArr, 0xFF0000, buffer);
+
+//    }
+
     // We need to update the track line too. If the mouse is moving on the chart (eg. if
     // the user drags the mouse on the chart to scroll it), the track line will be updated
     // in the MouseMovePlotArea event. Otherwise, we need to update the track line here.
@@ -1156,7 +1203,6 @@ void RealTime::drawChart(QChartViewer *viewer, int index)
         trackLineLabel(c, (0 == viewer->getChart()) ? c->getPlotArea()->getRightX() :
             viewer->getPlotAreaMouseX(), index);
     }
-
     // Set the chart image to the QChartViewer
     delete viewer->getChart();
     viewer->setChart(c);
@@ -1186,7 +1232,105 @@ void RealTime::trackLineLabel(XYChart *c, int mouseX, int index)
     ostringstream xlabel;
     xlabel << "<*font,bgColor=000000*> " << c->xAxis()->getFormattedLabel(xValue, "hh:nn:ss.fff")
         << " <*/font*>";
-    TTFText *t = d->text(xlabel.str().c_str(), "arialbd.ttf", 10);
+    TTFText *t = d->text(xlabel.str().c_str(), "arialbd.ttf", 10);       //         //font_2.family().toLatin1().data()
+
+    // Restrict the x-pixel position of the label to make sure it stays inside the chart image.
+    int xLabelPos = max(0, min(xCoor - t->getWidth() / 2, c->getWidth() - t->getWidth()));
+    t->draw(xLabelPos, plotArea->getBottomY() + 6, 0xffffff);
+    t->destroy();
+
+    // Iterate through all layers to draw the data labels
+    for (int i = 0; i < c->getLayerCount(); ++i) {
+        Layer *layer = c->getLayerByZ(i);
+
+        // The data array index of the x-value
+        int xIndex = layer->getXIndexOf(xValue);
+
+        // Iterate through all the data sets in the layer
+        for (int j = 0; j < layer->getDataSetCount(); ++j)
+        {
+            DataSet *dataSet = layer->getDataSetByZ(j);
+            const char *dataSetName = dataSet->getDataName();
+
+            // Get the color, name and position of the data label
+            int color = dataSet->getDataColor();
+            int yCoor = c->getYCoor(dataSet->getPosition(xIndex), dataSet->getUseYAxis());
+
+            // Draw a track dot with a label next to it for visible data points in the plot area
+            if ((yCoor >= plotArea->getTopY()) && (yCoor <= plotArea->getBottomY()) && (color !=
+                Chart::Transparent) && dataSetName && *dataSetName)
+            {
+                d->circle(xCoor, yCoor, 4, 4, color, color);
+
+                ostringstream label;
+                if(index == 0) {
+                    label << "<*font,bgColor=" << hex << color << "*> "
+                        << c->formatValue(dataSet->getValue(xIndex), "{value|P4}") << "V" << " <*font*>";
+                } else if(index == 1) {
+                    double bufD = dataSet->getValue(xIndex);
+                    if(bufD < 1) {
+                        label << "<*font,bgColor=" << hex << color << "*> "
+                            << c->formatValue(bufD * 1000, "{value|P4}") << "uA" << " <*font*>";
+                    } else {
+                        label << "<*font,bgColor=" << hex << color << "*> "
+                            << c->formatValue(bufD, "{value|P4}") << "mA" << " <*font*>";
+                    }
+                }
+
+
+                t = d->text(label.str().c_str(), "arialbd.ttf", 10);
+
+                // Draw the label on the right side of the dot if the mouse is on the left side the
+                // chart, and vice versa. This ensures the label will not go outside the chart image.
+                if (xCoor <= (plotArea->getLeftX() + plotArea->getRightX()) / 2)
+                    t->draw(xCoor + 6, yCoor, 0xffffff, Chart::Left);
+                else
+                    t->draw(xCoor - 6, yCoor, 0xffffff, Chart::Right);
+
+                t->destroy();
+            }
+        }
+    }
+}
+
+void RealTime::trackLineLabel_T1Or2(XYChart *c, int mouseX, int index, int T1Or2)
+{
+
+    // Clear the current dynamic layer and get the DrawArea object to draw on it.
+    DrawArea *d = c->initDynamicLayer();
+
+    // The plot area object
+    PlotArea *plotArea = c->getPlotArea();
+
+    // Get the data x-value that is nearest to the mouse, and find its pixel coordinate.
+    double xValue = c->getNearestXValue(mouseX);
+    int xCoor = c->getXCoor(xValue);
+    if (xCoor < plotArea->getLeftX())
+        return;
+
+//    if(index == 1)
+//    {
+//        qDebug() << "plotArea->getLeftX() = " << plotArea->getLeftX();          // 55
+//        qDebug() << "plotArea->getRightX() = " << plotArea->getRightX();        // 965
+//        qDebug() << "xValue = " << xValue;
+//        qDebug() << "xCoor = " << xCoor;
+//    }
+    // Draw a vertical track line at the x-position
+    d->vline(plotArea->getTopY(), plotArea->getBottomY(), xCoor, 0xFF0000);     // 0x888888
+
+    // Draw a label on the x-axis to show the track line position.
+    ostringstream xlabel;
+    xlabel << "<*font,bgColor=000000*> " << c->xAxis()->getFormattedLabel(xValue, "T=hh:nn:ss.fff")
+        << " <*/font*>";
+
+//    if(index == 1)
+//    {
+//        qDebug() << "m_ComData->d_currentIndex = " << m_ComData->d_currentIndex;
+//        qDebug() << "最左边的索引：" << c->getLayer(0)->getXIndexOf(c->getXValue(plotArea->getLeftX()));
+//        qDebug() << "当前的索引" << c->getLayer(0)->getXIndexOf(xValue);
+////        qDebug() << "c->getXValue = " << c->getXValue(xCoor);
+//    }
+    TTFText *t = d->text(xlabel.str().c_str(), "arialbd.ttf", 10);       //         //font_2.family().toLatin1().data()
 
     // Restrict the x-pixel position of the label to make sure it stays inside the chart image.
     int xLabelPos = max(0, min(xCoor - t->getWidth() / 2, c->getWidth() - t->getWidth()));
@@ -1252,8 +1396,8 @@ void RealTime::trackLineLabel(XYChart *c, int mouseX, int index)
 //
 void RealTime::onChartUpdateTimer(QChartViewer *viewer)
 {
-    if (m_ComData->d_currentIndex > 0)
-    {
+//    if (m_ComData->d_currentIndex > 0)
+//    {
         //
         // As we added more data, we may need to update the full range of the viewport.
         //
@@ -1283,7 +1427,7 @@ void RealTime::onChartUpdateTimer(QChartViewer *viewer)
         // or if new data are added to the existing axis scale.
         if (scaleHasChanged || (duration < initialFullRange))
             viewer->updateViewPort(true, false);
-    }
+//    }
 }
 
 void RealTime::onConnectUSB()
