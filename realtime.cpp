@@ -1170,7 +1170,10 @@ void RealTime::drawChart(QChartViewer *viewer, int index)
     //================================================================================
 
     if(m_ComData->d_currentIndex > 2000)
-        c->xAxis()->addMark(m_ComData->d_timeStamps[1000], 0xFF0000, "T1 = 70")->setLineWidth(1);
+    {
+        c->xAxis()->addMark(m_ComData->d_timeStamps[1000], 0xFF4500, "T1 = 1000")->setLineWidth(2);
+        c->xAxis()->addMark(m_ComData->d_timeStamps[2000], 0xF4A460, "T2 = 2000")->setLineWidth(2);
+    }
 
 
 //    T1_Cur_Index = 1000;
