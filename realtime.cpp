@@ -730,17 +730,28 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
 //    frame->setStyleSheet("background-color:white");
     frameTop->setFrameShape(QFrame::NoFrame);
     play = new QPushButton(QIcon(":/play_red.png"), "继续", frame_2);
-    play->setGeometry(1145 - 360, 15, 80, 25);
+    play->setGeometry(1145 - 400, 15, 80, 30);
     play->setStyleSheet(bnt_qss1);
     play->setFont(font);
     play->setVisible(false);
     connect(play, &QAbstractButton::clicked, this, &RealTime::onBtnPlay);
     pause = new QPushButton(QIcon(":/pause.png"), "暂停", frame_2);
-    pause->setGeometry(1225 - 360, 15, 80, 25);
+    pause->setGeometry(1225 - 400, 15, 80, 30);
     pause->setStyleSheet(bnt_qss1);
     pause->setFont(font);
     pause->setVisible(false);
     connect(pause, &QAbstractButton::clicked, this, &RealTime::onBtnPause);
+    QPushButton *SubButton = new QPushButton(frame_2);
+    SubButton->setGeometry(920, 15, 50, 30);
+    SubButton->setStyleSheet( "QPushButton{border-image: url(:/Triangle_Down.png);color:white; border:1px solid black;text-align:left; padding:2px; font-size:16px;}QPushButton:disabled{ border-image: url(:/Triangle_Disable.png);}");
+//    SubButton->setFont(font);
+    SubButton->setEnabled(false);
+
+    m_SubFrame_Cur = new AverageSubFrame(frame_2);
+    m_SubFrame_Cur->setGeometry(710, 45, 260, 100);
+
+    m_SubFrame_Vol = new AverageSubFrame(frame_2);
+    m_SubFrame_Vol->setGeometry(710, 365 + 45, 260, 100);
 
     FixCurrentScale = new QComboBox(frame_2);
     FixCurrentScale->setGeometry(250, 20, 120, 20);

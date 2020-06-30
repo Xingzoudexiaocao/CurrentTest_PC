@@ -31,6 +31,7 @@
 #include <QSpinBox>
 #include <QLineEdit>
 #include "sqlite_thread.h"
+#include "averagesubframe.h"
 
 class RealTime : public QWidget
 {
@@ -129,6 +130,8 @@ private:
 
     unsigned long long T1_Cur_Index;        // T1起始索引
     unsigned long long T2_Cur_Index;        // T2起始索引
+    AverageSubFrame *m_SubFrame_Cur;
+    AverageSubFrame *m_SubFrame_Vol;
 
     void drawChart(QChartViewer *viewer, int index);           // Draw chart
     void trackLineLabel(XYChart *c, int mouseX, int index);    // Draw track cursor

@@ -21,5 +21,7 @@
         <file>Laihuziti.ttf</file>
         <file>ZhuoJianGanLanJianTi.ttf</file>
         <file>SanariFontH001.ttf</file>
+        <file>Triangle_Down.png</file>
+        <file>Triangle_Disable.png</file>
     </qresource>
 </RCC>

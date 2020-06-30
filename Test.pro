@@ -32,6 +32,7 @@ CONFIG += c++11
 CONFIG += resources_big
 SOURCES += \
         about.cpp \
+        averagesubframe.cpp \
         comdata.cpp \
         debugwatch.cpp \
         historydetail.cpp \
@@ -48,6 +49,7 @@ SOURCES += \
 HEADERS += \
         about.h \
         about.h \
+        averagesubframe.h \
         comdata.h \
         debugwatch.h \
         historydetail.h \
