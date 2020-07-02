@@ -200,7 +200,7 @@ public slots:
     void slotShowTime(qint64 runningT, qint64 remainT);
 
 protected:
-    virtual void resizeEvent(QResizeEvent *event);
+//    virtual void resizeEvent(QResizeEvent *event);
 };
 
 #endif // REALTIME_H

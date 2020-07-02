@@ -793,12 +793,12 @@ RealTime::~RealTime()
 //    }
 }
 
-void RealTime::resizeEvent(QResizeEvent *event)
-{
-     qDebug() << "RealTime::frameGeometry().size() = " << frameGeometry().size();
-//     this->resize(frameGeometry().size()); //是采用size()还是frameGeometry.size()根据自己的需求。
-//     updateChart();
-}
+//void RealTime::resizeEvent(QResizeEvent *event)
+//{
+//     qDebug() << "RealTime::frameGeometry().size() = " << frameGeometry().size();
+////     this->resize(frameGeometry().size()); //是采用size()还是frameGeometry.size()根据自己的需求。
+////     updateChart();
+//}
 
 //
 // Shift new data values into the real time data series

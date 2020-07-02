@@ -48,7 +48,6 @@ SOURCES += \
 
 HEADERS += \
         about.h \
-        about.h \
         averagesubframe.h \
         comdata.h \
         debugwatch.h \
@@ -64,8 +63,8 @@ HEADERS += \
         usb_receive_thread.h \
         usb_send_thread.h
 
-FORMS += \
-        mainwindow.ui
+#FORMS += \
+#        mainwindow.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
