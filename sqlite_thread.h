@@ -7,12 +7,12 @@
 #include "comdata.h"
 #include "usb_hid.h"
 #include "qchartviewer.h"
-#include <QFontDatabase>
-#include <QCoreApplication>
+//#include <QFontDatabase>
+//#include <QCoreApplication>
 #include <QDir>
-#include <QFileInfo>
-#include <QFileDialog>
-#include <QMessageBox>
+//#include <QFileInfo>
+//#include <QFileDialog>
+//#include <QMessageBox>
 
 class sqlite_thread : public QThread
 {
