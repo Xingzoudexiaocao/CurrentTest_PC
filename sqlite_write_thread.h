@@ -1,5 +1,5 @@
-﻿#ifndef SQLITE_THREAD_H
-#define SQLITE_THREAD_H
+﻿#ifndef SQLITE_WRITE_THREAD_H
+#define SQLITE_WRITE_THREAD_H
 
 #include <QObject>
 #include <QThread>
@@ -15,12 +15,12 @@
 //#include <QFileDialog>
 //#include <QMessageBox>
 
-class sqlite_thread : public QThread
+class Sqlite_Write_Thread : public QThread
 {
     Q_OBJECT
 public:
-    explicit sqlite_thread(QObject *parent = nullptr, USB_HID *hid = nullptr, ComData *comD = nullptr);
-    ~sqlite_thread();
+    explicit Sqlite_Write_Thread(QObject *parent = nullptr, USB_HID *hid = nullptr, ComData *comD = nullptr);
+    ~Sqlite_Write_Thread();
 
 signals:
     void emitQBoxTip(QString);
@@ -48,6 +48,7 @@ public slots:
     void writeSqliteData(qint64 time, double vol, double cur);
     void CreateSqlite_T(void);
     void CreateSqliteByName(QString str);
+
 };
 
-#endif // SQLITE_THREAD_H
+#endif // SQLITE_WRITE_THREAD_H

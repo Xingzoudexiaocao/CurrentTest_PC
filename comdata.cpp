@@ -50,7 +50,7 @@ ComData::ComData()
         SettingBatteryCapacity = 5000.0;      // 初始化5000mAh
         WriteData(BATTERY_CAPACITY_VALUE);
     }
-    qDebug() << "SettingAverageTime = " << SettingBatteryCapacity;
+    qDebug() << "SettingBatteryCapacity = " << SettingBatteryCapacity;
 }
 
 ComData::~ComData()
@@ -81,6 +81,10 @@ void ComData::ClearData(void)
     RunningCount = 0;
     memset(&d_calculateValue, 0x00, sizeof(d_calculateValue));
 
+    T1_Cur_Index = 0;
+    T2_Cur_Index = 0;
+    T1_Vol_Index = 0;
+    T2_Vol_Index = 0;
 }
 
 bool ComData::WriteData(int dataI)

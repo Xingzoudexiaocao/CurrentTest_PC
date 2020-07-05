@@ -1,6 +1,6 @@
-﻿#include "sqlite_thread.h"
+﻿#include "sqlite_write_thread.h"
 
-sqlite_thread::sqlite_thread(QObject *parent, USB_HID *hid, ComData *comD) : QThread ()
+Sqlite_Write_Thread::Sqlite_Write_Thread(QObject *parent, USB_HID *hid, ComData *comD) : QThread ()
 {
     qDebug("数据库操作create: %d", this->currentThreadId());
     m_UsbHid = hid;
@@ -8,13 +8,14 @@ sqlite_thread::sqlite_thread(QObject *parent, USB_HID *hid, ComData *comD) : QTh
     isStop = false;
     m_DbName = "";        // 清空数据文件名称
 }
-sqlite_thread::~sqlite_thread()
+
+Sqlite_Write_Thread::~Sqlite_Write_Thread()
 {
     qDebug() << "sqlite_thread析构函数。";
 }
-void sqlite_thread::run()
+void Sqlite_Write_Thread::run()
 {
-    qDebug() << "出错了吗";
+//    qDebug() << "出错了吗";
     qDebug("数据库操作run: %d", this->currentThreadId());
     mDbCount = 0;
 
@@ -90,9 +91,9 @@ void sqlite_thread::run()
     this->wait();
 }
 
-void sqlite_thread::CreateSqliteByName(QString str)
+void Sqlite_Write_Thread::CreateSqliteByName(QString str)
 {
-    qDebug() << "出错了吗";
+//    qDebug() << "出错了吗";
     // 创建数据库文件
     QDir dir(QDir::currentPath() + "/iSCAN_Data");
     if(!dir.exists())
@@ -139,14 +140,14 @@ void sqlite_thread::CreateSqliteByName(QString str)
     QSqlDatabase::removeDatabase(ConnectName);
 }
 
-void sqlite_thread::CreateSqlite_T(void)
+void Sqlite_Write_Thread::CreateSqlite_T(void)
 {
 //    qDebug("测试数据", this->currentThreadId());
 }
 
-void sqlite_thread::writeSqliteData(qint64 time, double vol, double cur)
+void Sqlite_Write_Thread::writeSqliteData(qint64 time, double vol, double cur)
 {
-    qDebug() << "出错了吗";
+//    qDebug() << "出错了吗";
     static long long s_Count = 0;
 //    qDebug("测试数据", this->currentThreadId());
     DB_WRITE_STRUCT buf;

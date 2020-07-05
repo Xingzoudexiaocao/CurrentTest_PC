@@ -33,6 +33,7 @@ CONFIG += resources_big
 SOURCES += \
         about.cpp \
         averagesubframe.cpp \
+        calculate_tread.cpp \
         comdata.cpp \
         debugwatch.cpp \
         historydetail.cpp \
@@ -41,7 +42,7 @@ SOURCES += \
         mainwindow.cpp \
         qchartviewer.cpp \
         realtime.cpp \
-        sqlite_thread.cpp \
+        sqlite_write_thread.cpp \
         usb_hid.cpp \
         usb_receive_thread.cpp \
         usb_send_thread.cpp
@@ -49,6 +50,7 @@ SOURCES += \
 HEADERS += \
         about.h \
         averagesubframe.h \
+        calculate_tread.h \
         comdata.h \
         debugwatch.h \
         historydetail.h \
@@ -56,7 +58,7 @@ HEADERS += \
         mainwindow.h \
         qchartviewer.h \
         realtime.h \
-        sqlite_thread.h \
+        sqlite_write_thread.h \
         usb_hid.h \
         hidapi.h \
         libusb.h \

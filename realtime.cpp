@@ -421,9 +421,9 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     tabWidget->addTab(frame_2_ext, "历史数据");
 //    tabWidget->addTab(frame_2_updata, "设置");
     QString tabBarStyle = "QTabWidget::tab-bar{ alignment:left;}\
-            QTabBar::tab{border-color: #805533; background-color: rgb(96, 96, 96); /*灰色*/ color:white; width:150px; min-height:10px; border: 2px solid #FFFFFF; padding:5px;font-size:18px;}\
-            QTabBar::tab:selected{border-image: url(:/ButtonPressed.png); background-color: white; color:white; font-weight:bold; border: 2px solid #0066CC; font-size:22px;}\
-            QTabBar::tab:!selected { margin-top: 5px;}";
+            QTabBar::tab{border-color: #805533; background-color: rgb(96, 96, 96); /*灰色*/ color:white; width:150px; min-height:10px; border: 2px solid #FFFFFF; padding:2px;font-size:16px;}\
+            QTabBar::tab:selected{border-image: url(:/ButtonPressed.png); background-color: white; color:white; font-weight:bold; border: 2px solid #0066CC; font-size:20px;}\
+            QTabBar::tab:!selected { margin-top: 4px;}";
     tabWidget->setStyleSheet(tabBarStyle);
     tabWidget->setFont(font);
 //    tabWidget->removeTab(tabWidget->count()-1);
@@ -502,6 +502,25 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     // Set up the chart update timer
     m_ChartUpdateTimer = new QTimer(this);
     connect(m_ChartUpdateTimer, SIGNAL(timeout()), SLOT(updateChart()));
+
+    QFrame *frameTop = new QFrame(this);
+    frameTop->setGeometry(800, 4, 275, 30);
+//    frame->setStyleSheet("background-color:white");
+    frameTop->setFrameShape(QFrame::NoFrame);
+    play = new QPushButton(QIcon(":/play_red.png"), "继续", frame_2);
+    play->setGeometry(1145 - 400, 15, 80, 30);
+    play->setStyleSheet(bnt_qss1);
+    play->setFont(font);
+    play->setVisible(false);
+    connect(play, &QAbstractButton::clicked, this, &RealTime::onBtnPlay);
+    pause = new QPushButton(QIcon(":/pause.png"), "暂停", frame_2);
+    pause->setGeometry(1225 - 400, 15, 80, 30);
+    pause->setStyleSheet(bnt_qss1);
+    pause->setFont(font);
+    pause->setEnabled(true);
+    pause->setVisible(false);
+    connect(pause, &QAbstractButton::clicked, this, &RealTime::onBtnPause);
+
     qDebug() << "RealTime 到了完成updateChart之前";
 //    m_ChartViewer->setChart(new XYChart(1345 - 360 + 10, 425 - 40));
 //    m_ChartViewer_2->setChart(new XYChart(1345 - 360 + 10, 425 - 40));
@@ -526,7 +545,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     connect(m_UsbSendThread,SIGNAL(usbTimeOut()),this, SLOT(upadtaTimeOut()));
     connect(m_UsbReceiveThread,SIGNAL(setAckOrNak(int)),m_UsbSendThread, SLOT(setAckState(int)));
 
-    m_SqliteThread = new sqlite_thread(this, m_UsbHid, m_ComData);    // 新建线程
+    m_SqliteThread = new Sqlite_Write_Thread(this, m_UsbHid, m_ComData);    // 新建线程
     connect(m_SqliteThread,SIGNAL(end_Thread()),this, SLOT(thread_sqlite_finished()));
     connect(m_SqliteThread,SIGNAL(show_Energy()),this, SLOT(slotShowEnergy()));
     connect(m_SqliteThread,SIGNAL(show_Average()),this, SLOT(showAverage()));
@@ -538,15 +557,15 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
 
 
     QLabel *volTitle = new QLabel(frame_2);
-    volTitle->setGeometry(840 - 420, 455 - 4 - 66 - 5, 300, 30);
+    volTitle->setGeometry(840 - 420, 455 - 10 - 66 - 5, 300, 30);
     volTitle->setStyleSheet("QLabel {text-align:left; padding:0px; font-size:28px; background-color:white;}");
     volTitle->setText("电压测量波形图");
-    volTitle->setFont(font_2);
+    volTitle->setFont(font);
     QLabel *curTitle = new QLabel(frame_2);
-    curTitle->setGeometry(840 - 420, 18 - 4, 300, 30);
+    curTitle->setGeometry(840 - 420, 18 - 10, 300, 30);
     curTitle->setStyleSheet("QLabel {text-align:left; padding:0px; font-size:28px; background-color:white;}");
     curTitle->setText("电流测量波形图");
-    curTitle->setFont(font_2);
+    curTitle->setFont(font);
     /*
     QLabel *volShow = new QLabel(frame_2);
     volShow->setGeometry(360 - 262, 485 - 4, 60, 20);
@@ -725,33 +744,31 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     batteryCapacity->setValue(m_ComData->SettingBatteryCapacity);
     connect(batteryCapacity, SIGNAL(valueChanged(int)), SLOT(slotBatteryValue(int)));
 
-    QFrame *frameTop = new QFrame(this);
-    frameTop->setGeometry(800, 4, 275, 30);
-//    frame->setStyleSheet("background-color:white");
-    frameTop->setFrameShape(QFrame::NoFrame);
-    play = new QPushButton(QIcon(":/play_red.png"), "继续", frame_2);
-    play->setGeometry(1145 - 400, 15, 80, 30);
-    play->setStyleSheet(bnt_qss1);
-    play->setFont(font);
-    play->setVisible(false);
-    connect(play, &QAbstractButton::clicked, this, &RealTime::onBtnPlay);
-    pause = new QPushButton(QIcon(":/pause.png"), "暂停", frame_2);
-    pause->setGeometry(1225 - 400, 15, 80, 30);
-    pause->setStyleSheet(bnt_qss1);
-    pause->setFont(font);
-    pause->setVisible(false);
-    connect(pause, &QAbstractButton::clicked, this, &RealTime::onBtnPause);
-    QPushButton *SubButton = new QPushButton(frame_2);
-    SubButton->setGeometry(920, 15, 50, 30);
-    SubButton->setStyleSheet( "QPushButton{border-image: url(:/Triangle_Down.png);color:white; border:1px solid black;text-align:left; padding:2px; font-size:16px;}QPushButton:disabled{ border-image: url(:/Triangle_Disable.png);}");
-//    SubButton->setFont(font);
-    SubButton->setEnabled(false);
-
+    m_SubButton_Cur = new QPushButton(frame_2);
+    m_SubButton_Cur->setGeometry(920, 15, 50, 30);
+    m_SubButton_Cur->setStyleSheet( "QPushButton{border-image: url(:/Triangle_Down.png);color:white; border:1px solid black;text-align:left; padding:2px; font-size:16px;}QPushButton:disabled{ border-image: url(:/Triangle_Disable.png);}");
+    connect(m_SubButton_Cur, &QAbstractButton::clicked, this, &RealTime::slotSubButtonCurrent);
+    m_SubButton_Cur->setEnabled(false);
+    m_SubButton_Vol = new QPushButton(frame_2);
+    m_SubButton_Vol->setGeometry(920, 365 + 15, 50, 30);
+    m_SubButton_Vol->setStyleSheet( "QPushButton{border-image: url(:/Triangle_Down.png);color:white; border:1px solid black;text-align:left; padding:2px; font-size:16px;}QPushButton:disabled{ border-image: url(:/Triangle_Disable.png);}");
+    connect(m_SubButton_Vol, &QAbstractButton::clicked, this, &RealTime::slotSubButtonVoltage);
+    m_SubButton_Vol->setEnabled(false);
     m_SubFrame_Cur = new AverageSubFrame(frame_2);
-    m_SubFrame_Cur->setGeometry(710, 45, 260, 100);
-
+    m_SubFrame_Cur->setGeometry(770, 45, 200, 100);
+    m_SubFrame_Cur->setCurVolFlag(1);
+    connect(this, SIGNAL(singalCurUpdateT1AndT2(qint8, qint64)), m_SubFrame_Cur, SLOT(slotUpdateT1AndT2(qint8, qint64)));
+    m_SubFrame_Cur->setVisible(false);
     m_SubFrame_Vol = new AverageSubFrame(frame_2);
-    m_SubFrame_Vol->setGeometry(710, 365 + 45, 260, 100);
+    m_SubFrame_Vol->setGeometry(770, 365 + 45, 200, 100);
+    m_SubFrame_Vol->setCurVolFlag(2);
+    connect(this, SIGNAL(singalVolUpdateT1AndT2(qint8, qint64)), m_SubFrame_Vol, SLOT(slotUpdateT1AndT2(qint8, qint64)));
+    m_SubFrame_Vol->setVisible(false);
+
+    m_CalculateThread = new Calculate_Tread(this, m_UsbHid, m_ComData);
+    connect(m_CalculateThread, SIGNAL(signalUpdateCurAverage(qint64, double)), m_SubFrame_Cur, SLOT(slotUpdateAverage(qint64, double)));
+    connect(m_CalculateThread, SIGNAL(signalUpdateVolAverage(qint64, double)), m_SubFrame_Vol, SLOT(slotUpdateAverage(qint64, double)));
+    m_CalculateThread->start();
 
     FixCurrentScale = new QComboBox(frame_2);
     FixCurrentScale->setGeometry(250, 20, 120, 20);
@@ -889,8 +906,8 @@ void RealTime::getData()
 //
 void RealTime::updateChart()
 {
-    m_ChartViewer->updateViewPort(true, false);     // 这里可能会有问题
-    m_ChartViewer_2->updateViewPort(true, false);
+//    m_ChartViewer->updateViewPort(true, true);     // 这里可能会有问题
+//    m_ChartViewer_2->updateViewPort(true, true);
     onChartUpdateTimer(m_ChartViewer);
     onChartUpdateTimer(m_ChartViewer_2);
 }
@@ -900,22 +917,94 @@ void RealTime::updateChart()
 //
 void RealTime::onMouseClick(QMouseEvent *)
 {
-    qDebug() << "鼠标点击事件" << m_ChartViewer->getPlotAreaMouseX();
+    if(pause->isEnabled())
+    {
+        qDebug() << "不是暂停状态";
+        return;
+    }
+//    qDebug() << "鼠标点击事件" << m_ChartViewer->getPlotAreaMouseX();
+    XYChart *c = (XYChart *)m_ChartViewer->getChart();
+    double xValue = c->getNearestXValue(m_ChartViewer->getPlotAreaMouseX());
+//    qDebug() << "当前时间" << QDateTime::currentDateTime().toMSecsSinceEpoch();
+//    qDebug() << "第一个数据时间1  " <<QDateTime::fromMSecsSinceEpoch(m_ComData->BeginTime).toMSecsSinceEpoch();
+////    qDebug() << "第一个数据时间2  " <<QDateTime::fromTime_t(m_ComData->d_timeStamps[0]).toMSecsSinceEpoch();
+//    qDebug() << "最后一个数据时间" << m_ComData->lastTime.toMSecsSinceEpoch();
+//    qDebug() << "是否相等" << m_ComData->RunningCount << m_ComData->d_currentIndex;
+    QString bufT = c->xAxis()->getFormattedLabel(xValue, "yyyy-mm-dd hh:nn:ss.fff");
+////    qDebug() << "bufT=" << bufT;
+//    qDebug() << "x轴选中数据" << QDateTime::fromString(bufT, "yyyy-MM-dd hh:mm:ss.zzz").toMSecsSinceEpoch();
+    qint64 seclectIndex = QDateTime::fromString(bufT, "yyyy-MM-dd hh:mm:ss.zzz").toMSecsSinceEpoch() - QDateTime::fromMSecsSinceEpoch(m_ComData->BeginTime).toMSecsSinceEpoch();
+//    qDebug() << "是否相等" << seclectIndex;
+    if(seclectIndex <= 0 || seclectIndex > m_ComData->RunningCount)
+    {
+        qDebug() << "电压波形图选中非法区域";
+        return;
+    }
+    if(m_SubFrame_Vol->getKeyValue() == 1)
+    {
+        m_ComData->T1_Vol_Index = seclectIndex;
+        emit singalVolUpdateT1AndT2(1, QDateTime::fromMSecsSinceEpoch(m_ComData->BeginTime + seclectIndex).toMSecsSinceEpoch());
+    }
+    else if(m_SubFrame_Vol->getKeyValue() == 2)
+    {
+        m_ComData->T2_Vol_Index = seclectIndex;
+        emit singalVolUpdateT1AndT2(2, QDateTime::fromMSecsSinceEpoch(m_ComData->BeginTime + seclectIndex).toMSecsSinceEpoch());
+    }
+
+//    drawChart(m_ChartViewer, 0);
+    drawChart_Voltage();
+//    onChartUpdateTimer(m_ChartViewer);
+
+//    qDebug("xValue: %f", xValue);
 //    trackLineLabel_T1Or2((XYChart *)m_ChartViewer->getChart(), m_ChartViewer->getPlotAreaMouseX(), 0, 0);
 //    m_ChartViewer->updateDisplay();
 }
 void RealTime::onMouseClick_2(QMouseEvent *)
 {
+    if(pause->isEnabled())
+    {
+        qDebug() << "不是暂停状态";
+        return;
+    }
+    XYChart *c = (XYChart *)m_ChartViewer_2->getChart();
+    double xValue = c->getNearestXValue(m_ChartViewer_2->getPlotAreaMouseX());
+    QString bufT = c->xAxis()->getFormattedLabel(xValue, "yyyy-mm-dd hh:nn:ss.fff");
+    qint64 seclectIndex = QDateTime::fromString(bufT, "yyyy-MM-dd hh:mm:ss.zzz").toMSecsSinceEpoch() - QDateTime::fromMSecsSinceEpoch(m_ComData->BeginTime).toMSecsSinceEpoch();
+    if(seclectIndex <= 0 || seclectIndex > m_ComData->RunningCount)
+    {
+        qDebug() << "电流波形图选中非法区域";
+        return;
+    }
+    if(m_SubFrame_Cur->getKeyValue() == 1)
+    {
+        m_ComData->T1_Cur_Index = seclectIndex;
+        emit singalCurUpdateT1AndT2(1, QDateTime::fromMSecsSinceEpoch(m_ComData->BeginTime + seclectIndex).toMSecsSinceEpoch());
+    }
+    else if(m_SubFrame_Cur->getKeyValue() == 2)
+    {
+        m_ComData->T2_Cur_Index = seclectIndex;
+        emit singalCurUpdateT1AndT2(2, QDateTime::fromMSecsSinceEpoch(m_ComData->BeginTime + seclectIndex).toMSecsSinceEpoch());
+    }
+
+//    drawChart(m_ChartViewer_2, 1);
+    drawChart_Current();
+//    onChartUpdateTimer(m_ChartViewer_2);
 //    trackLineLabel_T1Or2((XYChart *)m_ChartViewer_2->getChart(), m_ChartViewer_2->getPlotAreaMouseX(), 1, 0);
 //    m_ChartViewer_2->updateDisplay();
+//    m_ChartViewer_2->updateViewPort(true, false);
+//    m_ChartViewer_2->update();
 }
 void RealTime::onMouseMovePlotArea(QMouseEvent *)
 {
+    if(m_ComData->d_currentIndex <= 1)
+        return;
     trackLineLabel((XYChart *)m_ChartViewer->getChart(), m_ChartViewer->getPlotAreaMouseX(), 0);
     m_ChartViewer->updateDisplay();
 }
 void RealTime::onMouseMovePlotArea_2(QMouseEvent *)
 {
+    if(m_ComData->d_currentIndex <= 1)
+        return;
     trackLineLabel((XYChart *)m_ChartViewer_2->getChart(), m_ChartViewer_2->getPlotAreaMouseX(), 1);
     m_ChartViewer_2->updateDisplay();
 }
@@ -959,7 +1048,8 @@ void RealTime::onHScrollBarChanged(int value)
 
         // Update the chart display without updating the image maps. (We can delay updating
         // the image map until scrolling is completed and the chart display is stable.)
-        m_ChartViewer->updateViewPort(true, false);
+//        m_ChartViewer->updateViewPort(true, false);
+        onChartUpdateTimer(m_ChartViewer);
     }
 }
 void RealTime::onHScrollBarChanged_2(int value)
@@ -972,7 +1062,8 @@ void RealTime::onHScrollBarChanged_2(int value)
 
         // Update the chart display without updating the image maps. (We can delay updating
         // the image map until scrolling is completed and the chart display is stable.)
-        m_ChartViewer_2->updateViewPort(true, false);
+//        m_ChartViewer_2->updateViewPort(true, false);
+        onChartUpdateTimer(m_ChartViewer_2);
     }
 }
 
@@ -987,7 +1078,8 @@ void RealTime::onViewPortChanged()
 
     // Update the chart if necessary
     if (m_ChartViewer->needUpdateChart())
-        drawChart(m_ChartViewer, 0);
+        drawChart_Voltage();
+//        drawChart(m_ChartViewer, 0);
 }
 void RealTime::onViewPortChanged_2()
 {
@@ -997,7 +1089,8 @@ void RealTime::onViewPortChanged_2()
 
     // Update the chart if necessary
     if (m_ChartViewer_2->needUpdateChart())
-        drawChart(m_ChartViewer_2, 1);
+        drawChart_Current();
+//        drawChart(m_ChartViewer_2, 1);
 }
 
 //
@@ -1017,6 +1110,383 @@ void RealTime::updateControls(QChartViewer *viewer, QScrollBar *bar)
     bar->setValue((int)(0.5 + viewer->getViewPortLeft() * scrollBarLen));
 }
 
+
+void RealTime::drawChart_Current(void)
+{
+    // Get the start date and end date that are visible on the chart.
+    double viewPortStartDate = m_ChartViewer_2->getValueAtViewPort("x", m_ChartViewer_2->getViewPortLeft());
+    double viewPortEndDate = m_ChartViewer_2->getValueAtViewPort("x", m_ChartViewer_2->getViewPortLeft() +
+        m_ChartViewer_2->getViewPortWidth());
+
+    // Extract the part of the data arrays that are visible.
+    DoubleArray viewPortTimeStampsC;
+    DoubleArray viewPortDataSeriesC;
+
+    if (m_ComData->d_currentIndex > 0)      //  && pause->isEnabled()
+    {
+        // Get the array indexes that corresponds to the visible start and end dates
+        int startIndex = (int)floor(Chart::bSearch(DoubleArray(m_ComData->d_timeStamps, m_ComData->d_currentIndex), viewPortStartDate));
+        int endIndex = (int)ceil(Chart::bSearch(DoubleArray(m_ComData->d_timeStamps, m_ComData->d_currentIndex), viewPortEndDate));
+        int noOfPoints = endIndex - startIndex + 1;
+
+        // Extract the visible data
+        viewPortTimeStampsC = DoubleArray(m_ComData->d_timeStamps+ startIndex, noOfPoints);
+        viewPortDataSeriesC = DoubleArray(m_ComData->d_dataSeriesA + startIndex, noOfPoints);
+    }
+//    else
+//    {
+//        double zero[1] = {0};
+//        viewPortTimeStamps = DoubleArray(zero, 1);
+//        viewPortDataSeriesC = DoubleArray(zero, 1);
+//    }
+
+
+    //
+    // At this stage, we have extracted the visible data. We can use those data to plot the chart.
+    //
+
+    //================================================================================
+    // Configure overall chart appearance.
+    //================================================================================
+
+    // Create an XYChart object of size 640 x 350 pixels
+    XYChart *c = new XYChart(1345 - 360 + 10, 425 - 40);     // 1345, 425        m_HScrollBar->width(), 300
+
+    // Set the plotarea at (55, 50) with width 80 pixels less than chart width, and height 80 pixels
+    // less than chart height. Use a vertical gradient from light blue (f0f6ff) to sky blue (a0c0ff)
+    // as background. Set border to transparent and grid lines to white (ffffff).
+    c->setPlotArea(55, 62, c->getWidth() - 85, c->getHeight() - 100, c->linearGradientColor(0, 50, 0,
+        c->getHeight() - 35, 0xf0f6ff, 0xa0c0ff), -1, Chart::Transparent, 0xffffff, 0xffffff);
+
+    // As the data can lie outside the plotarea in a zoomed chart, we need enable clipping.
+    c->setClipping();
+
+    // Add a title to the chart using 18pt Arial font
+//    if(index == 0)
+//        c->addTitle("Voltage with Zoom/Scroll and Track Line", "arial.ttf", 18);
+//    else if (index == 1)
+//        c->addTitle("Current with Zoom/Scroll and Track Line", "arial.ttf", 18);
+
+    // Add a legend box at (55, 25) using horizontal layout. Use 10pt Arial Bold as font. Set the
+    // background and border color to transparent and use line style legend key.
+    LegendBox *b = c->addLegend(55, 25, false, "arialbd.ttf", 10);
+    b->setBackground(Chart::Transparent);
+    b->setLineStyleKey();
+
+    // Set the x and y axis stems to transparent and the label font to 10pt Arial
+    c->xAxis()->setColors(Chart::Transparent);
+    c->yAxis()->setColors(Chart::Transparent);
+    c->xAxis()->setLabelStyle("arial.ttf", 10);
+    c->yAxis()->setLabelStyle("arial.ttf", 10);
+
+    // Set the y-axis tick length to 0 to disable the tick and put the labels closer to the axis.
+    c->yAxis()->setTickLength(0);
+
+    // Add axis title using 12pt Arial Bold Italic font
+    c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12);
+
+
+    //================================================================================
+    // Add data to chart
+    //================================================================================
+
+    //
+    // In this example, we represent the data by lines. You may modify the code below to use other
+    // representations (areas, scatter plot, etc).
+    //
+
+    // Add a line layer for the lines, using a line width of 2 pixels
+    LineLayer *layer = c->addLineLayer();
+    layer->setLineWidth(2);
+    layer->setFastLineMode();
+
+    // Now we add the 3 data series to a line layer, using the color red (ff0000), green (00cc00)
+    // and blue (0000ff)
+    layer->setXData(viewPortTimeStampsC);
+    char buffer[1024];
+    if(m_ComData->d_currentIndex > 1) {
+        double d = m_ComData->d_dataSeriesA[m_ComData->d_currentIndex - 1];
+        if(d < 1) {
+            sprintf(buffer, " <*bgColor=ffffff*> <*color=0000ff*> <*size=14px*> %.3f uA", d * 1000);
+        } else {
+            sprintf(buffer, " <*bgColor=ffffff*> <*color=0000ff*> <*size=14px*> %.2f mA", d);
+        }
+//        layer->addDataSet(DoubleArray(m_ComData->d_dataSeriesA, m_ComData->d_currentIndex), 0x00ff, buffer);
+        //        c->yAxis()->setMinTickInc(0.000001);        // 设置最小间隔
+            if(fixCurrentValue > 0)
+                c->yAxis()->setDateScale(0, fixCurrentValue);
+    }
+    else
+    {
+        sprintf(buffer, " <*bgColor=ffffff*> <*color=0000ff*> <*size=14px*> %.3f uA", 0);
+        c->yAxis()->setMinTickInc(20);
+        c->yAxis()->setDateScale(0, 120);           // 固定坐标轴0-7.5V
+    }
+    layer->addDataSet(viewPortDataSeriesC, 0x0000ff, buffer);
+
+
+
+    //================================================================================
+    // Configure axis scale and labelling
+    //================================================================================
+
+    // Set the x-axis as a date/time axis with the scale according to the view port x range.
+    if (m_ComData->d_currentIndex > 1)
+        c->xAxis()->setDateScale(viewPortStartDate, viewPortEndDate);
+
+    // For the automatic axis labels, set the minimum spacing to 75/30 pixels for the x/y axis.
+    c->xAxis()->setTickDensity(75);
+    c->yAxis()->setTickDensity(30);
+//    c->yAxis()->setLinearScale(0, 1000, 100, 10);
+//    c->yAxis()->setTickLength(8, 4);
+//    c->yAxis()->setLength(1);
+//    c->yAxis()->setAutoScale();
+
+    //
+    // In this demo, the time range can be from many hours to a few seconds. We can need to define
+    // the date/time format the various cases.
+    //
+
+    // If all ticks are hour algined, we use "hh:nn<*br*>mmm dd" in bold font as the first label of
+    // the Day, and "hh:nn" for other labels.
+    c->xAxis()->setFormatCondition("align", 3600);
+    c->xAxis()->setMultiFormat(Chart::StartOfDayFilter(), "<*font=bold*>{value|hh:nn<*br*>mmm dd}",
+        Chart::AllPassFilter(), "{value|hh:nn}");
+
+    // If all ticks are minute algined, then we use "hh:nn" as the label format.
+    c->xAxis()->setFormatCondition("align", 60);
+    c->xAxis()->setLabelFormat("{value|hh:nn}");
+
+    // If all other cases, we use "hh:nn:ss" as the label format.
+    c->xAxis()->setFormatCondition("else");
+    c->xAxis()->setLabelFormat("{value|hh:nn:ss}");
+
+    // We make sure the tick increment must be at least 1 second.
+    c->xAxis()->setMinTickInc(0.001);
+
+    //================================================================================
+    // Output the chart
+    //================================================================================
+
+//    if(m_ComData->d_currentIndex > 2000)
+//    {
+//        c->xAxis()->addMark(m_ComData->d_timeStamps[1000], 0xFF4500, "T1 = 1000")->setLineWidth(2);
+//        c->xAxis()->addMark(m_ComData->d_timeStamps[2000], 0xF4A460, "T2 = 2000")->setLineWidth(2);
+//    }
+
+        if(m_ComData->T1_Cur_Index > 0 && m_ComData->T1_Cur_Index <= m_ComData->RunningCount)
+        {
+            QString buf = "T1 = " + QDateTime::fromMSecsSinceEpoch(m_ComData->BeginTime + m_ComData->T1_Cur_Index).toString("hh:mm:ss.zzz");
+            c->xAxis()->addMark(*(m_ComData->d_timeStamps + m_ComData->T1_Cur_Index - 1), 0xFF4500, buf.toLatin1().data())->setLineWidth(2);
+        }
+        if(m_ComData->T2_Cur_Index > 0 && m_ComData->T2_Cur_Index <= m_ComData->RunningCount)
+        {
+            QString buf = "T2 = " + QDateTime::fromMSecsSinceEpoch(m_ComData->BeginTime + m_ComData->T2_Cur_Index).toString("hh:mm:ss.zzz");
+            c->xAxis()->addMark(*(m_ComData->d_timeStamps + m_ComData->T2_Cur_Index - 1), 0xFF4500, buf.toLatin1().data())->setLineWidth(2);
+        }
+
+    if (m_ComData->d_currentIndex > 1)
+    {
+//        qDebug() << "划线之前" << index;
+        // We need to update the track line too. If the mouse is moving on the chart (eg. if
+        // the user drags the mouse on the chart to scroll it), the track line will be updated
+        // in the MouseMovePlotArea event. Otherwise, we need to update the track line here.
+        if (!m_ChartViewer_2->isInMouseMoveEvent())
+        {
+            trackLineLabel(c, (0 == m_ChartViewer_2->getChart()) ? c->getPlotArea()->getRightX() :
+                m_ChartViewer_2->getPlotAreaMouseX(), 1);
+        }
+//        qDebug() << "划线之后" << index;
+    }
+//    qDebug() << "电流完成绘制前" << m_ChartViewer_2->getChart();
+    // Set the chart image to the QChartViewer
+    delete m_ChartViewer_2->getChart();
+//    qDebug() << "Delete" << m_ChartViewer_2 << c;
+    m_ChartViewer_2->setChart(c);        // 添加表格1导致程序无法正常运行
+//    qDebug() << "电流完成绘制后" << m_ChartViewer_2->getChart();
+}
+void RealTime::drawChart_Voltage(void)
+{
+    // Get the start date and end date that are visible on the chart.
+    double viewPortStartDate = m_ChartViewer->getValueAtViewPort("x", m_ChartViewer->getViewPortLeft());
+    double viewPortEndDate = m_ChartViewer->getValueAtViewPort("x", m_ChartViewer->getViewPortLeft() +
+        m_ChartViewer->getViewPortWidth());
+
+    // Extract the part of the data arrays that are visible.
+    DoubleArray viewPortTimeStampsB;
+    DoubleArray viewPortDataSeriesB;
+
+    if (m_ComData->d_currentIndex > 0)  //  && 32isEnabled()
+    {
+        // Get the array indexes that corresponds to the visible start and end dates
+        int startIndex = (int)floor(Chart::bSearch(DoubleArray(m_ComData->d_timeStamps, m_ComData->d_currentIndex), viewPortStartDate));
+        int endIndex = (int)ceil(Chart::bSearch(DoubleArray(m_ComData->d_timeStamps, m_ComData->d_currentIndex), viewPortEndDate));
+        int noOfPoints = endIndex - startIndex + 1;
+
+        // Extract the visible data
+        viewPortTimeStampsB = DoubleArray(m_ComData->d_timeStamps+ startIndex, noOfPoints);
+        viewPortDataSeriesB = DoubleArray(m_ComData->d_dataSeriesV + startIndex, noOfPoints);
+    }
+//    else
+//    {
+//        double zero[1] = {0};
+//        viewPortTimeStamps = DoubleArray(zero, 1);
+//        viewPortDataSeriesB = DoubleArray(zero, 1);
+//    }
+
+
+    //
+    // At this stage, we have extracted the visible data. We can use those data to plot the chart.
+    //
+
+    //================================================================================
+    // Configure overall chart appearance.
+    //================================================================================
+
+    // Create an XYChart object of size 640 x 350 pixels
+    XYChart *d = new XYChart(1345 - 360 + 10, 425 - 40);     // 1345, 425        m_HScrollBar->width(), 300
+
+    // Set the plotarea at (55, 50) with width 80 pixels less than chart width, and height 80 pixels
+    // less than chart height. Use a vertical gradient from light blue (f0f6ff) to sky blue (a0c0ff)
+    // as background. Set border to transparent and grid lines to white (ffffff).
+    d->setPlotArea(55, 62, d->getWidth() - 85, d->getHeight() - 100, d->linearGradientColor(0, 50, 0,
+        d->getHeight() - 35, 0xf0f6ff, 0xa0c0ff), -1, Chart::Transparent, 0xffffff, 0xffffff);
+
+    // As the data can lie outside the plotarea in a zoomed chart, we need enable clipping.
+    d->setClipping();
+
+    // Add a title to the chart using 18pt Arial font
+//    if(index == 0)
+//        c->addTitle("Voltage with Zoom/Scroll and Track Line", "arial.ttf", 18);
+//    else if (index == 1)
+//        c->addTitle("Current with Zoom/Scroll and Track Line", "arial.ttf", 18);
+
+    // Add a legend box at (55, 25) using horizontal layout. Use 10pt Arial Bold as font. Set the
+    // background and border color to transparent and use line style legend key.
+    LegendBox *b = d->addLegend(55, 25, false, "arialbd.ttf", 10);
+    b->setBackground(Chart::Transparent);
+    b->setLineStyleKey();
+
+    // Set the x and y axis stems to transparent and the label font to 10pt Arial
+    d->xAxis()->setColors(Chart::Transparent);
+    d->yAxis()->setColors(Chart::Transparent);
+    d->xAxis()->setLabelStyle("arial.ttf", 10);
+    d->yAxis()->setLabelStyle("arial.ttf", 10);
+
+    // Set the y-axis tick length to 0 to disable the tick and put the labels closer to the axis.
+    d->yAxis()->setTickLength(0);
+
+    // Add axis title using 12pt Arial Bold Italic font
+    d->yAxis()->setTitle("Voltage ( V )", "arialbd.ttf", 12);
+
+
+    //================================================================================
+    // Add data to chart
+    //================================================================================
+
+    //
+    // In this example, we represent the data by lines. You may modify the code below to use other
+    // representations (areas, scatter plot, etc).
+    //
+
+    // Add a line layer for the lines, using a line width of 2 pixels
+    LineLayer *layer = d->addLineLayer();
+    layer->setLineWidth(2);
+    layer->setFastLineMode();
+
+    // Now we add the 3 data series to a line layer, using the color red (ff0000), green (00cc00)
+    // and blue (0000ff)
+    layer->setXData(viewPortTimeStampsB);
+    char buffer[1024];
+    if(m_ComData->d_currentIndex > 1) {
+        sprintf(buffer, " <*bgColor=ffffff*> <*color=00cc00*> <*size=14px*> %.3f V", m_ComData->d_dataSeriesV[m_ComData->d_currentIndex - 1]);
+//        layer->addDataSet(DoubleArray(m_ComData->d_dataSeriesV, m_ComData->d_currentIndex), 0x00cc00, buffer);
+    } else {
+        sprintf(buffer, " <*bgColor=ffffff*> <*color=00cc00*> <*size=14px*> %.3f V", 0);
+    }
+    layer->addDataSet(viewPortDataSeriesB, 0x00cc00, buffer);
+    d->yAxis()->setMinTickInc(0.1);
+    d->yAxis()->setDateScale(0, 7.5);           // 固定坐标轴0-7.5V
+
+    //================================================================================
+    // Configure axis scale and labelling
+    //================================================================================
+
+    // Set the x-axis as a date/time axis with the scale according to the view port x range.
+    if (m_ComData->d_currentIndex > 1)
+        d->xAxis()->setDateScale(viewPortStartDate, viewPortEndDate);
+
+    // For the automatic axis labels, set the minimum spacing to 75/30 pixels for the x/y axis.
+    d->xAxis()->setTickDensity(75);
+    d->yAxis()->setTickDensity(30);
+//    c->yAxis()->setLinearScale(0, 1000, 100, 10);
+//    c->yAxis()->setTickLength(8, 4);
+//    c->yAxis()->setLength(1);
+//    c->yAxis()->setAutoScale();
+
+    //
+    // In this demo, the time range can be from many hours to a few seconds. We can need to define
+    // the date/time format the various cases.
+    //
+
+    // If all ticks are hour algined, we use "hh:nn<*br*>mmm dd" in bold font as the first label of
+    // the Day, and "hh:nn" for other labels.
+    d->xAxis()->setFormatCondition("align", 3600);
+    d->xAxis()->setMultiFormat(Chart::StartOfDayFilter(), "<*font=bold*>{value|hh:nn<*br*>mmm dd}",
+        Chart::AllPassFilter(), "{value|hh:nn}");
+
+    // If all ticks are minute algined, then we use "hh:nn" as the label format.
+    d->xAxis()->setFormatCondition("align", 60);
+    d->xAxis()->setLabelFormat("{value|hh:nn}");
+
+    // If all other cases, we use "hh:nn:ss" as the label format.
+    d->xAxis()->setFormatCondition("else");
+    d->xAxis()->setLabelFormat("{value|hh:nn:ss}");
+
+    // We make sure the tick increment must be at least 1 second.
+    d->xAxis()->setMinTickInc(0.001);
+
+    //================================================================================
+    // Output the chart
+    //================================================================================
+
+//    if(m_ComData->d_currentIndex > 2000)
+//    {
+//        c->xAxis()->addMark(m_ComData->d_timeStamps[1000], 0xFF4500, "T1 = 1000")->setLineWidth(2);
+//        c->xAxis()->addMark(m_ComData->d_timeStamps[2000], 0xF4A460, "T2 = 2000")->setLineWidth(2);
+//    }
+
+    if(m_ComData->T1_Vol_Index > 0 && m_ComData->T1_Vol_Index <= m_ComData->RunningCount)
+    {
+        QString buf = "T1 = " + QDateTime::fromMSecsSinceEpoch(m_ComData->BeginTime + m_ComData->T1_Vol_Index).toString("hh:mm:ss.zzz");
+        d->xAxis()->addMark(*(m_ComData->d_timeStamps + m_ComData->T1_Vol_Index - 1), 0xFF4500, buf.toLatin1().data())->setLineWidth(2);
+    }
+    if(m_ComData->T2_Vol_Index > 0 && m_ComData->T2_Vol_Index <= m_ComData->RunningCount)
+    {
+        QString buf = "T2 = " + QDateTime::fromMSecsSinceEpoch(m_ComData->BeginTime + m_ComData->T2_Vol_Index).toString("hh:mm:ss.zzz");
+        d->xAxis()->addMark(*(m_ComData->d_timeStamps + m_ComData->T2_Vol_Index - 1), 0xFF4500, buf.toLatin1().data())->setLineWidth(2);
+    }
+
+    if (m_ComData->d_currentIndex > 1)
+    {
+//        qDebug() << "划线之前" << index;
+        // We need to update the track line too. If the mouse is moving on the chart (eg. if
+        // the user drags the mouse on the chart to scroll it), the track line will be updated
+        // in the MouseMovePlotArea event. Otherwise, we need to update the track line here.
+        if (!m_ChartViewer->isInMouseMoveEvent())
+        {
+            trackLineLabel(d, (0 == m_ChartViewer->getChart()) ? d->getPlotArea()->getRightX() :
+                m_ChartViewer->getPlotAreaMouseX(), 0);
+        }
+//        qDebug() << "划线之后" << index;
+    }
+//    qDebug() << "电压完成绘制前" << m_ChartViewer->getChart();
+    // Set the chart image to the QChartViewer
+    delete m_ChartViewer->getChart();
+//    qDebug() << "Delete" << m_ChartViewer << d;
+    m_ChartViewer->setChart(d);        // 添加表格1导致程序无法正常运行
+//    qDebug() << "电压完成绘制后" << m_ChartViewer->getChart();
+}
 //
 // Draw chart
 //
@@ -1033,7 +1503,7 @@ void RealTime::drawChart(QChartViewer *viewer, int index)
     DoubleArray viewPortDataSeriesB;
     DoubleArray viewPortDataSeriesC;
 
-    if (m_ComData->d_currentIndex > 0)
+    if (m_ComData->d_currentIndex > 1)
     {
         // Get the array indexes that corresponds to the visible start and end dates
         int startIndex = (int)floor(Chart::bSearch(DoubleArray(m_ComData->d_timeStamps, m_ComData->d_currentIndex), viewPortStartDate));
@@ -1044,6 +1514,13 @@ void RealTime::drawChart(QChartViewer *viewer, int index)
         viewPortTimeStamps = DoubleArray(m_ComData->d_timeStamps+ startIndex, noOfPoints);
         viewPortDataSeriesB = DoubleArray(m_ComData->d_dataSeriesV + startIndex, noOfPoints);
         viewPortDataSeriesC = DoubleArray(m_ComData->d_dataSeriesA + startIndex, noOfPoints);
+    }
+    else
+    {
+        double zero[1] = {0};
+        viewPortTimeStamps = DoubleArray(zero, 1);
+        viewPortDataSeriesB = DoubleArray(zero, 1);
+        viewPortDataSeriesC = DoubleArray(zero, 1);
     }
 
 
@@ -1114,16 +1591,18 @@ void RealTime::drawChart(QChartViewer *viewer, int index)
     layer->setXData(viewPortTimeStamps);
     char buffer[1024];
     if(index == 0) {
-        if(m_ComData->d_currentIndex > 0) {
+        if(m_ComData->d_currentIndex > 1) {
             sprintf(buffer, " <*bgColor=ffffff*> <*color=00cc00*> <*size=14px*> %.3f V", m_ComData->d_dataSeriesV[m_ComData->d_currentIndex - 1]);
 //        layer->addDataSet(DoubleArray(m_ComData->d_dataSeriesV, m_ComData->d_currentIndex), 0x00cc00, buffer);
+        } else {
+            sprintf(buffer, " <*bgColor=ffffff*> <*color=00cc00*> <*size=14px*> %.3f V", 0);
         }
         layer->addDataSet(viewPortDataSeriesB, 0x00cc00, buffer);
         c->yAxis()->setMinTickInc(0.1);
         c->yAxis()->setDateScale(0, 7.5);           // 固定坐标轴0-7.5V
     }
     else if(index == 1) {
-        if(m_ComData->d_currentIndex > 0) {
+        if(m_ComData->d_currentIndex > 1) {
             double d = m_ComData->d_dataSeriesA[m_ComData->d_currentIndex - 1];
             if(d < 1) {
                 sprintf(buffer, " <*bgColor=ffffff*> <*color=0000ff*> <*size=14px*> %.3f uA", d * 1000);
@@ -1132,8 +1611,10 @@ void RealTime::drawChart(QChartViewer *viewer, int index)
             }
     //        layer->addDataSet(DoubleArray(m_ComData->d_dataSeriesA, m_ComData->d_currentIndex), 0x00ff, buffer);
         }
+        else
+            sprintf(buffer, " <*bgColor=ffffff*> <*color=0000ff*> <*size=14px*> %.3f uA", 0);
         layer->addDataSet(viewPortDataSeriesC, 0x0000ff, buffer);
-//        c->yAxis()->setMinTickInc(0.1);
+//        c->yAxis()->setMinTickInc(0.000001);        // 设置最小间隔
         if(fixCurrentValue > 0)
             c->yAxis()->setDateScale(0, fixCurrentValue);
     }
@@ -1180,46 +1661,46 @@ void RealTime::drawChart(QChartViewer *viewer, int index)
     // Output the chart
     //================================================================================
 
-    if(m_ComData->d_currentIndex > 2000)
-    {
-        c->xAxis()->addMark(m_ComData->d_timeStamps[1000], 0xFF4500, "T1 = 1000")->setLineWidth(2);
-        c->xAxis()->addMark(m_ComData->d_timeStamps[2000], 0xF4A460, "T2 = 2000")->setLineWidth(2);
-    }
-
-
-//    T1_Cur_Index = 1000;
-//    T2_Cur_Index = 2000;
-//    if(m_ComData->d_currentIndex > 2000 && index == 1 && m_ComData->d_currentIndex < 10000)
+//    if(m_ComData->d_currentIndex > 2000)
 //    {
-//        LineLayer *layer_T1 = c->addLineLayer();
-//        layer_T1->setLineWidth(2);
-//        layer_T1->setFastLineMode();
-
-//        DoubleArray T1_XArr;
-//        DoubleArray T1_YArr;
-//        T1_XArr = DoubleArray(m_ComData->d_timeStamps + 1000, 2);
-//        double buf[2] = {0, 0.00008};      //
-//        T1_YArr = DoubleArray(buf, 2);
-//        qDebug() << "显示T1_XArr" << QString::number(T1_XArr[0]) << QString::number(T1_XArr[1]);
-//        qDebug() << "显示T1_YArr" << QString::number(T1_YArr[0]) << QString::number(T1_YArr[1]);
-
-//        layer_T1->setXData(T1_XArr);
-//        char buffer[1024];
-//        layer_T1->addDataSet(T1_YArr, 0xFF0000, buffer);
-
+//        c->xAxis()->addMark(m_ComData->d_timeStamps[1000], 0xFF4500, "T1 = 1000")->setLineWidth(2);
+//        c->xAxis()->addMark(m_ComData->d_timeStamps[2000], 0xF4A460, "T2 = 2000")->setLineWidth(2);
 //    }
 
-    // We need to update the track line too. If the mouse is moving on the chart (eg. if
-    // the user drags the mouse on the chart to scroll it), the track line will be updated
-    // in the MouseMovePlotArea event. Otherwise, we need to update the track line here.
-    if (!viewer->isInMouseMoveEvent())
+    if(index == 0)
     {
-        trackLineLabel(c, (0 == viewer->getChart()) ? c->getPlotArea()->getRightX() :
-            viewer->getPlotAreaMouseX(), index);
+        if(m_ComData->T1_Vol_Index > 0 && m_ComData->T1_Vol_Index <= m_ComData->RunningCount)
+            c->xAxis()->addMark(*(m_ComData->d_timeStamps + m_ComData->T1_Vol_Index - 1), 0xFF4500, "T1 = 1000")->setLineWidth(2);
+        if(m_ComData->T2_Vol_Index > 0 && m_ComData->T2_Vol_Index <= m_ComData->RunningCount)
+            c->xAxis()->addMark(*(m_ComData->d_timeStamps + m_ComData->T2_Vol_Index - 1), 0xFF4500, "T2 = 2000")->setLineWidth(2);
     }
+    else if(index == 1)
+    {
+        if(m_ComData->T1_Cur_Index > 0 && m_ComData->T1_Cur_Index <= m_ComData->RunningCount)
+            c->xAxis()->addMark(*(m_ComData->d_timeStamps + m_ComData->T1_Cur_Index - 1), 0xFF4500, "T1 = 1000")->setLineWidth(2);
+        if(m_ComData->T2_Cur_Index > 0 && m_ComData->T2_Cur_Index <= m_ComData->RunningCount)
+            c->xAxis()->addMark(*(m_ComData->d_timeStamps + m_ComData->T2_Cur_Index - 1), 0xFF4500, "T2 = 2000")->setLineWidth(2);
+    }
+
+    if (m_ComData->d_currentIndex > 1)
+    {
+//        qDebug() << "划线之前" << index;
+        // We need to update the track line too. If the mouse is moving on the chart (eg. if
+        // the user drags the mouse on the chart to scroll it), the track line will be updated
+        // in the MouseMovePlotArea event. Otherwise, we need to update the track line here.
+        if (!viewer->isInMouseMoveEvent())
+        {
+            trackLineLabel(c, (0 == viewer->getChart()) ? c->getPlotArea()->getRightX() :
+                viewer->getPlotAreaMouseX(), index);
+        }
+//        qDebug() << "划线之后" << index;
+    }
+    qDebug() << "完成绘制前" << index << viewer->getChart();
     // Set the chart image to the QChartViewer
     delete viewer->getChart();
-    viewer->setChart(c);
+    qDebug() << "Delete" << viewer << c;
+    viewer->setChart(c);        // 添加表格1导致程序无法正常运行
+    qDebug() << "完成绘制后" << index << viewer->getChart();
 }
 
 //
@@ -1410,15 +1891,20 @@ void RealTime::trackLineLabel_T1Or2(XYChart *c, int mouseX, int index, int T1Or2
 //
 void RealTime::onChartUpdateTimer(QChartViewer *viewer)
 {
-//    if (m_ComData->d_currentIndex > 0)
-//    {
+    if (m_ComData->d_currentIndex > 0)
+    {
         //
         // As we added more data, we may need to update the full range of the viewport.
         //
 
-        double startDate = m_ComData->d_timeStamps[0];
-        double endDate = m_ComData->d_timeStamps[m_ComData->d_currentIndex - 1];
+        double startDate = 0;
+        double endDate = 0;
 
+        if (m_ComData->d_currentIndex > 1)
+        {
+            startDate = m_ComData->d_timeStamps[0];
+            endDate = m_ComData->d_timeStamps[m_ComData->d_currentIndex - 1];
+        }
         // Use the initialFullRange (which is 60 seconds in this demo) if this is sufficient.
         double duration = endDate - startDate;
         if (duration < initialFullRange)
@@ -1441,7 +1927,7 @@ void RealTime::onChartUpdateTimer(QChartViewer *viewer)
         // or if new data are added to the existing axis scale.
         if (scaleHasChanged || (duration < initialFullRange))
             viewer->updateViewPort(true, false);
-//    }
+    }
 }
 
 void RealTime::onConnectUSB()
@@ -1458,6 +1944,16 @@ void RealTime::onConnectUSB()
         emit CreateSqilite();
         m_SqliteThread->isStop = false;
         m_SqliteThread->start();
+
+        m_SubFrame_Cur->initFrameDisplay();
+        m_SubFrame_Vol->initFrameDisplay();
+        m_SubFrame_Cur->setVisible(false);
+        m_SubFrame_Vol->setVisible(false);
+//        slotSubButtonCurrent();
+//        slotSubButtonVoltage();
+        m_SubButton_Cur->setEnabled(false);
+        m_SubButton_Vol->setEnabled(false);
+
 
             m_UsbReceiveThread->isStop = false;
             m_UsbReceiveThread->start();   // 启动线程
@@ -1532,6 +2028,9 @@ void RealTime::onDisConnectUSB()
     batteryCapacity->setEnabled(true);
     historyView->ClearData();       // 清除历史数据
 //    historyDetail->ClearData();
+
+    m_SubButton_Cur->setEnabled(true);
+    m_SubButton_Vol->setEnabled(true);
 }
 
 void RealTime::thread_receive_finished()
@@ -1543,6 +2042,7 @@ void RealTime::thread_receive_finished()
 
 //        m_UsbReceiveThread->terminate();    // 关闭线程
         play->setVisible(false);
+        pause->setEnabled(false);
         pause->setVisible(false);
 //        download->setEnabled(true);
 
@@ -1800,6 +2300,20 @@ void RealTime::onBtnPlay()
         QMessageBox::critical(this, "提示", "正在更新程序，请勿执行其他操作！");
         return;
     }
+
+    m_ComData->T1_Cur_Index = 0;
+    m_ComData->T2_Cur_Index = 0;
+    m_ComData->T1_Vol_Index = 0;
+    m_ComData->T2_Vol_Index = 0;
+    m_SubFrame_Cur->initFrameDisplay();
+    m_SubFrame_Vol->initFrameDisplay();
+    m_SubFrame_Cur->setVisible(false);
+    m_SubFrame_Vol->setVisible(false);
+//    slotSubButtonCurrent();
+//    slotSubButtonVoltage();
+    m_SubButton_Cur->setEnabled(false);
+    m_SubButton_Vol->setEnabled(false);
+
     play->setEnabled(false);
     pause->setEnabled(true);
     m_ChartUpdateTimer->start(100);    // 启动更新表格
@@ -1817,6 +2331,10 @@ void RealTime::onBtnPause()
         QMessageBox::critical(this, "提示", "正在更新程序，请勿执行其他操作！");
         return;
     }
+
+    m_SubButton_Cur->setEnabled(true);
+    m_SubButton_Vol->setEnabled(true);
+
     play->setEnabled(true);
     pause->setEnabled(false);
     m_ChartUpdateTimer->stop();    // 关闭更新表格
@@ -2043,12 +2561,6 @@ void RealTime::send_CMD(unsigned char cmd)
     m_UsbHid->SendUSB(sendP, 32);   // 使用USB发送数据
 }
 
-void RealTime::writeSQL(qint64 time, double vol, double cur)
-{
-
-
-}
-
 /*
 void RealTime::writeSQL(qint64 time, double vol, double cur)
 {
@@ -2236,4 +2748,32 @@ void RealTime::slotFixCurrentScale(int val)
 void RealTime::slotQBoxTip(QString str)
 {
     QMessageBox::critical(this, "提示", str);
+}
+
+void RealTime::slotSubButtonCurrent(void)
+{
+    if(m_SubFrame_Cur->isVisible())
+    {
+        m_SubFrame_Cur->setVisible(false);
+        m_SubButton_Cur->setStyleSheet( "QPushButton{border-image: url(:/Triangle_Down.png);color:white; border:1px solid black;text-align:left; padding:2px; font-size:16px;}QPushButton:disabled{ border-image: url(:/Triangle_Disable.png);}");
+    }
+    else
+    {
+        m_SubFrame_Cur->setVisible(true);
+        m_SubButton_Cur->setStyleSheet( "QPushButton{border-image: url(:/Triangle_Up.png);color:white; border:1px solid black;text-align:left; padding:2px; font-size:16px;}QPushButton:disabled{ border-image: url(:/Triangle_Disable.png);}");
+    }
+}
+
+void RealTime::slotSubButtonVoltage(void)
+{
+    if(m_SubFrame_Vol->isVisible())
+    {
+        m_SubFrame_Vol->setVisible(false);
+        m_SubButton_Vol->setStyleSheet( "QPushButton{border-image: url(:/Triangle_Down.png);color:white; border:1px solid black;text-align:left; padding:2px; font-size:16px;}QPushButton:disabled{ border-image: url(:/Triangle_Disable.png);}");
+    }
+    else
+    {
+        m_SubFrame_Vol->setVisible(true);
+        m_SubButton_Vol->setStyleSheet( "QPushButton{border-image: url(:/Triangle_Up.png);color:white; border:1px solid black;text-align:left; padding:2px; font-size:16px;}QPushButton:disabled{ border-image: url(:/Triangle_Disable.png);}");
+    }
 }

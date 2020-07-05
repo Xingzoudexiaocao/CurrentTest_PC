@@ -30,8 +30,9 @@
 #include "historydetail.h"
 #include <QSpinBox>
 #include <QLineEdit>
-#include "sqlite_thread.h"
+#include "sqlite_write_thread.h"
 #include "averagesubframe.h"
+#include "calculate_tread.h"
 
 class RealTime : public QWidget
 {
@@ -42,11 +43,15 @@ public:
 
     USB_Receive_Thread *m_UsbReceiveThread;
     USB_Send_Thread *m_UsbSendThread;
-    sqlite_thread *m_SqliteThread;
+    Sqlite_Write_Thread *m_SqliteThread;
+    Calculate_Tread *m_CalculateThread;
 
 signals:
     void CreateSqilite(void);
     void SignalsTest(void);
+
+    void singalCurUpdateT1AndT2(qint8, qint64);
+    void singalVolUpdateT1AndT2(qint8, qint64);
 private:
     // The initial full range is set to 60 seconds of data.
     static const int initialFullRange = 60;
@@ -128,11 +133,13 @@ private:
     QComboBox *FixCurrentScale;
     double fixCurrentValue;
 
-    unsigned long long T1_Cur_Index;        // T1起始索引
-    unsigned long long T2_Cur_Index;        // T2起始索引
+    QPushButton *m_SubButton_Cur;
+    QPushButton *m_SubButton_Vol;
     AverageSubFrame *m_SubFrame_Cur;
     AverageSubFrame *m_SubFrame_Vol;
 
+    void drawChart_Current(void);
+    void drawChart_Voltage(void);
     void drawChart(QChartViewer *viewer, int index);           // Draw chart
     void trackLineLabel(XYChart *c, int mouseX, int index);    // Draw track cursor
     void trackLineLabel_T1Or2(XYChart *c, int mouseX, int index, int T1Or2);
@@ -177,6 +184,9 @@ private slots:
 
     void slotFixCurrentScale(int);
 
+    void slotSubButtonCurrent(void);
+    void slotSubButtonVoltage(void);
+
 public slots:
     void m_get_USB_Data(QDateTime, double, unsigned char, unsigned char);
     void m_get_Version_Length(unsigned long long, unsigned long long);
@@ -191,7 +201,7 @@ public slots:
     void upadtaTimeOut();
 
     void send_CMD(unsigned char cmd);
-    void writeSQL(qint64 time, double vol, double cur);
+//    void writeSQL(qint64 time, double vol, double cur);
 
     void slotQBoxTip(QString);
 

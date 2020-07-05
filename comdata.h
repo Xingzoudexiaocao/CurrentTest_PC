@@ -118,6 +118,10 @@ public:
 public:
     hid_device *myHandle;   // USB_HID
 
+    qint64 T1_Cur_Index;        // 电流波形T1起始索引
+    qint64 T2_Cur_Index;        // 电流波形T2起始索引
+    qint64 T1_Vol_Index;        // 电压波形T1起始索引
+    qint64 T2_Vol_Index;        // 电压波形T2起始索引
     QDateTime lastTime;     // 上次接收到数据的时间;用于判断是否更新表格为0
     qint64 BeginTime;
     qint64 RunningCount;    // 运行时间计数

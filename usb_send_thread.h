@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QThread>
 #include <QtDebug>
+#include <QDebug>
 #include "comdata.h"
 #include "usb_hid.h"
 #include "qchartviewer.h"
