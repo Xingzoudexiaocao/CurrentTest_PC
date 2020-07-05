@@ -280,6 +280,14 @@ void USB_Receive_Thread::HandleData(ST_REC_STRUCT *bufData)
                 ComData::shiftData_D(m_ComData->d_dataSeriesA, m_ComData->DataSize, tmp_A);
                 ComData::shiftData_D(m_ComData->d_timeStamps, m_ComData->DataSize, currentTime);
             }
+            if(!m_ComData->layerIsPause)
+            {
+                m_ComData->layer_currentIndex = m_ComData->d_currentIndex;
+                m_ComData->layer_BeginTime = now.toMSecsSinceEpoch() - m_ComData->d_currentIndex;
+                mempcpy(m_ComData->layer_timeStamps, m_ComData->d_timeStamps, sizeof(double) * m_ComData->d_currentIndex);
+                memcpy(m_ComData->layer_dataSeriesV, m_ComData->d_dataSeriesV, sizeof(double) * m_ComData->d_currentIndex);
+                memcpy(m_ComData->layer_dataSeriesA, m_ComData->d_dataSeriesA, sizeof(double) * m_ComData->d_currentIndex);
+            }
             emit get_Vol_Cur_Now(now.toMSecsSinceEpoch(), dataB.d, dataC.d);
       //      qDebug() << "--单次接收的数据：dataB = " << dataB.d << ", dataC =" << dataC.d  << " Time = " << QDateTime::currentDateTime();
       //      qDebug() << "单次接收数据：" <<  QDateTime::fromMSecsSinceEpoch(m_ComData->d_timeStamps[m_ComData->d_currentIndex - 1]) << QDateTime::currentDateTime();

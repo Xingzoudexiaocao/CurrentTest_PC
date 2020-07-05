@@ -917,7 +917,7 @@ void RealTime::updateChart()
 //
 void RealTime::onMouseClick(QMouseEvent *)
 {
-    if(pause->isEnabled())
+    if(!m_ComData->layerIsPause)
     {
         qDebug() << "不是暂停状态";
         return;
@@ -933,9 +933,9 @@ void RealTime::onMouseClick(QMouseEvent *)
     QString bufT = c->xAxis()->getFormattedLabel(xValue, "yyyy-mm-dd hh:nn:ss.fff");
 ////    qDebug() << "bufT=" << bufT;
 //    qDebug() << "x轴选中数据" << QDateTime::fromString(bufT, "yyyy-MM-dd hh:mm:ss.zzz").toMSecsSinceEpoch();
-    qint64 seclectIndex = QDateTime::fromString(bufT, "yyyy-MM-dd hh:mm:ss.zzz").toMSecsSinceEpoch() - QDateTime::fromMSecsSinceEpoch(m_ComData->BeginTime).toMSecsSinceEpoch();
+    qint64 seclectIndex = QDateTime::fromString(bufT, "yyyy-MM-dd hh:mm:ss.zzz").toMSecsSinceEpoch() - m_ComData->layer_BeginTime;
 //    qDebug() << "是否相等" << seclectIndex;
-    if(seclectIndex <= 0 || seclectIndex > m_ComData->RunningCount)
+    if(seclectIndex <= 0 || seclectIndex > m_ComData->layer_currentIndex)
     {
         qDebug() << "电压波形图选中非法区域";
         return;
@@ -943,12 +943,12 @@ void RealTime::onMouseClick(QMouseEvent *)
     if(m_SubFrame_Vol->getKeyValue() == 1)
     {
         m_ComData->T1_Vol_Index = seclectIndex;
-        emit singalVolUpdateT1AndT2(1, QDateTime::fromMSecsSinceEpoch(m_ComData->BeginTime + seclectIndex).toMSecsSinceEpoch());
+        emit singalVolUpdateT1AndT2(1, QDateTime::fromMSecsSinceEpoch(m_ComData->layer_BeginTime + seclectIndex).toMSecsSinceEpoch());
     }
     else if(m_SubFrame_Vol->getKeyValue() == 2)
     {
         m_ComData->T2_Vol_Index = seclectIndex;
-        emit singalVolUpdateT1AndT2(2, QDateTime::fromMSecsSinceEpoch(m_ComData->BeginTime + seclectIndex).toMSecsSinceEpoch());
+        emit singalVolUpdateT1AndT2(2, QDateTime::fromMSecsSinceEpoch(m_ComData->layer_BeginTime + seclectIndex).toMSecsSinceEpoch());
     }
 
 //    drawChart(m_ChartViewer, 0);
@@ -961,16 +961,24 @@ void RealTime::onMouseClick(QMouseEvent *)
 }
 void RealTime::onMouseClick_2(QMouseEvent *)
 {
-    if(pause->isEnabled())
+    if(!m_ComData->layerIsPause)
     {
         qDebug() << "不是暂停状态";
         return;
     }
+
+//    qDebug() << "m_ComData->BeginTime = " << m_ComData->BeginTime;
+//    qDebug() << "m_ComData->layer_BeginTime = " << m_ComData->layer_BeginTime;
+//    qDebug() << "m_ComData->d_timeStamps[i] = " << m_ComData->d_timeStamps[m_ComData->d_currentIndex - 1];
+//    qDebug() << "m_ComData->layer_timeStamps[i] = " << m_ComData->layer_timeStamps[m_ComData->d_currentIndex - 1];
+//    qDebug() << "m_ComData->d_dataSeriesA[i] = " << m_ComData->d_dataSeriesA[m_ComData->d_currentIndex - 1];
+//    qDebug() << "m_ComData->layer_dataSeriesA[i] = " << m_ComData->layer_dataSeriesA[m_ComData->d_currentIndex - 1];
+
     XYChart *c = (XYChart *)m_ChartViewer_2->getChart();
     double xValue = c->getNearestXValue(m_ChartViewer_2->getPlotAreaMouseX());
     QString bufT = c->xAxis()->getFormattedLabel(xValue, "yyyy-mm-dd hh:nn:ss.fff");
-    qint64 seclectIndex = QDateTime::fromString(bufT, "yyyy-MM-dd hh:mm:ss.zzz").toMSecsSinceEpoch() - QDateTime::fromMSecsSinceEpoch(m_ComData->BeginTime).toMSecsSinceEpoch();
-    if(seclectIndex <= 0 || seclectIndex > m_ComData->RunningCount)
+    qint64 seclectIndex = QDateTime::fromString(bufT, "yyyy-MM-dd hh:mm:ss.zzz").toMSecsSinceEpoch() - m_ComData->layer_BeginTime;
+    if(seclectIndex <= 0 || seclectIndex > m_ComData->layer_currentIndex)
     {
         qDebug() << "电流波形图选中非法区域";
         return;
@@ -978,12 +986,12 @@ void RealTime::onMouseClick_2(QMouseEvent *)
     if(m_SubFrame_Cur->getKeyValue() == 1)
     {
         m_ComData->T1_Cur_Index = seclectIndex;
-        emit singalCurUpdateT1AndT2(1, QDateTime::fromMSecsSinceEpoch(m_ComData->BeginTime + seclectIndex).toMSecsSinceEpoch());
+        emit singalCurUpdateT1AndT2(1, QDateTime::fromMSecsSinceEpoch(m_ComData->layer_BeginTime + seclectIndex).toMSecsSinceEpoch());
     }
     else if(m_SubFrame_Cur->getKeyValue() == 2)
     {
         m_ComData->T2_Cur_Index = seclectIndex;
-        emit singalCurUpdateT1AndT2(2, QDateTime::fromMSecsSinceEpoch(m_ComData->BeginTime + seclectIndex).toMSecsSinceEpoch());
+        emit singalCurUpdateT1AndT2(2, QDateTime::fromMSecsSinceEpoch(m_ComData->layer_BeginTime + seclectIndex).toMSecsSinceEpoch());
     }
 
 //    drawChart(m_ChartViewer_2, 1);
@@ -1124,14 +1132,28 @@ void RealTime::drawChart_Current(void)
 
     if (m_ComData->d_currentIndex > 0)      //  && pause->isEnabled()
     {
-        // Get the array indexes that corresponds to the visible start and end dates
-        int startIndex = (int)floor(Chart::bSearch(DoubleArray(m_ComData->d_timeStamps, m_ComData->d_currentIndex), viewPortStartDate));
-        int endIndex = (int)ceil(Chart::bSearch(DoubleArray(m_ComData->d_timeStamps, m_ComData->d_currentIndex), viewPortEndDate));
-        int noOfPoints = endIndex - startIndex + 1;
+        if(m_ComData->layerIsPause)
+        {
+            // Get the array indexes that corresponds to the visible start and end dates
+            int startIndex = (int)floor(Chart::bSearch(DoubleArray(m_ComData->layer_timeStamps, m_ComData->layer_currentIndex), viewPortStartDate));
+            int endIndex = (int)ceil(Chart::bSearch(DoubleArray(m_ComData->layer_timeStamps, m_ComData->layer_currentIndex), viewPortEndDate));
+            int noOfPoints = endIndex - startIndex + 1;
 
-        // Extract the visible data
-        viewPortTimeStampsC = DoubleArray(m_ComData->d_timeStamps+ startIndex, noOfPoints);
-        viewPortDataSeriesC = DoubleArray(m_ComData->d_dataSeriesA + startIndex, noOfPoints);
+            // Extract the visible data
+            viewPortTimeStampsC = DoubleArray(m_ComData->layer_timeStamps+ startIndex, noOfPoints);
+            viewPortDataSeriesC = DoubleArray(m_ComData->layer_dataSeriesA + startIndex, noOfPoints);
+        }
+        else
+        {
+            // Get the array indexes that corresponds to the visible start and end dates
+            int startIndex = (int)floor(Chart::bSearch(DoubleArray(m_ComData->d_timeStamps, m_ComData->d_currentIndex), viewPortStartDate));
+            int endIndex = (int)ceil(Chart::bSearch(DoubleArray(m_ComData->d_timeStamps, m_ComData->d_currentIndex), viewPortEndDate));
+            int noOfPoints = endIndex - startIndex + 1;
+
+            // Extract the visible data
+            viewPortTimeStampsC = DoubleArray(m_ComData->d_timeStamps+ startIndex, noOfPoints);
+            viewPortDataSeriesC = DoubleArray(m_ComData->d_dataSeriesA + startIndex, noOfPoints);
+        }
     }
 //    else
 //    {
@@ -1205,7 +1227,11 @@ void RealTime::drawChart_Current(void)
     layer->setXData(viewPortTimeStampsC);
     char buffer[1024];
     if(m_ComData->d_currentIndex > 1) {
-        double d = m_ComData->d_dataSeriesA[m_ComData->d_currentIndex - 1];
+        double d;
+        if(m_ComData->layerIsPause)
+            d = m_ComData->layer_dataSeriesA[m_ComData->layer_currentIndex - 1];
+        else
+            d = m_ComData->d_dataSeriesA[m_ComData->d_currentIndex - 1];
         if(d < 1) {
             sprintf(buffer, " <*bgColor=ffffff*> <*color=0000ff*> <*size=14px*> %.3f uA", d * 1000);
         } else {
@@ -1274,15 +1300,15 @@ void RealTime::drawChart_Current(void)
 //        c->xAxis()->addMark(m_ComData->d_timeStamps[2000], 0xF4A460, "T2 = 2000")->setLineWidth(2);
 //    }
 
-        if(m_ComData->T1_Cur_Index > 0 && m_ComData->T1_Cur_Index <= m_ComData->RunningCount)
+        if(m_ComData->T1_Cur_Index > 0 && m_ComData->T1_Cur_Index <= m_ComData->layer_currentIndex)
         {
-            QString buf = "T1 = " + QDateTime::fromMSecsSinceEpoch(m_ComData->BeginTime + m_ComData->T1_Cur_Index).toString("hh:mm:ss.zzz");
-            c->xAxis()->addMark(*(m_ComData->d_timeStamps + m_ComData->T1_Cur_Index - 1), 0xFF4500, buf.toLatin1().data())->setLineWidth(2);
+            QString buf = "T1 = " + QDateTime::fromMSecsSinceEpoch(m_ComData->layer_BeginTime + m_ComData->T1_Cur_Index).toString("hh:mm:ss.zzz");
+            c->xAxis()->addMark(*(m_ComData->layer_timeStamps + m_ComData->T1_Cur_Index - 1), 0xFF4500, buf.toLatin1().data())->setLineWidth(2);
         }
-        if(m_ComData->T2_Cur_Index > 0 && m_ComData->T2_Cur_Index <= m_ComData->RunningCount)
+        if(m_ComData->T2_Cur_Index > 0 && m_ComData->T2_Cur_Index <= m_ComData->layer_currentIndex)
         {
-            QString buf = "T2 = " + QDateTime::fromMSecsSinceEpoch(m_ComData->BeginTime + m_ComData->T2_Cur_Index).toString("hh:mm:ss.zzz");
-            c->xAxis()->addMark(*(m_ComData->d_timeStamps + m_ComData->T2_Cur_Index - 1), 0xFF4500, buf.toLatin1().data())->setLineWidth(2);
+            QString buf = "T2 = " + QDateTime::fromMSecsSinceEpoch(m_ComData->layer_BeginTime + m_ComData->T2_Cur_Index).toString("hh:mm:ss.zzz");
+            c->xAxis()->addMark(*(m_ComData->layer_timeStamps + m_ComData->T2_Cur_Index - 1), 0xFF4500, buf.toLatin1().data())->setLineWidth(2);
         }
 
     if (m_ComData->d_currentIndex > 1)
@@ -1318,14 +1344,28 @@ void RealTime::drawChart_Voltage(void)
 
     if (m_ComData->d_currentIndex > 0)  //  && 32isEnabled()
     {
-        // Get the array indexes that corresponds to the visible start and end dates
-        int startIndex = (int)floor(Chart::bSearch(DoubleArray(m_ComData->d_timeStamps, m_ComData->d_currentIndex), viewPortStartDate));
-        int endIndex = (int)ceil(Chart::bSearch(DoubleArray(m_ComData->d_timeStamps, m_ComData->d_currentIndex), viewPortEndDate));
-        int noOfPoints = endIndex - startIndex + 1;
+        if(m_ComData->layerIsPause)
+        {
+            // Get the array indexes that corresponds to the visible start and end dates
+            int startIndex = (int)floor(Chart::bSearch(DoubleArray(m_ComData->layer_timeStamps, m_ComData->layer_currentIndex), viewPortStartDate));
+            int endIndex = (int)ceil(Chart::bSearch(DoubleArray(m_ComData->layer_timeStamps, m_ComData->layer_currentIndex), viewPortEndDate));
+            int noOfPoints = endIndex - startIndex + 1;
 
-        // Extract the visible data
-        viewPortTimeStampsB = DoubleArray(m_ComData->d_timeStamps+ startIndex, noOfPoints);
-        viewPortDataSeriesB = DoubleArray(m_ComData->d_dataSeriesV + startIndex, noOfPoints);
+            // Extract the visible data
+            viewPortTimeStampsB = DoubleArray(m_ComData->layer_timeStamps+ startIndex, noOfPoints);
+            viewPortDataSeriesB = DoubleArray(m_ComData->layer_dataSeriesV + startIndex, noOfPoints);
+        }
+        else
+        {
+            // Get the array indexes that corresponds to the visible start and end dates
+            int startIndex = (int)floor(Chart::bSearch(DoubleArray(m_ComData->d_timeStamps, m_ComData->d_currentIndex), viewPortStartDate));
+            int endIndex = (int)ceil(Chart::bSearch(DoubleArray(m_ComData->d_timeStamps, m_ComData->d_currentIndex), viewPortEndDate));
+            int noOfPoints = endIndex - startIndex + 1;
+
+            // Extract the visible data
+            viewPortTimeStampsB = DoubleArray(m_ComData->d_timeStamps+ startIndex, noOfPoints);
+            viewPortDataSeriesB = DoubleArray(m_ComData->d_dataSeriesV + startIndex, noOfPoints);
+        }
     }
 //    else
 //    {
@@ -1399,7 +1439,10 @@ void RealTime::drawChart_Voltage(void)
     layer->setXData(viewPortTimeStampsB);
     char buffer[1024];
     if(m_ComData->d_currentIndex > 1) {
-        sprintf(buffer, " <*bgColor=ffffff*> <*color=00cc00*> <*size=14px*> %.3f V", m_ComData->d_dataSeriesV[m_ComData->d_currentIndex - 1]);
+        if(m_ComData->layerIsPause)
+            sprintf(buffer, " <*bgColor=ffffff*> <*color=00cc00*> <*size=14px*> %.3f V", m_ComData->layer_dataSeriesV[m_ComData->layer_currentIndex - 1]);
+        else
+            sprintf(buffer, " <*bgColor=ffffff*> <*color=00cc00*> <*size=14px*> %.3f V", m_ComData->d_dataSeriesV[m_ComData->d_currentIndex - 1]);
 //        layer->addDataSet(DoubleArray(m_ComData->d_dataSeriesV, m_ComData->d_currentIndex), 0x00cc00, buffer);
     } else {
         sprintf(buffer, " <*bgColor=ffffff*> <*color=00cc00*> <*size=14px*> %.3f V", 0);
@@ -1456,15 +1499,15 @@ void RealTime::drawChart_Voltage(void)
 //        c->xAxis()->addMark(m_ComData->d_timeStamps[2000], 0xF4A460, "T2 = 2000")->setLineWidth(2);
 //    }
 
-    if(m_ComData->T1_Vol_Index > 0 && m_ComData->T1_Vol_Index <= m_ComData->RunningCount)
+    if(m_ComData->T1_Vol_Index > 0 && m_ComData->T1_Vol_Index <= m_ComData->layer_currentIndex)
     {
-        QString buf = "T1 = " + QDateTime::fromMSecsSinceEpoch(m_ComData->BeginTime + m_ComData->T1_Vol_Index).toString("hh:mm:ss.zzz");
-        d->xAxis()->addMark(*(m_ComData->d_timeStamps + m_ComData->T1_Vol_Index - 1), 0xFF4500, buf.toLatin1().data())->setLineWidth(2);
+        QString buf = "T1 = " + QDateTime::fromMSecsSinceEpoch(m_ComData->layer_BeginTime + m_ComData->T1_Vol_Index).toString("hh:mm:ss.zzz");
+        d->xAxis()->addMark(*(m_ComData->layer_timeStamps + m_ComData->T1_Vol_Index - 1), 0xFF4500, buf.toLatin1().data())->setLineWidth(2);
     }
-    if(m_ComData->T2_Vol_Index > 0 && m_ComData->T2_Vol_Index <= m_ComData->RunningCount)
+    if(m_ComData->T2_Vol_Index > 0 && m_ComData->T2_Vol_Index <= m_ComData->layer_currentIndex)
     {
-        QString buf = "T2 = " + QDateTime::fromMSecsSinceEpoch(m_ComData->BeginTime + m_ComData->T2_Vol_Index).toString("hh:mm:ss.zzz");
-        d->xAxis()->addMark(*(m_ComData->d_timeStamps + m_ComData->T2_Vol_Index - 1), 0xFF4500, buf.toLatin1().data())->setLineWidth(2);
+        QString buf = "T2 = " + QDateTime::fromMSecsSinceEpoch(m_ComData->layer_BeginTime + m_ComData->T2_Vol_Index).toString("hh:mm:ss.zzz");
+        d->xAxis()->addMark(*(m_ComData->layer_timeStamps + m_ComData->T2_Vol_Index - 1), 0xFF4500, buf.toLatin1().data())->setLineWidth(2);
     }
 
     if (m_ComData->d_currentIndex > 1)
@@ -1957,12 +2000,13 @@ void RealTime::onConnectUSB()
 
             m_UsbReceiveThread->isStop = false;
             m_UsbReceiveThread->start();   // 启动线程
-            m_ChartUpdateTimer->start(100);    // 启动更新表格
+            m_ChartUpdateTimer->start(200);    // 启动更新表格
 //            m_ComData->ClearData();         // 清之前的数据
             play->setVisible(true);
             play->setEnabled(false);
             pause->setVisible(true);
             pause->setEnabled(true);
+            m_ComData->layerIsPause = false;
             usb_str1->setText(m_UsbHid->str_Manufactured);
             usb_str2->setText(m_UsbHid->str_Product);
             usb_str3->setText(m_UsbHid->str_SerialNumber);
@@ -2044,6 +2088,7 @@ void RealTime::thread_receive_finished()
         play->setVisible(false);
         pause->setEnabled(false);
         pause->setVisible(false);
+        m_ComData->layerIsPause = true;
 //        download->setEnabled(true);
 
         qDebug() << "关闭成功";
@@ -2316,7 +2361,8 @@ void RealTime::onBtnPlay()
 
     play->setEnabled(false);
     pause->setEnabled(true);
-    m_ChartUpdateTimer->start(100);    // 启动更新表格
+    m_ComData->layerIsPause = false;
+    m_ChartUpdateTimer->start(200);    // 启动更新表格
 }
 void RealTime::onBtnPause()
 {
@@ -2337,6 +2383,7 @@ void RealTime::onBtnPause()
 
     play->setEnabled(true);
     pause->setEnabled(false);
+    m_ComData->layerIsPause = true;
     m_ChartUpdateTimer->stop();    // 关闭更新表格
 }
 void RealTime::onBtnDownload()
@@ -2738,7 +2785,7 @@ void RealTime::slotFixCurrentScale(int val)
     double fixArr[9] = {0, 3000, 1000, 100, 10, 1, 0.1, 0.01, 0.001};
     try {
         fixCurrentValue = fixArr[val];
-        updateChart();      // 初始化显示表格
+        drawChart_Current();        // 重新绘制表格
     } catch (...) {
 
     }

@@ -7,7 +7,7 @@ using namespace std;
 ComData::ComData()
 {
     myHandle = nullptr;
-    DataSize = 360000;  // 保存1小时数据
+    DataSize = 300000;  // 保存5分钟数据
     // 头码 167, 89, 62, 189 = (0xA7, 0x59, 0x3E, 0xBD)
     headerC = new unsigned char[4]{0xA7, 0x59, 0x3E, 0xBD};
     headerLength = 4;
@@ -15,6 +15,10 @@ ComData::ComData()
     d_timeStamps = new double [DataSize];
     d_dataSeriesV = new double [DataSize];
     d_dataSeriesA = new double [DataSize];
+
+    layer_timeStamps = new double [DataSize];
+    layer_dataSeriesV = new double [DataSize];
+    layer_dataSeriesA = new double [DataSize];
     qDebug() << "ComData构造，分配内存空间。";
 
     ClearData();
@@ -75,6 +79,9 @@ void ComData::ClearData(void)
 
     BeginTime = QDateTime::currentDateTime().toMSecsSinceEpoch();
     lastTime = QDateTime::fromMSecsSinceEpoch(BeginTime);      // 更新接收时间
+    layer_BeginTime = BeginTime;    // 跟新波形起始时间
+    layer_currentIndex = 0;
+    layerIsPause = false;
     memset(&AverageVolMinute, 0x00, sizeof(AverageVolMinute));
     memset(&AverageCurMinute, 0x00, sizeof(AverageCurMinute));
     AverageMinuteCount = 0;

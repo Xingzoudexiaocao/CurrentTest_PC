@@ -16,37 +16,38 @@ Calculate_Tread::~Calculate_Tread()
 void Calculate_Tread::run()
 {
     qDebug("计算线程run: %d", this->currentThreadId());
-    qint64 CurDifferT = 0;
+    qint64 CurDifferT_A = 0;
+    qint64 CurDifferT_V = 0;
     while (!isStop) {
 
         try {
-            if(m_ComData->T1_Cur_Index > 0 && m_ComData->T1_Cur_Index <= m_ComData->RunningCount &&
-                    m_ComData->T2_Cur_Index > 0 && m_ComData->T2_Cur_Index <= m_ComData->RunningCount &&
-                    CurDifferT != m_ComData->T2_Cur_Index - m_ComData->T1_Cur_Index)
+            if(m_ComData->T1_Cur_Index > 0 && m_ComData->T1_Cur_Index <= m_ComData->layer_currentIndex &&
+                    m_ComData->T2_Cur_Index > 0 && m_ComData->T2_Cur_Index <= m_ComData->layer_currentIndex &&
+                    CurDifferT_A != m_ComData->T2_Cur_Index - m_ComData->T1_Cur_Index)
             {
-                CurDifferT = m_ComData->T2_Cur_Index - m_ComData->T1_Cur_Index;
+                CurDifferT_A = m_ComData->T2_Cur_Index - m_ComData->T1_Cur_Index;
 
                 double sunCurrent = 0;
 
-                if(CurDifferT == 0)
-                    emit signalUpdateCurAverage(0, m_ComData->d_dataSeriesA[m_ComData->T2_Cur_Index - 1]);
-                else if(CurDifferT > 0) {
+                if(CurDifferT_A == 0)
+                    emit signalUpdateCurAverage(0, m_ComData->layer_dataSeriesA[m_ComData->T2_Cur_Index - 1]);
+                else if(CurDifferT_A > 0) {
                     for(qint64 i = m_ComData->T1_Cur_Index; i < m_ComData->T2_Cur_Index; i++)
                     {
-                        sunCurrent += m_ComData->d_dataSeriesA[i - 1];
+                        sunCurrent += m_ComData->layer_dataSeriesA[i - 1];
                     }
-                    if(CurDifferT != 0)
-                        sunCurrent = sunCurrent / CurDifferT;
-                    emit signalUpdateCurAverage(CurDifferT, sunCurrent);
-                } else if(CurDifferT < 0) {
-                    CurDifferT = 0 - CurDifferT;
+                    if(CurDifferT_A != 0)
+                        sunCurrent = sunCurrent / CurDifferT_A;
+                    emit signalUpdateCurAverage(CurDifferT_A, sunCurrent);
+                } else if(CurDifferT_A < 0) {
+                    CurDifferT_A = 0 - CurDifferT_A;
                     for(qint64 i = m_ComData->T2_Cur_Index; i < m_ComData->T1_Cur_Index; i++)
                     {
-                        sunCurrent += m_ComData->d_dataSeriesA[i - 1];
+                        sunCurrent += m_ComData->layer_dataSeriesA[i - 1];
                     }
-                    if(CurDifferT != 0)
-                        sunCurrent = sunCurrent / CurDifferT;
-                    emit signalUpdateCurAverage(CurDifferT, sunCurrent);
+                    if(CurDifferT_A != 0)
+                        sunCurrent = sunCurrent / CurDifferT_A;
+                    emit signalUpdateCurAverage(CurDifferT_A, sunCurrent);
                 }
 
             }
@@ -55,31 +56,31 @@ void Calculate_Tread::run()
         }
 
         try {
-            if(m_ComData->T1_Vol_Index > 0 && m_ComData->T1_Vol_Index <= m_ComData->RunningCount &&
-                    m_ComData->T2_Vol_Index > 0 && m_ComData->T2_Vol_Index <= m_ComData->RunningCount &&
-                    CurDifferT != m_ComData->T2_Vol_Index - m_ComData->T1_Vol_Index)
+            if(m_ComData->T1_Vol_Index > 0 && m_ComData->T1_Vol_Index <= m_ComData->layer_currentIndex &&
+                    m_ComData->T2_Vol_Index > 0 && m_ComData->T2_Vol_Index <= m_ComData->layer_currentIndex &&
+                    CurDifferT_V != m_ComData->T2_Vol_Index - m_ComData->T1_Vol_Index)
             {
-                CurDifferT = m_ComData->T2_Vol_Index - m_ComData->T1_Vol_Index;
+                CurDifferT_V = m_ComData->T2_Vol_Index - m_ComData->T1_Vol_Index;
 
                 double sunCurrent = 0;
 
-                if(CurDifferT == 0)
-                    emit signalUpdateVolAverage(0, m_ComData->d_dataSeriesV[m_ComData->T2_Vol_Index - 1]);
-                else if (CurDifferT > 0) {
+                if(CurDifferT_V == 0)
+                    emit signalUpdateVolAverage(0, m_ComData->layer_dataSeriesV[m_ComData->T2_Vol_Index - 1]);
+                else if (CurDifferT_V > 0) {
                     for(qint64 i = m_ComData->T1_Vol_Index; i < m_ComData->T2_Vol_Index; i++)
                     {
-                        sunCurrent += m_ComData->d_dataSeriesV[i - 1];
+                        sunCurrent += m_ComData->layer_dataSeriesV[i - 1];
                     }
-                    sunCurrent = sunCurrent / CurDifferT;
-                    emit signalUpdateVolAverage(CurDifferT, sunCurrent);
-                } else if (CurDifferT < 0) {
-                    CurDifferT = 0 - CurDifferT;
+                    sunCurrent = sunCurrent / CurDifferT_V;
+                    emit signalUpdateVolAverage(CurDifferT_V, sunCurrent);
+                } else if (CurDifferT_V < 0) {
+                    CurDifferT_V = 0 - CurDifferT_V;
                     for(qint64 i = m_ComData->T2_Vol_Index; i < m_ComData->T1_Vol_Index; i++)
                     {
-                        sunCurrent += m_ComData->d_dataSeriesV[i - 1];
+                        sunCurrent += m_ComData->layer_dataSeriesV[i - 1];
                     }
-                    sunCurrent = sunCurrent / CurDifferT;
-                    emit signalUpdateVolAverage(CurDifferT, sunCurrent);
+                    sunCurrent = sunCurrent / CurDifferT_V;
+                    emit signalUpdateVolAverage(CurDifferT_V, sunCurrent);
                 }
 
             }

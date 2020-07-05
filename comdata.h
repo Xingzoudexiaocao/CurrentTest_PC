@@ -118,6 +118,13 @@ public:
 public:
     hid_device *myHandle;   // USB_HID
 
+    bool layerIsPause;
+    qint64 layer_BeginTime;
+    qint64 layer_currentIndex;
+    double *layer_timeStamps;	// The timestamps for the data series
+    double *layer_dataSeriesV;	// The values for the data series A
+    double *layer_dataSeriesA;	// The values for the data series B
+
     qint64 T1_Cur_Index;        // 电流波形T1起始索引
     qint64 T2_Cur_Index;        // 电流波形T2起始索引
     qint64 T1_Vol_Index;        // 电压波形T1起始索引
