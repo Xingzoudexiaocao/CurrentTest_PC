@@ -25,7 +25,7 @@ HistoryView::HistoryView(QWidget *parent) : QGraphicsView(new QGraphicsScene, pa
     chatVoltage = new QChart();
     chatVoltage->addSeries(seriesVoltage);
     chatVoltage->legend()->hide();
-    chatVoltage->setGeometry(0, 380, 1000, 440 - 60);
+    chatVoltage->setGeometry(0, 380, 1000, 440 - 60 - 30);
 //    chatVoltage->setTitleFont(font);
 //    chatVoltage->setTitle("电压波形图");
     //![3]
@@ -76,7 +76,7 @@ HistoryView::HistoryView(QWidget *parent) : QGraphicsView(new QGraphicsScene, pa
     chatCurrent = new QChart();
     chatCurrent->addSeries(seriesCurrent);
     chatCurrent->legend()->hide();
-    chatCurrent->setGeometry(0, 30, 1000, 440 - 60);
+    chatCurrent->setGeometry(0, 30, 1000, 440 - 60 - 30);
 //    chatCurrent->setTitleFont(font);
 //    chatCurrent->setTitle("电流波形图");
     //![3]
@@ -173,7 +173,7 @@ HistoryView::HistoryView(QWidget *parent) : QGraphicsView(new QGraphicsScene, pa
 
     unitVol = new QLabel(this);
     unitVol->setStyleSheet("QLabel { text-align:center; font-size:20px; color:#00cc00; background-color:white;}");  //  padding:10px;
-    unitVol->setGeometry(20, 400, 100, 20);
+    unitVol->setGeometry(20, 400 - 30, 100, 20);
 
     unitCur = new QLabel(this);
     unitCur->setStyleSheet("QLabel { text-align:center; font-size:20px; color:blue; background-color:white;}");  //  padding:10px;
@@ -183,7 +183,7 @@ HistoryView::HistoryView(QWidget *parent) : QGraphicsView(new QGraphicsScene, pa
 
     markLabel = new QLabel(this);
     markLabel->setStyleSheet("QLabel { text-align:center; font-size:24px; color:#CC0000; background-color:white;}");  //  padding:10px;
-    markLabel->setGeometry(400, 390, 600, 30);
+    markLabel->setGeometry(400, 390 - 30, 600, 30);
 
 //    testLCD = new QLCDNumber(this);
 //    // 设置能显示的位数
@@ -241,7 +241,7 @@ void HistoryView::mousePressEvent(QMouseEvent *event)
 //    qDebug() << "pos[count-1] = " << seriesCurrent->points()[seriesCurrent->points().count()-1].x();
 
 //    m_x_V = chatVoltage->mapToValue(event->pos()).x();
-    if(event->pos().y() > 465 - 66)
+    if(event->pos().y() > 365 - 66)
         m_x_A = (qlonglong)chatVoltage->mapToValue(event->pos()).x();
     else
         m_x_A = (qlonglong)chatCurrent->mapToValue(event->pos()).x();

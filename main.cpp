@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
 //    demo.setGeometry(400, 20, 960, 850);
 //    demo.show();
 
-//    printscreeninfo();
+    printscreeninfo();
 
     MainWindow w(nullptr, comD, hid);
 //    w.setWindowFlags( Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint); // 置顶，最小化，关闭   | Qt::WindowMaximizeButtonHint     Qt::WindowStaysOnTopHint |
