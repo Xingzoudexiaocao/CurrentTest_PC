@@ -21,14 +21,14 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     m_About = nullptr;
     cntDisplay = 0;
 
-    setGeometry(8, 10, 1280, 800);
+    setGeometry(8, 10, m_ComData->gUiSize->width(), m_ComData->gUiSize->height());
 //    setFixedSize(1090, 850);
 ////    setMinimumSize(200,200);
 //    setWindowTitle("Simple Realtime Chart");
 
     // The frame on the left side
     QFrame *frame = new QFrame(this);
-    frame->setGeometry(0, 0, 264, 720);     // 777
+    frame->setGeometry(0, 0, 264, 690);     // 777
 //    frame->setFixedSize(300, 910);
 //    frame->setStyleSheet("background-color:white");
     frame->setFrameShape(QFrame::NoFrame);
@@ -141,137 +141,137 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     QString fontName = loadFontFamilyFromTTF(":/DSDigital.ttf");    // digifaw ":/DSDigital.ttf" "C:/Windows/Fonts/Terminal.fon"
     QFont    font_VAW ( fontName,  10,   100);     // "Microsoft YaHei"
     QFrame *frame_3 = new QFrame(frame);
-    frame_3->setGeometry(2, 104, 260, 255);     // -25
+    frame_3->setGeometry(2, 104, 260, 255 - 10);     // -25
 //    frame_3->setFrameShape(QFrame::Panel);
     frame_3->setObjectName("FrameQss");
     frame_3->setStyleSheet(frame_qss);
     QLabel *realTimeValue = new QLabel(frame_3);
-    realTimeValue->setGeometry(0, 2, 250, 30);
+    realTimeValue->setGeometry(0, -3, 250, 30);
     realTimeValue->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:24px;}");
     realTimeValue->setFont(font);
     realTimeValue->setText("实时采集值：");
     // 显示瞬时电压/电流/功率
     m_ValueB = new QLabel(frame_3);
     m_ValueB->setStyleSheet("QLabel { text-align:center; padding:10px; font-size:60px; color:#00cc00; }");      // background-color:white;
-    m_ValueB->setGeometry(-25, 80 - 5, 250, 70);
+    m_ValueB->setGeometry(-25, 80 - 5 - 10, 250, 70);
     m_ValueB->setFont(font_VAW);
     m_ValueB->setAlignment(Qt::AlignHCenter);
     m_ValueB->setFrameShape(QFrame::NoFrame);
     m_ValueB->setText(QString::number(0, 'f', 3));  // 初始化显示0
     QLabel *unitV = new QLabel(frame_3);
-    unitV->setGeometry(200, 80 + 10 - 5, 64, 70);
+    unitV->setGeometry(200, 80 + 10 - 5 - 10, 64, 70);
     unitV->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:28px; color:#00cc00; }");
     unitV->setText("V");
 
     m_ValueC = new QLabel(frame_3);
     m_ValueC->setStyleSheet("QLabel { text-align:center; padding:10px; font-size:60px; color:blue;}");
-    m_ValueC->setGeometry(-25, 20, 250, 70);
+    m_ValueC->setGeometry(-25, 20 - 10, 250, 70);
     m_ValueC->setFont(font_VAW);
     m_ValueC->setAlignment(Qt::AlignHCenter);
     m_ValueC->setFrameShape(QFrame::NoFrame);
     m_ValueC->setText(QString::number(0, 'f', 3));  // 初始化显示0
     m_unitA = new QLabel(frame_3);
-    m_unitA->setGeometry(200, 20 + 10, 64, 70);
+    m_unitA->setGeometry(200, 20 + 10 - 10, 64, 70);
     m_unitA->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:28px; color:blue; }");
     m_unitA->setText("mA");
 
     m_Power = new QLabel(frame_3);
     m_Power->setStyleSheet("QLabel { text-align:left; padding:10px; font-size:60px; color:black;}");
-    m_Power->setGeometry(-25, 140 - 10, 250, 70);
+    m_Power->setGeometry(-25, 140 - 10 - 10, 250, 70);
     m_Power->setFont(font_VAW);
     m_Power->setAlignment(Qt::AlignHCenter);
     m_Power->setFrameShape(QFrame::NoFrame);
     m_Power->setText(QString::number(0, 'f', 2));  // 初始化显示0
     QLabel *unitW = new QLabel(frame_3);
-    unitW->setGeometry(200, 140 + 10 - 10, 68, 70);
+    unitW->setGeometry(200, 140 + 10 - 10 - 10, 68, 70);
     unitW->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:28px; color:black; }");
     unitW->setText("W");
 
     m_Energy = new QLabel(frame_3);
     m_Energy->setStyleSheet("QLabel { text-align:left; padding:10px; font-size:60px; color:black; }");
-    m_Energy->setGeometry(-25, 200 - 15, 250, 70);
+    m_Energy->setGeometry(-25, 200 - 15 - 10, 250, 70);
     m_Energy->setFont(font_VAW);
     m_Energy->setAlignment(Qt::AlignHCenter);
     m_Energy->setFrameShape(QFrame::NoFrame);
     m_Energy->setText(QString::number(0, 'f', 2));  // 初始化显示0
     QLabel *unitE = new QLabel(frame_3);
-    unitE->setGeometry(200, 200 + 10 - 15, 68, 70);
+    unitE->setGeometry(200, 200 + 10 - 15 - 10, 68, 70);
     unitE->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:24px; color:black; }");
     unitE->setText("mAh");
 
     // The frame on the left side
     QFrame *frame_4 = new QFrame(frame);
-    frame_4->setGeometry(2, 390 - 25 - 4, 260, 220 - 15);
+    frame_4->setGeometry(2, 390 - 25 - 14, 260, 220 - 15 - 10);
 //    frame_4->setFrameShape(QFrame::Panel);
     frame_4->setObjectName("FrameQss");
     frame_4->setStyleSheet(frame_qss);
     QLabel *avgValue = new QLabel(frame_4);
-    avgValue->setGeometry(0, 2, 250, 30);
+    avgValue->setGeometry(0, -3, 250, 30);
     avgValue->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:24px;}");
     avgValue->setFont(font);
     avgValue->setText("平均采集值：");
     // avarge voltage
     buf1_QL = new QLabel(frame_4);
     buf1_QL->setStyleSheet("QLabel { text-align:center; padding:10px; font-size:64px; color:#00cc00;}");
-    buf1_QL->setGeometry(-25, 20 + 60 - 5, 250, 80);
+    buf1_QL->setGeometry(-25, 20 + 60 - 5 - 10, 250, 80);
     buf1_QL->setFont(font_VAW);
     buf1_QL->setAlignment(Qt::AlignHCenter);
     buf1_QL->setFrameShape(QFrame::NoFrame);
     buf1_QL->setText("-");  // 初始化显示-
 //    buf1_QL->setText(QString::number(0, 'f', 3));  // 初始化显示0
     QLabel *avg_V = new QLabel(frame_4);
-    avg_V->setGeometry(200, 20 + 70 - 5, 64, 70);
+    avg_V->setGeometry(200, 20 + 70 - 5 - 10, 64, 70);
     avg_V->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:28px; color:#00cc00; }");
     avg_V->setText("V");
     // avarge current
     buf2_QL = new QLabel(frame_4);
     buf2_QL->setStyleSheet("QLabel { text-align:center; padding:10px; font-size:64px; color:blue;}");
-    buf2_QL->setGeometry(-25, 20, 250, 80);
+    buf2_QL->setGeometry(-25, 20 - 10, 250, 80);
     buf2_QL->setFont(font_VAW);
     buf2_QL->setAlignment(Qt::AlignHCenter);
     buf2_QL->setFrameShape(QFrame::NoFrame);
     buf2_QL->setText("-");  // 初始化显示-
 //    buf2_QL->setText(QString::number(0, 'f', 3));  // 初始化显示0
     m_averageA = new QLabel(frame_4);
-    m_averageA->setGeometry(200, 20 + 10, 64, 70);
+    m_averageA->setGeometry(200, 20 + 10 - 10, 64, 70);
     m_averageA->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:28px; color:blue; }");
     m_averageA->setText("mA");
     // avarge power
     buf3_QL = new QLabel(frame_4);
     buf3_QL->setStyleSheet("QLabel { text-align:left; padding:10px; font-size:64px; color:black; }");
-    buf3_QL->setGeometry(-25, 140 - 10, 250, 80);
+    buf3_QL->setGeometry(-25, 140 - 10 - 10, 250, 80);
     buf3_QL->setFont(font_VAW);
     buf3_QL->setAlignment(Qt::AlignHCenter);
     buf3_QL->setFrameShape(QFrame::NoFrame);
     buf3_QL->setText("-");  // 初始化显示-
 //    buf3_QL->setText(QString::number(0, 'f', 2));  // 初始化显示0
     QLabel *avg_W = new QLabel(frame_4);
-    avg_W->setGeometry(200, 140 + 10 - 10, 64, 70);
+    avg_W->setGeometry(200, 140 + 10 - 10 - 10, 64, 70);
     avg_W->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:28px; color:black; }");
     avg_W->setText("W");
 
     QFrame *frame_6 = new QFrame(frame);
-    frame_6->setGeometry(2, 615 - 47, 260, 152);
+    frame_6->setGeometry(2, 615 - 47 - 20, 260, 152 - 10);
 //    frame_6->setFrameShape(QFrame::Panel);
     frame_6->setObjectName("FrameQss");
     frame_6->setStyleSheet(frame_qss);
     QLabel *batteryInfo = new QLabel(frame_6);
-    batteryInfo->setGeometry(0, 2, 250, 30);
+    batteryInfo->setGeometry(0, -3, 250, 30);
     batteryInfo->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:24px;}");
     batteryInfo->setFont(font);
     batteryInfo->setText("电池信息：");
     QLabel *totalCapacity = new QLabel(frame_6);
-    totalCapacity->setGeometry(0, 30 - 2, 250, 40);
+    totalCapacity->setGeometry(0, 30 - 2 - 10, 250, 40);
     totalCapacity->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:24px;}");
     totalCapacity->setFont(font);
     totalCapacity->setText("总容量：");
     QLabel *totalCapacityUnit = new QLabel(frame_6);
-    totalCapacityUnit->setGeometry(200, 30, 250, 40);
+    totalCapacityUnit->setGeometry(200, 30 - 10, 250, 40);
     totalCapacityUnit->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:18px;}");
     totalCapacityUnit->setFont(font);
     totalCapacityUnit->setText("mAh");
     bTotalCap = new QLabel(frame_6);
-    bTotalCap->setGeometry(110, 30 + 8, 80, 40);
+    bTotalCap->setGeometry(110, 30 + 5 - 10, 80, 40);
 //    bTotalCap->setStyleSheet("QLabel {font-family:arial; text-align:left; padding:2px; font-size:24px;}");
     bTotalCap->setStyleSheet("QLabel { text-align:left; padding:0px; font-size:30px; color:black; }");
     bTotalCap->setFont(font_VAW);
@@ -279,12 +279,12 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     bTotalCap->setFrameShape(QFrame::NoFrame);
     bTotalCap->setText(QString::number(m_ComData->SettingBatteryCapacity));
     QLabel *remainCapacity = new QLabel(frame_6);
-    remainCapacity->setGeometry(0, 60 - 4, 250, 40);
+    remainCapacity->setGeometry(0, 60 - 4 - 10, 250, 40);
     remainCapacity->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:24px;}");
     remainCapacity->setFont(font);
     remainCapacity->setText("剩余容量：");
     bRemainCap = new QLabel(frame_6);
-    bRemainCap->setGeometry(140, 60 + 8 - 4, 100, 40);
+    bRemainCap->setGeometry(140, 60 + 8 - 4 - 10, 100, 40);
 //    bRemainCap->setStyleSheet("QLabel {font-family:arial; text-align:left; padding:2px; font-size:24px;}");
     bRemainCap->setStyleSheet("QLabel { text-align:left; padding:0px; font-size:30px; color:black; }");
     bRemainCap->setFont(font_VAW);
@@ -292,38 +292,38 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     bRemainCap->setFrameShape(QFrame::NoFrame);
     bRemainCap->setText("100%");
     QLabel *workingTime = new QLabel(frame_6);
-    workingTime->setGeometry(0, 90 - 6, 260, 40);
+    workingTime->setGeometry(0, 90 - 6 - 10, 260, 40);
     workingTime->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:24px;}");
     workingTime->setFont(font);
     workingTime->setText("运行时间：   时  分");
     bRunningTimeHour = new QLabel(frame_6);
-    bRunningTimeHour->setGeometry(120, 90 + 8 - 6, 80, 40);
+    bRunningTimeHour->setGeometry(120, 90 + 8 - 6 - 10, 80, 40);
     bRunningTimeHour->setStyleSheet("QLabel { text-align:left; padding:0px; font-size:30px; color:black; }");
     bRunningTimeHour->setFont(font_VAW);
     bRunningTimeHour->setAlignment(Qt::AlignLeft);
     bRunningTimeHour->setFrameShape(QFrame::NoFrame);
     bRunningTimeHour->setText(" -");
     bRunningTimeMinute = new QLabel(frame_6);
-    bRunningTimeMinute->setGeometry(197, 90 + 8 - 6, 40, 40);
+    bRunningTimeMinute->setGeometry(197, 90 + 8 - 6 - 10, 40, 40);
     bRunningTimeMinute->setStyleSheet("QLabel { text-align:left; padding:0px; font-size:30px; color:black; }");
     bRunningTimeMinute->setFont(font_VAW);
     bRunningTimeMinute->setAlignment(Qt::AlignLeft);
     bRunningTimeMinute->setFrameShape(QFrame::NoFrame);
     bRunningTimeMinute->setText(" -");
     QLabel *remainTime = new QLabel(frame_6);
-    remainTime->setGeometry(0, 120 - 8, 260, 40);
+    remainTime->setGeometry(0, 120 - 8 - 10, 260, 40);
     remainTime->setStyleSheet("QLabel { text-align:left; padding:1px; font-size:24px;}");
     remainTime->setFont(font);
     remainTime->setText("剩余时间：   时  分");
     bRemainTimeHour = new QLabel(frame_6);
-    bRemainTimeHour->setGeometry(120, 120 + 8 - 8, 80, 40);
+    bRemainTimeHour->setGeometry(120, 120 + 8 - 8 - 10, 80, 40);
     bRemainTimeHour->setStyleSheet("QLabel { text-align:left; padding:0px; font-size:30px; color:black; }");
     bRemainTimeHour->setFont(font_VAW);
     bRemainTimeHour->setAlignment(Qt::AlignLeft);
     bRemainTimeHour->setFrameShape(QFrame::NoFrame);
     bRemainTimeHour->setText(" -");
     bRemainTimeMinute = new QLabel(frame_6);
-    bRemainTimeMinute->setGeometry(197, 120 + 8 - 8, 40, 40);
+    bRemainTimeMinute->setGeometry(197, 120 + 8 - 8 - 10, 40, 40);
     bRemainTimeMinute->setStyleSheet("QLabel { text-align:left; padding:0px; font-size:30px; color:black; }");
     bRemainTimeMinute->setFont(font_VAW);
     bRemainTimeMinute->setAlignment(Qt::AlignLeft);
@@ -404,19 +404,19 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
 
     // The frame on the left side
     QFrame *frame_2 = new QFrame(this);     // 波形显示界面
-    frame_2->setGeometry(0, 0, 1000, 720);
+    frame_2->setGeometry(0, 0, m_ComData->gUiSize->width() - 280, m_ComData->gUiSize->height() - 78);
 //    frame_2->setFrameShape(QFrame::StyledPanel);
     QFrame *frame_2_ext = new QFrame(this);     // 数据显示界面
-    frame_2_ext->setGeometry(0, 0, 1000, 720);
+    frame_2_ext->setGeometry(0, 0, m_ComData->gUiSize->width() - 280, m_ComData->gUiSize->height() - 78);
 //    frame_2_ext->setBackgroundRole(QPalette::shadow());
 //    frame_2_ext->setFrameShape(QFrame::StyledPanel);
     frame_2_updata = new QFrame(this);     // 更新程序界面
-    frame_2_updata->setGeometry(0, 0, 1000, 720);
+    frame_2_updata->setGeometry(0, 0, m_ComData->gUiSize->width() - 280, m_ComData->gUiSize->height() - 78);
 //    frame_2_updata->setBackgroundRole(QPalette::shadow());
 //    frame_2_updata->setFrameShape(QFrame::StyledPanel);
 
     tabWidget = new QTabWidget(this);
-    tabWidget->setGeometry(265, 0, 1000, 720);
+    tabWidget->setGeometry(265, 0, m_ComData->gUiSize->width() - 280, m_ComData->gUiSize->height() - 78);
     tabWidget->addTab(frame_2, "最新数据");
     tabWidget->addTab(frame_2_ext, "历史数据");
 //    tabWidget->addTab(frame_2_updata, "设置");
@@ -449,7 +449,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
 
     // Chart Viewer
     m_ChartViewer = new QChartViewer(frame_2);
-    m_ChartViewer->setGeometry(4, 445 - 96 - 30, 1345 - 360 + 10, 505);
+    m_ChartViewer->setGeometry(4, -16 + (m_ComData->gUiSize->height() - 78 - 10) / 2 - 16, m_ComData->gUiSize->width() - 280 - 5, 505);
     connect(m_ChartViewer, SIGNAL(viewPortChanged()), SLOT(onViewPortChanged()));
     connect(m_ChartViewer, SIGNAL(mouseMovePlotArea(QMouseEvent*)),
         SLOT(onMouseMovePlotArea(QMouseEvent*)));
@@ -458,12 +458,12 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
 
     // Horizontal scroll bar
     m_HScrollBar = new QScrollBar(Qt::Horizontal, frame_2);
-    m_HScrollBar->setGeometry(4, 855 - 130 - 60, 1345 - 360 + 10, 17);
+    m_HScrollBar->setGeometry(4, -16 + (m_ComData->gUiSize->height() - 78 - 10) - 16 - 12, m_ComData->gUiSize->width() - 280 - 5, 17);
     connect(m_HScrollBar, SIGNAL(valueChanged(int)), SLOT(onHScrollBarChanged(int)));
 
     // Chart Viewer 2
     m_ChartViewer_2 = new QChartViewer(frame_2);
-    m_ChartViewer_2->setGeometry(4, -16, 1345 - 360 + 10, 505);
+    m_ChartViewer_2->setGeometry(4, -16, m_ComData->gUiSize->width() - 280 - 5, 505);
     connect(m_ChartViewer_2, SIGNAL(viewPortChanged()), SLOT(onViewPortChanged_2()));
     connect(m_ChartViewer_2, SIGNAL(mouseMovePlotArea(QMouseEvent*)),
         SLOT(onMouseMovePlotArea_2(QMouseEvent*)));
@@ -472,7 +472,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
 
     // Horizontal scroll bar
     m_HScrollBar_2 = new QScrollBar(Qt::Horizontal, frame_2);
-    m_HScrollBar_2->setGeometry(4, 423 - 66 - 30, 1345 - 360 + 10, 17);
+    m_HScrollBar_2->setGeometry(4, -16 + (m_ComData->gUiSize->height() - 78 - 10) / 2 - 12, m_ComData->gUiSize->width() - 280 - 5, 17);
     connect(m_HScrollBar_2, SIGNAL(valueChanged(int)), SLOT(onHScrollBarChanged_2(int)));
 
     /* 控件自动缩放
@@ -508,13 +508,13 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
 //    frame->setStyleSheet("background-color:white");
     frameTop->setFrameShape(QFrame::NoFrame);
     play = new QPushButton(QIcon(":/play_red.png"), "继续", frame_2);
-    play->setGeometry(1145 - 400, 15, 80, 30);
+    play->setGeometry(m_ComData->gUiSize->width() - 360 - 175, 12, 80, 30);
     play->setStyleSheet(bnt_qss1);
     play->setFont(font);
     play->setVisible(false);
     connect(play, &QAbstractButton::clicked, this, &RealTime::onBtnPlay);
     pause = new QPushButton(QIcon(":/pause.png"), "暂停", frame_2);
-    pause->setGeometry(1225 - 400, 15, 80, 30);
+    pause->setGeometry(m_ComData->gUiSize->width() - 360 - 95, 12, 80, 30);
     pause->setStyleSheet(bnt_qss1);
     pause->setFont(font);
     pause->setEnabled(true);
@@ -557,12 +557,12 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
 
 
     QLabel *volTitle = new QLabel(frame_2);
-    volTitle->setGeometry(840 - 420, 455 - 15 - 66 - 30, 300, 30);
+    volTitle->setGeometry((m_ComData->gUiSize->width() - 280) / 2 - 80, 8 + (m_ComData->gUiSize->height() - 78 - 10) / 2 - 14, 300, 30);
     volTitle->setStyleSheet("QLabel {text-align:left; padding:0px; font-size:28px; background-color:white;}");
     volTitle->setText("电压测量波形图");
     volTitle->setFont(font);
     QLabel *curTitle = new QLabel(frame_2);
-    curTitle->setGeometry(840 - 420, 18 - 10, 300, 30);
+    curTitle->setGeometry((m_ComData->gUiSize->width() - 280) / 2 - 80, 8, 300, 30);
     curTitle->setStyleSheet("QLabel {text-align:left; padding:0px; font-size:28px; background-color:white;}");
     curTitle->setText("电流测量波形图");
     curTitle->setFont(font);
@@ -601,7 +601,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     connect(historyOpen, &QAbstractButton::clicked, this, &RealTime::HistoryOpen);
 
     QFrame *frame_setting = new QFrame(frame_2_updata);     // 波形显示界面
-    frame_setting->setGeometry(100, 0, 1000 - 100, 780);
+    frame_setting->setGeometry((m_ComData->gUiSize->width() - 1080) / 2, 0, m_ComData->gUiSize->width() - 280, 780);
     frame_setting->setFrameShape(QFrame::NoFrame);
 
     QFrame *firstLine1 = new QFrame(frame_setting);
@@ -745,22 +745,22 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     connect(batteryCapacity, SIGNAL(valueChanged(int)), SLOT(slotBatteryValue(int)));
 
     m_SubButton_Cur = new QPushButton(frame_2);
-    m_SubButton_Cur->setGeometry(920, 15, 50, 30);
+    m_SubButton_Cur->setGeometry(m_ComData->gUiSize->width() - 360, 15, 50, 30);
     m_SubButton_Cur->setStyleSheet( "QPushButton{border-image: url(:/Triangle_Down.png);color:white; border:1px solid black;text-align:left; padding:2px; font-size:16px;}QPushButton:disabled{ border-image: url(:/Triangle_Disable.png);}");
     connect(m_SubButton_Cur, &QAbstractButton::clicked, this, &RealTime::slotSubButtonCurrent);
     m_SubButton_Cur->setEnabled(false);
     m_SubButton_Vol = new QPushButton(frame_2);
-    m_SubButton_Vol->setGeometry(920, 365 + 15 - 30, 50, 30);
+    m_SubButton_Vol->setGeometry(m_ComData->gUiSize->width() - 360, 13 + (m_ComData->gUiSize->height() - 78 - 10) / 2 - 14, 50, 30);
     m_SubButton_Vol->setStyleSheet( "QPushButton{border-image: url(:/Triangle_Down.png);color:white; border:1px solid black;text-align:left; padding:2px; font-size:16px;}QPushButton:disabled{ border-image: url(:/Triangle_Disable.png);}");
     connect(m_SubButton_Vol, &QAbstractButton::clicked, this, &RealTime::slotSubButtonVoltage);
     m_SubButton_Vol->setEnabled(false);
     m_SubFrame_Cur = new AverageSubFrame(frame_2);
-    m_SubFrame_Cur->setGeometry(770, 45, 200, 100);
+    m_SubFrame_Cur->setGeometry(m_ComData->gUiSize->width() - 510, 45, 200, 100);
     m_SubFrame_Cur->setCurVolFlag(1);
     connect(this, SIGNAL(singalCurUpdateT1AndT2(qint8, qint64)), m_SubFrame_Cur, SLOT(slotUpdateT1AndT2(qint8, qint64)));
     m_SubFrame_Cur->setVisible(false);
     m_SubFrame_Vol = new AverageSubFrame(frame_2);
-    m_SubFrame_Vol->setGeometry(770, 365 + 45 - 30, 200, 100);
+    m_SubFrame_Vol->setGeometry(m_ComData->gUiSize->width() - 510, 13 + (m_ComData->gUiSize->height() - 78 - 10) / 2 - 14 + 30, 200, 100);
     m_SubFrame_Vol->setCurVolFlag(2);
     connect(this, SIGNAL(singalVolUpdateT1AndT2(qint8, qint64)), m_SubFrame_Vol, SLOT(slotUpdateT1AndT2(qint8, qint64)));
     m_SubFrame_Vol->setVisible(false);
@@ -1172,7 +1172,7 @@ void RealTime::drawChart_Current(void)
     //================================================================================
 
     // Create an XYChart object of size 640 x 350 pixels
-    XYChart *c = new XYChart(1345 - 360 + 10, 425 - 40 - 30);     // 1345, 425        m_HScrollBar->width(), 300
+    XYChart *c = new XYChart(m_ComData->gUiSize->width() - 280, (m_ComData->gUiSize->height() - 78 - 10) / 2);     // 1345, 425        m_HScrollBar->width(), 300
 
     // Set the plotarea at (55, 50) with width 80 pixels less than chart width, and height 80 pixels
     // less than chart height. Use a vertical gradient from light blue (f0f6ff) to sky blue (a0c0ff)
@@ -1384,7 +1384,7 @@ void RealTime::drawChart_Voltage(void)
     //================================================================================
 
     // Create an XYChart object of size 640 x 350 pixels
-    XYChart *d = new XYChart(1345 - 360 + 10, 425 - 40 - 30);     // 1345, 425        m_HScrollBar->width(), 300
+    XYChart *d = new XYChart(m_ComData->gUiSize->width() - 280, (m_ComData->gUiSize->height() - 78 - 10) / 2);     // 1345, 425        m_HScrollBar->width(), 300
 
     // Set the plotarea at (55, 50) with width 80 pixels less than chart width, and height 80 pixels
     // less than chart height. Use a vertical gradient from light blue (f0f6ff) to sky blue (a0c0ff)
@@ -1576,7 +1576,7 @@ void RealTime::drawChart(QChartViewer *viewer, int index)
     //================================================================================
 
     // Create an XYChart object of size 640 x 350 pixels
-    XYChart *c = new XYChart(1345 - 360 + 10, 425 - 40 - 30);     // 1345, 425        m_HScrollBar->width(), 300
+    XYChart *c = new XYChart(m_ComData->gUiSize->width() - 280, (m_ComData->gUiSize->height() - 78 - 10) / 2);     // 1345, 425        m_HScrollBar->width(), 300
 
     // Set the plotarea at (55, 50) with width 80 pixels less than chart width, and height 80 pixels
     // less than chart height. Use a vertical gradient from light blue (f0f6ff) to sky blue (a0c0ff)
@@ -2268,30 +2268,30 @@ void RealTime::slotShowTime(qint64 runningT, qint64 remainT)
     bRunningTimeHour->setText(QString::number(runningT / 60));
     bRunningTimeMinute->setText(QString::number(runningT % 60));
     if(runningT % 60 < 10)
-        bRunningTimeMinute->setGeometry(197 + 15, 90 + 8 - 6, 40, 40);
+        bRunningTimeMinute->setGeometry(197 + 15, 90 + 8 - 6 - 10, 40, 40);
     else
-        bRunningTimeMinute->setGeometry(197, 90 + 8 - 6, 40, 40);
+        bRunningTimeMinute->setGeometry(197, 90 + 8 - 6 - 10, 40, 40);
     if(runningT / 60 >= 100)
-        bRunningTimeHour->setGeometry(120, 90 + 8 - 6, 80, 40);
+        bRunningTimeHour->setGeometry(120, 90 + 8 - 6 - 10, 80, 40);
     else if(runningT / 60 < 10)
-        bRunningTimeHour->setGeometry(120 + 30, 90 + 8 - 6, 80, 40);
+        bRunningTimeHour->setGeometry(120 + 30, 90 + 8 - 6 - 10, 80, 40);
     else
-        bRunningTimeHour->setGeometry(120 + 15, 90 + 8 - 6, 80, 40);
+        bRunningTimeHour->setGeometry(120 + 15, 90 + 8 - 6 - 10, 80, 40);
 
     if(remainT > 60000 - 1)
         remainT = 60000 - 1;
     bRemainTimeHour->setText(QString::number(remainT / 60));
     bRemainTimeMinute->setText(QString::number(remainT % 60));
     if(remainT % 60 < 10)
-        bRemainTimeMinute->setGeometry(197 + 15, 120 + 8 - 8, 40, 40);
+        bRemainTimeMinute->setGeometry(197 + 15, 120 + 8 - 8 - 10, 40, 40);
     else
-        bRemainTimeMinute->setGeometry(197, 120 + 8 - 8, 40, 40);
+        bRemainTimeMinute->setGeometry(197, 120 + 8 - 8 - 10, 40, 40);
     if(remainT / 60 >= 100)
-        bRemainTimeHour->setGeometry(120, 120 + 8 - 8, 80, 40);
+        bRemainTimeHour->setGeometry(120, 120 + 8 - 8 - 10, 80, 40);
     else if(remainT / 60 < 10)
-        bRemainTimeHour->setGeometry(120 + 30, 120 + 8 - 8, 80, 40);
+        bRemainTimeHour->setGeometry(120 + 30, 120 + 8 - 8 - 10, 80, 40);
     else
-        bRemainTimeHour->setGeometry(120 + 15, 160 + 8 - 8, 80, 40);
+        bRemainTimeHour->setGeometry(120 + 15, 160 + 8 - 8 - 10, 80, 40);
 }
 
 void RealTime::linkUs(QString str)

@@ -6,6 +6,8 @@ using namespace std;
 
 ComData::ComData()
 {
+    gUiSize = new QSize(1280, 768);     // 默认1280 * 768
+
     myHandle = nullptr;
     DataSize = 300000;  // 保存5分钟数据
     // 头码 167, 89, 62, 189 = (0xA7, 0x59, 0x3E, 0xBD)

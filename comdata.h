@@ -118,6 +118,9 @@ public:
 public:
     hid_device *myHandle;   // USB_HID
 
+//    QRect *gUiRect;
+    QSize *gUiSize;
+
     bool layerIsPause;
     qint64 layer_BeginTime;
     qint64 layer_currentIndex;
