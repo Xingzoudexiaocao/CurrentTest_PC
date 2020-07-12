@@ -511,12 +511,14 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     play->setGeometry(m_ComData->gUiSize->width() - 360 - 175, 12, 80, 30);
     play->setStyleSheet(bnt_qss1);
     play->setFont(font);
+    play->setToolTip("点击继续波形数据更新");
     play->setVisible(false);
     connect(play, &QAbstractButton::clicked, this, &RealTime::onBtnPlay);
     pause = new QPushButton(QIcon(":/pause.png"), "暂停", frame_2);
     pause->setGeometry(m_ComData->gUiSize->width() - 360 - 95, 12, 80, 30);
     pause->setStyleSheet(bnt_qss1);
     pause->setFont(font);
+    pause->setToolTip("点击暂停波形数据更新");
     pause->setEnabled(true);
     pause->setVisible(false);
     connect(pause, &QAbstractButton::clicked, this, &RealTime::onBtnPause);
@@ -582,23 +584,12 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
 //    dataView->setModel(dataModel);
 //    dataView->setColumnWidth(0,70);dataView->setColumnWidth(1,230);dataView->setColumnWidth(2,160);dataView->setColumnWidth(3,160);dataView->setColumnWidth(4,160);
 //    dataView->setUpdatesEnabled(true);  //恢复界面刷新
-     historyView = new HistoryView(frame_2_ext);    // 历史数据表格界面
-     historyView->setGeometry(0, 0, 1000, 780);
-//    historyDetail = new HistoryDetail(frame_2_ext);
-//    historyDetail->setGeometry(0, 0, 1000, 780);
-//    connect(this,SIGNAL(SignalsTest()),historyDetail, SLOT(ReceiveTest()));
+//     historyView = new HistoryView(frame_2_ext);    // 历史数据表格界面
+//     historyView->setGeometry(0, 0, 1000, 780);
+    historyDetail = new HistoryDetail(frame_2_ext, m_UsbHid, m_ComData);
+    historyDetail->setGeometry(0, 0, m_ComData->gUiSize->width() - 280, m_ComData->gUiSize->height() - 78);
+    connect(this,SIGNAL(SignalsTest()),historyDetail, SLOT(ReceiveTest()));
     emit SignalsTest();
-    historyFile = new QPushButton(frame_2_ext);
-    historyFile->setStyleSheet("QPushButton {font-family:arial; text-align:left; padding:5px; font-size:18px; border:1px solid #000000;}");
-    historyFile->setGeometry(4, 5, 1180-4-360, 30);
-//    historyFile->setFrameShape(QFrame::NoFrame);
-    historyFile->setText("");
-    connect(historyFile, &QAbstractButton::clicked, this, &RealTime::HistoryOpen);
-    historyOpen = new QPushButton( " 加载文件", frame_2_ext);
-    historyOpen->setGeometry(1182-360, 5, 130, 30);
-    historyOpen->setStyleSheet(bnt_qss2);
-    historyOpen->setFont(font);
-    connect(historyOpen, &QAbstractButton::clicked, this, &RealTime::HistoryOpen);
 
     QFrame *frame_setting = new QFrame(frame_2_updata);     // 波形显示界面
     frame_setting->setGeometry((m_ComData->gUiSize->width() - 1080) / 2, 0, m_ComData->gUiSize->width() - 280, 780);
@@ -748,11 +739,13 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     m_SubButton_Cur->setGeometry(m_ComData->gUiSize->width() - 360, 15, 50, 30);
     m_SubButton_Cur->setStyleSheet( "QPushButton{border-image: url(:/Triangle_Down.png);color:white; border:1px solid black;text-align:left; padding:2px; font-size:16px;}QPushButton:disabled{ border-image: url(:/Triangle_Disable.png);}");
     connect(m_SubButton_Cur, &QAbstractButton::clicked, this, &RealTime::slotSubButtonCurrent);
+    m_SubButton_Cur->setToolTip("点击弹出平均值界面");
     m_SubButton_Cur->setEnabled(false);
     m_SubButton_Vol = new QPushButton(frame_2);
     m_SubButton_Vol->setGeometry(m_ComData->gUiSize->width() - 360, 13 + (m_ComData->gUiSize->height() - 78 - 10) / 2 - 14, 50, 30);
     m_SubButton_Vol->setStyleSheet( "QPushButton{border-image: url(:/Triangle_Down.png);color:white; border:1px solid black;text-align:left; padding:2px; font-size:16px;}QPushButton:disabled{ border-image: url(:/Triangle_Disable.png);}");
     connect(m_SubButton_Vol, &QAbstractButton::clicked, this, &RealTime::slotSubButtonVoltage);
+    m_SubButton_Vol->setToolTip("点击弹出平均值界面");
     m_SubButton_Vol->setEnabled(false);
     m_SubFrame_Cur = new AverageSubFrame(frame_2);
     m_SubFrame_Cur->setGeometry(m_ComData->gUiSize->width() - 510, 45, 200, 100);
@@ -768,7 +761,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     m_CalculateThread = new Calculate_Tread(this, m_UsbHid, m_ComData);
     connect(m_CalculateThread, SIGNAL(signalUpdateCurAverage(qint64, double)), m_SubFrame_Cur, SLOT(slotUpdateAverage(qint64, double)));
     connect(m_CalculateThread, SIGNAL(signalUpdateVolAverage(qint64, double)), m_SubFrame_Vol, SLOT(slotUpdateAverage(qint64, double)));
-    m_CalculateThread->start();
+    m_CalculateThread->start(QThread ::LowestPriority);
 
     FixCurrentScale = new QComboBox(frame_2);
     FixCurrentScale->setGeometry(250, 20, 120, 20);
@@ -790,6 +783,17 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     SendVerifyCmd = new QTimer(this);
     connect(SendVerifyCmd, SIGNAL(timeout()), this, SLOT(slotSendVerifyCmd()));
     SendVerifyCount = 0;
+
+    QFrame *TestFrame = new QFrame(this);
+    TestFrame->setGeometry(600, 100, 600, 600);
+    m_Test1 = new QLabel(TestFrame);
+    m_Test2 = new QLabel(TestFrame);
+    m_Test3 = new QLabel(TestFrame);
+    m_Test4 = new QLabel(TestFrame);
+    m_Test5 = new QLabel(TestFrame);
+    connect(m_CalculateThread, SIGNAL(signalUpdateTestData()), this, SLOT(slot_Receive_TestData()));
+//    TestFrame->setVisible(false);
+//    slot_Receive_TestData();
 }
 
 RealTime::~RealTime()
@@ -808,6 +812,32 @@ RealTime::~RealTime()
 //        delete m_ComData;
 //        m_ComData = nullptr;
 //    }
+}
+
+void RealTime::slot_Receive_TestData(void)
+{
+    m_Test1->setGeometry(6, 100, 600, 40);
+    m_Test1->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:18px; color:red;}");
+    m_Test1->setText("m_ComData->testNomal = " + QString::number(m_ComData->testNomal));
+
+    m_Test2->setGeometry(6, 140, 600, 40);
+    m_Test2->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:18px; color:red;}");
+    m_Test2->setText("m_ComData->testNumber32 = " + QString::number(m_ComData->testNumber32));
+
+
+    m_Test3->setGeometry(6, 180, 600, 40);
+    m_Test3->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:18px; color:red;}");
+    m_Test3->setText("m_ComData->testNumberRight = " + QString::number(m_ComData->testNumberRight));
+
+    m_Test4->setGeometry(6, 220, 600, 40);
+    m_Test4->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:18px; color:red;}");
+    m_Test4->setText("m_ComData->testNumberWrong = " + QString::number(m_ComData->testNumberWrong));
+
+    m_Test5->setGeometry(6, 260, 600, 40);
+    m_Test5->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:18px; color:red;}");
+    m_Test5->setText("m_ComData->testError = " + QString::number(m_ComData->testError));
+
+
 }
 
 //void RealTime::resizeEvent(QResizeEvent *event)
@@ -1177,7 +1207,7 @@ void RealTime::drawChart_Current(void)
     // Set the plotarea at (55, 50) with width 80 pixels less than chart width, and height 80 pixels
     // less than chart height. Use a vertical gradient from light blue (f0f6ff) to sky blue (a0c0ff)
     // as background. Set border to transparent and grid lines to white (ffffff).
-    c->setPlotArea(55, 62, c->getWidth() - 85, c->getHeight() - 100, c->linearGradientColor(0, 50, 0,
+    c->setPlotArea(85, 62, c->getWidth() - 85, c->getHeight() - 100, c->linearGradientColor(0, 50, 0,
         c->getHeight() - 35, 0xf0f6ff, 0xa0c0ff), -1, Chart::Transparent, 0xffffff, 0xffffff);
 
     // As the data can lie outside the plotarea in a zoomed chart, we need enable clipping.
@@ -1272,6 +1302,20 @@ void RealTime::drawChart_Current(void)
     // In this demo, the time range can be from many hours to a few seconds. We can need to define
     // the date/time format the various cases.
     //
+//    c->yAxis()->setMinTickInc(0);
+//    c->yAxis()->setDateScale(0, 2000);           // 固定坐标轴0-7.5V
+//    double yMax = c->yAxis()->getMaxValue();
+//    qDebug() << "yMax = " << QString::number(yMax, 'f', 3);
+//    if(yMax < 0.001) {
+//        c->yAxis()->setLabelFormat("{value*1000|3}");
+//        c->yAxis()->setTitle("Current ( uA )", "arialbd.ttf", 12);
+//    } else if(yMax < 1000) {
+        c->yAxis()->setLabelFormat("{value|3}");
+        c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12);
+//    } else {
+//        c->yAxis()->setLabelFormat("{value|2}");
+//        c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12);
+//    }
 
     // If all ticks are hour algined, we use "hh:nn<*br*>mmm dd" in bold font as the first label of
     // the Day, and "hh:nn" for other labels.
@@ -1389,7 +1433,7 @@ void RealTime::drawChart_Voltage(void)
     // Set the plotarea at (55, 50) with width 80 pixels less than chart width, and height 80 pixels
     // less than chart height. Use a vertical gradient from light blue (f0f6ff) to sky blue (a0c0ff)
     // as background. Set border to transparent and grid lines to white (ffffff).
-    d->setPlotArea(55, 62, d->getWidth() - 85, d->getHeight() - 100, d->linearGradientColor(0, 50, 0,
+    d->setPlotArea(85, 62, d->getWidth() - 85, d->getHeight() - 100, d->linearGradientColor(0, 50, 0,
         d->getHeight() - 35, 0xf0f6ff, 0xa0c0ff), -1, Chart::Transparent, 0xffffff, 0xffffff);
 
     // As the data can lie outside the plotarea in a zoomed chart, we need enable clipping.
@@ -1406,6 +1450,8 @@ void RealTime::drawChart_Voltage(void)
     LegendBox *b = d->addLegend(55, 25, false, "arialbd.ttf", 10);
     b->setBackground(Chart::Transparent);
     b->setLineStyleKey();
+
+    d->yAxis()->setLabelFormat("{value|3}");
 
     // Set the x and y axis stems to transparent and the label font to 10pt Arial
     d->xAxis()->setColors(Chart::Transparent);
@@ -1581,7 +1627,7 @@ void RealTime::drawChart(QChartViewer *viewer, int index)
     // Set the plotarea at (55, 50) with width 80 pixels less than chart width, and height 80 pixels
     // less than chart height. Use a vertical gradient from light blue (f0f6ff) to sky blue (a0c0ff)
     // as background. Set border to transparent and grid lines to white (ffffff).
-    c->setPlotArea(55, 62, c->getWidth() - 85, c->getHeight() - 100, c->linearGradientColor(0, 50, 0,
+    c->setPlotArea(85, 62, c->getWidth() - 85, c->getHeight() - 100, c->linearGradientColor(0, 50, 0,
         c->getHeight() - 35, 0xf0f6ff, 0xa0c0ff), -1, Chart::Transparent, 0xffffff, 0xffffff);
 
     // As the data can lie outside the plotarea in a zoomed chart, we need enable clipping.
@@ -1986,7 +2032,7 @@ void RealTime::onConnectUSB()
 
         emit CreateSqilite();
         m_SqliteThread->isStop = false;
-        m_SqliteThread->start();
+        m_SqliteThread->start(QThread ::LowPriority);
 
         m_SubFrame_Cur->initFrameDisplay();
         m_SubFrame_Vol->initFrameDisplay();
@@ -1999,7 +2045,7 @@ void RealTime::onConnectUSB()
 
 
             m_UsbReceiveThread->isStop = false;
-            m_UsbReceiveThread->start();   // 启动线程
+            m_UsbReceiveThread->start(QThread :: HighestPriority);   // 启动线程
             m_ChartUpdateTimer->start(200);    // 启动更新表格
 //            m_ComData->ClearData();         // 清之前的数据
             play->setVisible(true);
@@ -2029,8 +2075,8 @@ void RealTime::onConnectUSB()
             updataBar->setEnabled(false);
             // 发送读取版本号和文件长度指令
 //
-            historyView->ClearData();       // 清除历史数据
-//            historyDetail->ClearData();
+//            historyView->ClearData();       // 清除历史数据
+            historyDetail->ClearData();
 
             SendVerifyCmd->start(100);
             SendVerifyCount = 0;
@@ -2070,8 +2116,8 @@ void RealTime::onDisConnectUSB()
 
     averageValue->setEnabled(true);
     batteryCapacity->setEnabled(true);
-    historyView->ClearData();       // 清除历史数据
-//    historyDetail->ClearData();
+//    historyView->ClearData();       // 清除历史数据
+    historyDetail->ClearData();
 
     m_SubButton_Cur->setEnabled(true);
     m_SubButton_Vol->setEnabled(true);
@@ -2089,6 +2135,9 @@ void RealTime::thread_receive_finished()
         pause->setEnabled(false);
         pause->setVisible(false);
         m_ComData->layerIsPause = true;
+        memcpy(m_ComData->layer_timeStamps, m_ComData->d_timeStamps, sizeof(double) * m_ComData->layer_currentIndex);
+        memcpy(m_ComData->layer_dataSeriesV, m_ComData->d_dataSeriesV, sizeof(double) * m_ComData->layer_currentIndex);
+        memcpy(m_ComData->layer_dataSeriesA, m_ComData->d_dataSeriesA, sizeof(double) * m_ComData->layer_currentIndex);
 //        download->setEnabled(true);
 
         qDebug() << "关闭成功";
@@ -2255,8 +2304,11 @@ void RealTime::showAverage(void)
     if(m_ComData->d_Avg_A < 1) {
         buf2_QL->setText(QString::number(m_ComData->d_Avg_A * 1000, 'f', 3));
         m_averageA->setText("uA");
-    } else {
+    } else if(m_ComData->d_Avg_A >= 1 && m_ComData->d_Avg_A < 1000) {
         buf2_QL->setText(QString::number(m_ComData->d_Avg_A, 'f', 3));
+        m_averageA->setText("mA");
+    } else {
+        buf2_QL->setText(QString::number(m_ComData->d_Avg_A, 'f', 2));
         m_averageA->setText("mA");
     }
     double bufPower_2 = m_ComData->d_Avg_V * m_ComData->d_Avg_A / 1000;
@@ -2384,6 +2436,9 @@ void RealTime::onBtnPause()
     play->setEnabled(true);
     pause->setEnabled(false);
     m_ComData->layerIsPause = true;
+    memcpy(m_ComData->layer_timeStamps, m_ComData->d_timeStamps, sizeof(double) * m_ComData->layer_currentIndex);
+    memcpy(m_ComData->layer_dataSeriesV, m_ComData->d_dataSeriesV, sizeof(double) * m_ComData->layer_currentIndex);
+    memcpy(m_ComData->layer_dataSeriesA, m_ComData->d_dataSeriesA, sizeof(double) * m_ComData->layer_currentIndex);
     m_ChartUpdateTimer->stop();    // 关闭更新表格
 }
 void RealTime::onBtnDownload()
@@ -2557,7 +2612,7 @@ void RealTime::UpdataSend()
     }
 
     m_UsbSendThread->isStop = false;
-    m_UsbSendThread->start();   // 启动线程
+    m_UsbSendThread->start(QThread :: NormalPriority);   // 启动线程
 
 }
 
@@ -2716,31 +2771,6 @@ void RealTime::writeSQL(qint64 time, double vol, double cur)
 
 }
 */
-void RealTime::HistoryOpen()
-{
-    if(m_UsbHid->dev_handle != nullptr)
-    {
-        qDebug() << "USB正在运行，无法加载文件！";
-         QMessageBox::critical(this, "提示", "USB正在运行，无法加载文件！");
-        return;
-    }
-    qDebug() << qApp->applicationDirPath();
-    QString fileName=QFileDialog::getOpenFileName(this,QString::fromLocal8Bit("历史数据"),qApp->applicationDirPath() + "/iSCAN_Data",
-                                                  QString::fromLocal8Bit("bin File(*.db)"));//新建文件打开窗口
-    if (fileName.isEmpty())//如果未选择文件便确认，即返回
-        return;
-//    QFile file(fileName);
-//    if(!file.open(QIODevice::ReadOnly))
-//        qDebug() << file.errorString();//文件打开错误显示错误信息
-//    QByteArray arry=file.readAll();//读取文件
-//    file.close();
-    qDebug() << "打开文件：" << fileName;
-    historyFile->setText(fileName);
-//    int length=arry.size();//计算长度
-//    qDebug() << length;
-    historyView->LoadingData(fileName);     // 更新表格数据
-//    historyDetail->LoadingData(fileName);
-}
 
 void RealTime::slotAverageValue(int val)
 {

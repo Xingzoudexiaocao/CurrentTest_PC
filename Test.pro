@@ -14,7 +14,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 RC_FILE += exe.rc
 
-TARGET = Test
+TARGET = iSCAN
 TEMPLATE = app
 
 # The following define makes your compiler emit warnings if you use
@@ -30,12 +30,15 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 CONFIG += c++11
 CONFIG += resources_big
+CONFIG += qt thread
+
 SOURCES += \
         about.cpp \
         averagesubframe.cpp \
         calculate_tread.cpp \
         comdata.cpp \
         debugwatch.cpp \
+        doubleslider.cpp \
         historydetail.cpp \
         historyview.cpp \
         main.cpp \
@@ -53,6 +56,7 @@ HEADERS += \
         calculate_tread.h \
         comdata.h \
         debugwatch.h \
+        doubleslider.h \
         historydetail.h \
         historyview.h \
         mainwindow.h \

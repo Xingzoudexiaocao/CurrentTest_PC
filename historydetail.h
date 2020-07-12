@@ -7,6 +7,7 @@
 #include <QtDebug>
 #include <QtWidgets/QGraphicsView>
 #include <QScrollBar>
+#include <QPushButton>
 //#include <QtCharts/QChartGlobal>
 //#include <QtCharts/QtCharts>
 //#include <QtCharts/QChartView>
@@ -20,12 +21,21 @@
 #include <math.h>
 #include <vector>
 #include <sstream>
+#include <QSlider>
+#include "doubleslider.h"
+#include <QFontDatabase>
+#include <QFileDialog>
+#include <QApplication>
+
+#include <algorithm>
+using namespace std;      //这一句也不能少
+
 
 class HistoryDetail : public QGraphicsView
 {
     Q_OBJECT
 public:
-    explicit HistoryDetail(QWidget *parent = nullptr);
+    explicit HistoryDetail(QWidget *parent = nullptr, USB_HID *hid = nullptr, ComData *comD = nullptr);
     ~HistoryDetail();
 
     void LoadingData(QString fileName);
@@ -33,6 +43,17 @@ public:
 signals:
 
 private:
+    QFont    font;
+    QPushButton *historyFile;
+    QPushButton *historyOpen;
+
+    ComData *m_ComData;
+    USB_HID *m_UsbHid;
+
+    QPushButton *m_EjectSubButton;
+    QFrame *m_SubFrame;
+    DoubleSlider *m_DoubleSlider;
+
     unsigned long long DataSize;
     double *d_timeStamps;	// The timestamps for the data series
     double *d_dataSeriesV;	// The values for the data series A
@@ -46,19 +67,22 @@ private:
     QScrollBar *m_HScrollBar;           // The scroll bar
     QScrollBar *m_HScrollBar_2;           // The scroll bar
 
-//    void drawChart(QChartViewer *viewer, int index);           // Draw chart
-//    void trackLineLabel(XYChart *c, int mouseX, int index);    // Draw track cursor
-//    void updateControls(QChartViewer *viewer, QScrollBar *bar);      // Update other controls as viewport changes
+    void drawChart(QChartViewer *viewer, int index);           // Draw chart
+    void trackLineLabel(XYChart *c, int mouseX, int index);    // Draw track cursor
+    void updateControls(QChartViewer *viewer, QScrollBar *bar);      // Update other controls as viewport changes
 private slots:
-//    void updateChart();                 // Update the chart.
-//    void onMouseMovePlotArea(QMouseEvent *);
-//    void onMouseMovePlotArea_2(QMouseEvent *);
-//    void onMouseUsageChanged(int mouseUsage);       // Pointer/zoom in/zoom out button clicked
-//    void onHScrollBarChanged(int value);            // Scrollbar changed
-//    void onHScrollBarChanged_2(int value);            // Scrollbar changed
-//    void onViewPortChanged();                       // Viewport has changed
-//    void onViewPortChanged_2();                       // Viewport has changed
-//    void onChartUpdateTimer(QChartViewer *viewer);                      // Update the chart.
+    void updateChart();                 // Update the chart.
+    void onMouseMovePlotArea(QMouseEvent *);
+    void onMouseMovePlotArea_2(QMouseEvent *);
+    void onMouseUsageChanged(int mouseUsage);       // Pointer/zoom in/zoom out button clicked
+    void onHScrollBarChanged(int value);            // Scrollbar changed
+    void onHScrollBarChanged_2(int value);            // Scrollbar changed
+    void onViewPortChanged();                       // Viewport has changed
+    void onViewPortChanged_2();                       // Viewport has changed
+    void onChartUpdateTimer(QChartViewer *viewer);                      // Update the chart.
+
+    void slotSubButtonClick(void);
+    void slotHistoryOpen(void);
 
 public slots:
     void ReceiveTest(void);

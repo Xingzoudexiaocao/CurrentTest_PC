@@ -1,54 +1,100 @@
 ﻿#include "historydetail.h"
 
-HistoryDetail::HistoryDetail(QWidget *parent) : QGraphicsView(new QGraphicsScene, parent)
+HistoryDetail::HistoryDetail(QWidget *parent, USB_HID *hid, ComData *comD) : QGraphicsView(new QGraphicsScene, parent)
 {
     qDebug() << "HistoryDetail构造函数。";
-    DataSize = 100000;        // 3600000
-    d_timeStamps = new double[100000];	// The timestamps for the data series
-    d_dataSeriesV = new double[100000];	// The values for the data series A
-    d_dataSeriesA = new double[100000];
+
+    m_ComData = comD;
+    m_UsbHid = hid;
+
+    DataSize = 60000;        // 3600000
+    d_timeStamps = new double[60000];	// The timestamps for the data series
+    d_dataSeriesV = new double[60000];	// The values for the data series A
+    d_dataSeriesA = new double[60000];
 //    d_timeStamps = d_time;
 //    d_dataSeriesV = d_V;
 //    d_dataSeriesA = d_A;
 
+    QString bnt_qss2 = "QPushButton{border-image: url(:/ButtonNormal.png);color:white; border:1px solid black;text-align:left; padding:2px; font-size:22px;\
+            border-top-left-radius:8px;         \
+            border-top-right-radius:8px;        \
+            border-bottom-left-radius:8px;     \
+            border-bottom-right-radius:8px }   \
+        QPushButton:hover{border-image: url(:/ButtonHover.png);color:#f0f0f0 ;}  \
+        QPushButton:pressed{border-image: url(:/ButtonPressed.png);color:#e0e0e0 ;}\
+        QPushButton:disabled{ color:#585858 ;}";
+    int fontId = QFontDatabase::addApplicationFont(":/ZhuoJianGanLanJianTi.ttf");
+    QStringList fontFamilies = QFontDatabase::applicationFontFamilies(fontId);
+    font.setFamily(fontFamilies.at(0));
 
     // Chart Viewer
     m_ChartViewer = new QChartViewer(this);
-    m_ChartViewer->setGeometry(4, 445 - 96, 1345 - 360 + 10, 535);
-//    connect(m_ChartViewer, SIGNAL(viewPortChanged()),this, SLOT(onViewPortChanged()));
-//    connect(m_ChartViewer, SIGNAL(mouseMovePlotArea(QMouseEvent*)), this,
-//        SLOT(onMouseMovePlotArea(QMouseEvent*)));
+    m_ChartViewer->setGeometry(4, -16 + (m_ComData->gUiSize->height() - 78 - 10) / 2 - 16, m_ComData->gUiSize->width() - 280 - 5, 505);
+    connect(m_ChartViewer, SIGNAL(viewPortChanged()),this, SLOT(onViewPortChanged()));
+    connect(m_ChartViewer, SIGNAL(mouseMovePlotArea(QMouseEvent*)), this,
+        SLOT(onMouseMovePlotArea(QMouseEvent*)));
 
     // Horizontal scroll bar
     m_HScrollBar = new QScrollBar(Qt::Horizontal, this);
-    m_HScrollBar->setGeometry(4, 855 - 132, 1345 - 360 + 10, 17);
-//    connect(m_HScrollBar, SIGNAL(valueChanged(int)),this, SLOT(onHScrollBarChanged(int)));
+    m_HScrollBar->setGeometry(4, -16 + (m_ComData->gUiSize->height() - 78 - 10) - 16 - 12, m_ComData->gUiSize->width() - 280 - 5, 17);
+    connect(m_HScrollBar, SIGNAL(valueChanged(int)),this, SLOT(onHScrollBarChanged(int)));
 
     // Chart Viewer 2
     m_ChartViewer_2 = new QChartViewer(this);
-    m_ChartViewer_2->setGeometry(4, -16, 1345 - 360 + 10, 535);
-//    connect(m_ChartViewer_2, SIGNAL(viewPortChanged()),this, SLOT(onViewPortChanged_2()));
-//    connect(m_ChartViewer_2, SIGNAL(mouseMovePlotArea(QMouseEvent*)), this,
-//        SLOT(onMouseMovePlotArea_2(QMouseEvent*)));
+    m_ChartViewer_2->setGeometry(4, -16, m_ComData->gUiSize->width() - 280 - 5, 505);
+    connect(m_ChartViewer_2, SIGNAL(viewPortChanged()),this, SLOT(onViewPortChanged_2()));
+    connect(m_ChartViewer_2, SIGNAL(mouseMovePlotArea(QMouseEvent*)), this,
+        SLOT(onMouseMovePlotArea_2(QMouseEvent*)));
 
     // Horizontal scroll bar
     m_HScrollBar_2 = new QScrollBar(Qt::Horizontal, this);
-    m_HScrollBar_2->setGeometry(4, 423 - 66, 1345 - 360 + 10, 17);
-//    connect(m_HScrollBar_2, SIGNAL(valueChanged(int)), this, SLOT(onHScrollBarChanged_2(int)));
+    m_HScrollBar_2->setGeometry(4, -16 + (m_ComData->gUiSize->height() - 78 - 10) / 2 - 12, m_ComData->gUiSize->width() - 280 - 5, 17);
+    connect(m_HScrollBar_2, SIGNAL(valueChanged(int)), this, SLOT(onHScrollBarChanged_2(int)));
 
 //    onHScrollBarChanged(1); // 初始化显示表格
 //    onHScrollBarChanged_2(1);
 ////    onMouseMovePlotArea(nullptr);
 ////    m_ChartViewer_2->updateDisplay();
 
-//    // Initially set the mouse to drag to scroll mode.
-//    onMouseUsageChanged( Chart::MouseUsageScroll);      // 初始化表格鼠标事件的选中和缩放问题
+    // Initially set the mouse to drag to scroll mode.
+    onMouseUsageChanged( Chart::MouseUsageScroll);      // 初始化表格鼠标事件的选中和缩放问题
 
-//    // Enable mouse wheel zooming by setting the zoom ratio to 1.1 per wheel event
-//    m_ChartViewer->setMouseWheelZoomRatio(1.1);
-//    m_ChartViewer_2->setMouseWheelZoomRatio(1.1);
+    // Enable mouse wheel zooming by setting the zoom ratio to 1.1 per wheel event
+    m_ChartViewer->setMouseWheelZoomRatio(1.1);
+    m_ChartViewer_2->setMouseWheelZoomRatio(1.1);
 
-//    updateChart();      // 初始化显示表格
+    updateChart();      // 初始化显示表格
+
+    m_EjectSubButton = new QPushButton(this);
+    m_EjectSubButton->setGeometry(2, 0, parent->width() - 10, 10);
+    m_EjectSubButton->setStyleSheet(bnt_qss2);
+    connect(m_EjectSubButton, &QAbstractButton::clicked, this, &HistoryDetail::slotSubButtonClick);
+
+    m_SubFrame = new QFrame(this);
+    m_SubFrame->setGeometry(2, 10, parent->width() - 10, 300);
+    m_SubFrame->setObjectName("FrameQss");
+    m_SubFrame->setStyleSheet("QFrame#FrameQss {border:1px solid black; background-color: rgb(96, 96, 96, 200);\
+                            border-top-left-radius:4px;         \
+                            border-top-right-radius:4px;        \
+                            border-bottom-left-radius:4px;      \
+                            border-bottom-right-radius:4px}");
+    m_SubFrame->setVisible(false);
+
+    historyFile = new QPushButton(m_SubFrame);
+    historyFile->setStyleSheet("QPushButton {font-family:arial; text-align:left; padding:5px; font-size:18px; border:1px solid #000000;}");
+    historyFile->setGeometry(4, 5, 1180-4-360, 30);
+//    historyFile->setFrameShape(QFrame::NoFrame);
+    historyFile->setText("");
+    historyFile->setText("设置线程优先级");
+    connect(historyFile, &QAbstractButton::clicked, this, &HistoryDetail::slotHistoryOpen);
+    historyOpen = new QPushButton( " 加载文件", m_SubFrame);
+    historyOpen->setGeometry(1182-360, 5, 130, 30);
+    historyOpen->setStyleSheet(bnt_qss2);
+    historyOpen->setFont(font);
+    connect(historyOpen, &QAbstractButton::clicked, this, &HistoryDetail::slotHistoryOpen);
+
+    m_DoubleSlider = new DoubleSlider(m_SubFrame);
+    m_DoubleSlider->setGeometry(100, 100, 300, 50);
 }
 
 HistoryDetail::~HistoryDetail()
@@ -59,6 +105,40 @@ HistoryDetail::~HistoryDetail()
     delete [] d_dataSeriesA;
 }
 
+void HistoryDetail::slotSubButtonClick(void)
+{
+    if(m_SubFrame->isVisible())
+        m_SubFrame->setVisible(false);
+    else
+        m_SubFrame->setVisible(true);
+}
+
+void HistoryDetail::slotHistoryOpen(void)
+{
+    if(m_UsbHid->dev_handle != nullptr)
+    {
+        qDebug() << "USB正在运行，无法加载文件！";
+         QMessageBox::critical(this, "提示", "USB正在运行，无法加载文件！");
+        return;
+    }
+    qDebug() << qApp->applicationDirPath();
+    QString fileName=QFileDialog::getOpenFileName(this,QString::fromLocal8Bit("历史数据"),qApp->applicationDirPath() + "/iSCAN_Data",
+                                                  QString::fromLocal8Bit("bin File(*.db)"));//新建文件打开窗口
+    if (fileName.isEmpty())//如果未选择文件便确认，即返回
+        return;
+//    QFile file(fileName);
+//    if(!file.open(QIODevice::ReadOnly))
+//        qDebug() << file.errorString();//文件打开错误显示错误信息
+//    QByteArray arry=file.readAll();//读取文件
+//    file.close();
+    qDebug() << "打开文件：" << fileName;
+    historyFile->setText(fileName);
+//    int length=arry.size();//计算长度
+//    qDebug() << length;
+//    historyView->LoadingData(fileName);     // 更新表格数据
+    LoadingData(fileName);
+}
+
 void HistoryDetail::ReceiveTest(void)
 {
     qDebug() << "接收到信号！";
@@ -66,7 +146,6 @@ void HistoryDetail::ReceiveTest(void)
 
 void HistoryDetail::LoadingData(QString fileName)
 {
-    return;
    qDebug() << "update view";
    qint64 dataCount;
 //   QString ConnectName;
@@ -103,7 +182,36 @@ void HistoryDetail::LoadingData(QString fileName)
    qDebug() << "数据个数 = " << dataCount << QDateTime::currentDateTime();
 
 
-   UpdateChartData();
+//   strQuery = "select avg(current) from stm32_data where id < 60000";       // 获取1分钟数据
+//   sqlModel.setQuery(strQuery);
+
+//   qDebug() << "个数 = " << sqlModel.record().count();
+//   double curBuf = sqlModel.record(0).value(0).toDouble();
+//   qDebug() << "电流平均值数 = " << QString::number(curBuf, 'f', 10) << QDateTime::currentDateTime();
+
+
+   strQuery = "select * from stm32_data where (id <= 60000)";
+   sqlModel.setQuery(strQuery);
+
+   while(sqlModel.canFetchMore())
+   {
+       sqlModel.fetchMore();
+   }
+   qDebug()<< "Update Chart Data:" <<sqlModel.rowCount() << QDateTime::currentDateTime();
+
+   for(int i = 0; i < sqlModel.rowCount(); i++)
+   {
+//       *(d_timeStamps + i) = sqlModel.record(i).value("time").toLongLong();
+       QDateTime now = QDateTime::fromMSecsSinceEpoch(sqlModel.record(i).value("time").toLongLong());
+       *(d_timeStamps + i) = Chart::chartTime2(now.toTime_t())
+                            + ((double)now.time().msec() / 10) * 0.01;     //     / 10 * 0.01
+       *(d_dataSeriesV + i) = sqlModel.record(i).value("voltage").toDouble();
+       *(d_dataSeriesA + i) = sqlModel.record(i).value("current").toDouble();
+   }
+   qDebug()<< "Update Chart Data Success: "<< QDateTime::currentDateTime();
+
+   updateChart();
+//   UpdateChartData();
 }
 
 void HistoryDetail::ClearData(void)
@@ -114,7 +222,7 @@ void HistoryDetail::ClearData(void)
 void HistoryDetail::UpdateChartData(void)
 {
     QSqlQueryModel sqlModel;
-    QString strQuery = "select * from stm32_data where (id <= 3600000)";
+    QString strQuery = "select * from stm32_data where (id <= 600000)";
     sqlModel.setQuery(strQuery);
     while(sqlModel.canFetchMore())
     {
@@ -122,20 +230,20 @@ void HistoryDetail::UpdateChartData(void)
     }
     qDebug()<< "Update Chart Data:" <<sqlModel.rowCount() << QDateTime::currentDateTime();
 
-//    for(int i = 0; i < sqlModel.rowCount(); i++)
-//    {
-//        *(d_timeStamps + i) = sqlModel.record(i).value("time").toLongLong();
-//        *(d_dataSeriesV + i) = sqlModel.record(i).value("voltage").toLongLong();
-//        *(d_dataSeriesA + i) = sqlModel.record(i).value("current").toLongLong();
-//    }
+    for(int i = 0; i < sqlModel.rowCount(); i++)
+    {
+        *(d_timeStamps + i) = sqlModel.record(i).value("time").toLongLong();
+        *(d_dataSeriesV + i) = sqlModel.record(i).value("voltage").toLongLong();
+        *(d_dataSeriesA + i) = sqlModel.record(i).value("current").toLongLong();
+    }
     qDebug()<< "Update Chart Data Success: "<< QDateTime::currentDateTime();
 
 }
-/*
+
 void HistoryDetail::updateChart()
 {
-    m_ChartViewer->updateViewPort(true, false);     // 这里可能会有问题
-    m_ChartViewer_2->updateViewPort(true, false);
+//    m_ChartViewer->updateViewPort(true, false);     // 这里可能会有问题
+//    m_ChartViewer_2->updateViewPort(true, false);
     onChartUpdateTimer(m_ChartViewer);
     onChartUpdateTimer(m_ChartViewer_2);
 }
@@ -258,7 +366,7 @@ void HistoryDetail::drawChart(QChartViewer *viewer, int index)
     //================================================================================
 
     // Create an XYChart object of size 640 x 350 pixels
-    XYChart *c = new XYChart(1345 - 360 + 10, 425 - 40);     // 1345, 425        m_HScrollBar->width(), 300
+    XYChart *c = new XYChart(m_ComData->gUiSize->width() - 280, (m_ComData->gUiSize->height() - 78 - 10) / 2);     // 1345, 425        m_HScrollBar->width(), 300
 
     // Set the plotarea at (55, 50) with width 80 pixels less than chart width, and height 80 pixels
     // less than chart height. Use a vertical gradient from light blue (f0f6ff) to sky blue (a0c0ff)
@@ -306,6 +414,7 @@ void HistoryDetail::drawChart(QChartViewer *viewer, int index)
     // representations (areas, scatter plot, etc).
     //
 
+
     // Add a line layer for the lines, using a line width of 2 pixels
     LineLayer *layer = c->addLineLayer();
     layer->setLineWidth(2);
@@ -320,7 +429,7 @@ void HistoryDetail::drawChart(QChartViewer *viewer, int index)
             sprintf(buffer, " <*bgColor=ffffff*> <*color=00cc00*> <*size=14px*> %.3f V", d_dataSeriesV[DataSize - 1]);
 //        layer->addDataSet(DoubleArray(m_ComData->d_dataSeriesV, m_ComData->d_currentIndex), 0x00cc00, buffer);
         }
-        layer->addDataSet(viewPortDataSeriesB, 0x00cc00, buffer);
+        layer->addDataSet(viewPortDataSeriesB, 0x00cc00);   // , buffer
         c->yAxis()->setMinTickInc(0.1);
         c->yAxis()->setDateScale(0, 7.5);           // 固定坐标轴0-7.5V
     }
@@ -334,11 +443,12 @@ void HistoryDetail::drawChart(QChartViewer *viewer, int index)
             }
     //        layer->addDataSet(DoubleArray(m_ComData->d_dataSeriesA, m_ComData->d_currentIndex), 0x00ff, buffer);
         }
-        layer->addDataSet(viewPortDataSeriesC, 0x0000ff, buffer);
+        layer->addDataSet(viewPortDataSeriesC, 0x0000ff);       // , buffer
 //        c->yAxis()->setMinTickInc(0.1);
 //        if(fixCurrentValue > 0)
 //            c->yAxis()->setDateScale(0, fixCurrentValue);
     }
+
 
     //================================================================================
     // Configure axis scale and labelling
@@ -395,125 +505,125 @@ void HistoryDetail::drawChart(QChartViewer *viewer, int index)
     delete viewer->getChart();
     viewer->setChart(c);
 }
-*/
-
-//void HistoryDetail::trackLineLabel(XYChart *c, int mouseX, int index)
-//{
-//    // Clear the current dynamic layer and get the DrawArea object to draw on it.
-//    DrawArea *d = c->initDynamicLayer();
-
-//    // The plot area object
-//    PlotArea *plotArea = c->getPlotArea();
-
-//    // Get the data x-value that is nearest to the mouse, and find its pixel coordinate.
-//    double xValue = c->getNearestXValue(mouseX);
-//    int xCoor = c->getXCoor(xValue);
-//    if (xCoor < plotArea->getLeftX())
-//        return;
-
-//    // Draw a vertical track line at the x-position
-//    d->vline(plotArea->getTopY(), plotArea->getBottomY(), xCoor, 0x888888);
-
-//    // Draw a label on the x-axis to show the track line position.
-//    std::ostringstream xlabel;
-//    xlabel << "<*font,bgColor=000000*> " << c->xAxis()->getFormattedLabel(xValue, "hh:nn:ss.fff")
-//        << " <*/font*>";
-//    TTFText *t = d->text(xlabel.str().c_str(), "arialbd.ttf", 10);
-
-//    // Restrict the x-pixel position of the label to make sure it stays inside the chart image.
-//    int xLabelPos = max(0, min(xCoor - t->getWidth() / 2, c->getWidth() - t->getWidth()));
-//    t->draw(xLabelPos, plotArea->getBottomY() + 6, 0xffffff);
-//    t->destroy();
-
-//    // Iterate through all layers to draw the data labels
-//    for (int i = 0; i < c->getLayerCount(); ++i) {
-//        Layer *layer = c->getLayerByZ(i);
-
-//        // The data array index of the x-value
-//        int xIndex = layer->getXIndexOf(xValue);
-
-//        // Iterate through all the data sets in the layer
-//        for (int j = 0; j < layer->getDataSetCount(); ++j)
-//        {
-//            DataSet *dataSet = layer->getDataSetByZ(j);
-//            const char *dataSetName = dataSet->getDataName();
-
-//            // Get the color, name and position of the data label
-//            int color = dataSet->getDataColor();
-//            int yCoor = c->getYCoor(dataSet->getPosition(xIndex), dataSet->getUseYAxis());
-
-//            // Draw a track dot with a label next to it for visible data points in the plot area
-//            if ((yCoor >= plotArea->getTopY()) && (yCoor <= plotArea->getBottomY()) && (color !=
-//                Chart::Transparent) && dataSetName && *dataSetName)
-//            {
-//                d->circle(xCoor, yCoor, 4, 4, color, color);
-
-//                std::ostringstream label;
-//                if(index == 0) {
-//                    label << "<*font,bgColor=" << hex << color << "*> "
-//                        << c->formatValue(dataSet->getValue(xIndex), "{value|P4}") << "V" << " <*font*>";
-//                } else if(index == 1) {
-//                    double bufD = dataSet->getValue(xIndex);
-//                    if(bufD < 1) {
-//                        label << "<*font,bgColor=" << hex << color << "*> "
-//                            << c->formatValue(bufD * 1000, "{value|P4}") << "uA" << " <*font*>";
-//                    } else {
-//                        label << "<*font,bgColor=" << hex << color << "*> "
-//                            << c->formatValue(bufD, "{value|P4}") << "mA" << " <*font*>";
-//                    }
-//                }
 
 
-//                t = d->text(label.str().c_str(), "arialbd.ttf", 10);
+void HistoryDetail::trackLineLabel(XYChart *c, int mouseX, int index)
+{
+    // Clear the current dynamic layer and get the DrawArea object to draw on it.
+    DrawArea *d = c->initDynamicLayer();
 
-//                // Draw the label on the right side of the dot if the mouse is on the left side the
-//                // chart, and vice versa. This ensures the label will not go outside the chart image.
-//                if (xCoor <= (plotArea->getLeftX() + plotArea->getRightX()) / 2)
-//                    t->draw(xCoor + 6, yCoor, 0xffffff, Chart::Left);
-//                else
-//                    t->draw(xCoor - 6, yCoor, 0xffffff, Chart::Right);
+    // The plot area object
+    PlotArea *plotArea = c->getPlotArea();
 
-//                t->destroy();
-//            }
-//        }
-//    }
-//}
+    // Get the data x-value that is nearest to the mouse, and find its pixel coordinate.
+    double xValue = c->getNearestXValue(mouseX);
+    int xCoor = c->getXCoor(xValue);
+    if (xCoor < plotArea->getLeftX())
+        return;
 
-//void HistoryDetail::onChartUpdateTimer(QChartViewer *viewer)
-//{
-//    static const int initialFullRange = 60;
-//    static const int zoomInLimit = 1;
+    // Draw a vertical track line at the x-position
+    d->vline(plotArea->getTopY(), plotArea->getBottomY(), xCoor, 0x888888);
 
-//    if (DataSize > 0)
-//    {
-//        //
-//        // As we added more data, we may need to update the full range of the viewport.
-//        //
+    // Draw a label on the x-axis to show the track line position.
+    std::ostringstream xlabel;
+    xlabel << "<*font,bgColor=000000*> " << c->xAxis()->getFormattedLabel(xValue, "hh:nn:ss.fff")
+        << " <*/font*>";
+    TTFText *t = d->text(xlabel.str().c_str(), "arialbd.ttf", 10);
 
-//        double startDate = d_timeStamps[0];
-//        double endDate = d_timeStamps[DataSize - 1];
+    // Restrict the x-pixel position of the label to make sure it stays inside the chart image.
+    int xLabelPos = max(0, min(xCoor - t->getWidth() / 2, c->getWidth() - t->getWidth()));
+    t->draw(xLabelPos, plotArea->getBottomY() + 6, 0xffffff);
+    t->destroy();
 
-//        // Use the initialFullRange (which is 60 seconds in this demo) if this is sufficient.
-//        double duration = endDate - startDate;
-//        if (duration < initialFullRange)
-//            endDate = startDate + initialFullRange;
+    // Iterate through all layers to draw the data labels
+    for (int i = 0; i < c->getLayerCount(); ++i) {
+        Layer *layer = c->getLayerByZ(i);
 
-//        // Update the full range to reflect the actual duration of the data. In this case,
-//        // if the view port is viewing the latest data, we will scroll the view port as new
-//        // data are added. If the view port is viewing historical data, we would keep the
-//        // axis scale unchanged to keep the chart stable.
-//        int updateType = Chart::ScrollWithMax;
-//        if (viewer->getViewPortLeft() + viewer->getViewPortWidth() < 0.999)
-//            updateType = Chart::KeepVisibleRange;
-//        bool scaleHasChanged = viewer->updateFullRangeH("x", startDate, endDate, updateType);
+        // The data array index of the x-value
+        int xIndex = layer->getXIndexOf(xValue);
 
-//        // Set the zoom in limit as a ratio to the full range
-//        viewer->setZoomInWidthLimit(zoomInLimit / (viewer->getValueAtViewPort("x", 1) -
-//            viewer->getValueAtViewPort("x", 0)));
+        // Iterate through all the data sets in the layer
+        for (int j = 0; j < layer->getDataSetCount(); ++j)
+        {
+            DataSet *dataSet = layer->getDataSetByZ(j);
+            const char *dataSetName = dataSet->getDataName();
 
-//        // Trigger the viewPortChanged event to update the display if the axis scale has changed
-//        // or if new data are added to the existing axis scale.
-//        if (scaleHasChanged || (duration < initialFullRange))
-//            viewer->updateViewPort(true, false);
-//    }
-//}
+            // Get the color, name and position of the data label
+            int color = dataSet->getDataColor();
+            int yCoor = c->getYCoor(dataSet->getPosition(xIndex), dataSet->getUseYAxis());
+
+            // Draw a track dot with a label next to it for visible data points in the plot area
+            if ((yCoor >= plotArea->getTopY()) && (yCoor <= plotArea->getBottomY()) && (color !=
+                Chart::Transparent) && dataSetName && *dataSetName)
+            {
+                d->circle(xCoor, yCoor, 4, 4, color, color);
+
+                std::ostringstream label;
+                if(index == 0) {
+                    label << "<*font,bgColor=" << hex << color << "*> "
+                        << c->formatValue(dataSet->getValue(xIndex), "{value|P4}") << "V" << " <*font*>";
+                } else if(index == 1) {
+                    double bufD = dataSet->getValue(xIndex);
+                    if(bufD < 1) {
+                        label << "<*font,bgColor=" << hex << color << "*> "
+                            << c->formatValue(bufD * 1000, "{value|P4}") << "uA" << " <*font*>";
+                    } else {
+                        label << "<*font,bgColor=" << hex << color << "*> "
+                            << c->formatValue(bufD, "{value|P4}") << "mA" << " <*font*>";
+                    }
+                }
+
+
+                t = d->text(label.str().c_str(), "arialbd.ttf", 10);
+
+                // Draw the label on the right side of the dot if the mouse is on the left side the
+                // chart, and vice versa. This ensures the label will not go outside the chart image.
+                if (xCoor <= (plotArea->getLeftX() + plotArea->getRightX()) / 2)
+                    t->draw(xCoor + 6, yCoor, 0xffffff, Chart::Left);
+                else
+                    t->draw(xCoor - 6, yCoor, 0xffffff, Chart::Right);
+
+                t->destroy();
+            }
+        }
+    }
+}
+
+void HistoryDetail::onChartUpdateTimer(QChartViewer *viewer)
+{
+    static const int initialFullRange = 60;
+    static const int zoomInLimit = 1;
+
+    if (DataSize > 0)
+    {
+        //
+        // As we added more data, we may need to update the full range of the viewport.
+        //
+
+        double startDate = d_timeStamps[0];
+        double endDate = d_timeStamps[DataSize - 1];
+
+        // Use the initialFullRange (which is 60 seconds in this demo) if this is sufficient.
+        double duration = endDate - startDate;
+        if (duration < initialFullRange)
+            endDate = startDate + initialFullRange;
+
+        // Update the full range to reflect the actual duration of the data. In this case,
+        // if the view port is viewing the latest data, we will scroll the view port as new
+        // data are added. If the view port is viewing historical data, we would keep the
+        // axis scale unchanged to keep the chart stable.
+        int updateType = Chart::ScrollWithMax;
+        if (viewer->getViewPortLeft() + viewer->getViewPortWidth() < 0.999)
+            updateType = Chart::KeepVisibleRange;
+        bool scaleHasChanged = viewer->updateFullRangeH("x", startDate, endDate, updateType);
+
+        // Set the zoom in limit as a ratio to the full range
+        viewer->setZoomInWidthLimit(zoomInLimit / (viewer->getValueAtViewPort("x", 1) -
+            viewer->getValueAtViewPort("x", 0)));
+
+        // Trigger the viewPortChanged event to update the display if the axis scale has changed
+        // or if new data are added to the existing axis scale.
+        if (scaleHasChanged || (duration < initialFullRange))
+            viewer->updateViewPort(true, false);
+    }
+}

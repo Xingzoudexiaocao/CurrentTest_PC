@@ -8,6 +8,12 @@ ComData::ComData()
 {
     gUiSize = new QSize(1280, 768);     // 默认1280 * 768
 
+    testNomal = 0;
+    testNumber32 = 0;
+    testNumberRight = 0;
+    testNumberWrong = 0;
+    testError = 0;
+
     myHandle = nullptr;
     DataSize = 300000;  // 保存5分钟数据
     // 头码 167, 89, 62, 189 = (0xA7, 0x59, 0x3E, 0xBD)
@@ -30,7 +36,7 @@ ComData::ComData()
     d_standardValue.Lelve_1_min = 0; d_standardValue.Lelve_1_max = 0;
     d_standardValue.Lelve_2_min = 0.002; d_standardValue.Lelve_2_max = 0.14;    // 2档校准最小值0.002mA;最大值0.14mA
     d_standardValue.Lelve_3_min = 0.2; d_standardValue.Lelve_3_max = 14.0;      // 3档校准最小值0.2mA;最大值14mA
-    d_standardValue.Lelve_4_min = 20; d_standardValue.Lelve_4_max = 3000;       // 4档校准最小值20mA;最大值3000mA
+    d_standardValue.Lelve_4_min = 20; d_standardValue.Lelve_4_max = 2800;       // 4档校准最小值20mA;最大值2800mA
 
     updataFile = new unsigned char[256000];     // 最大256k
 //    memset(&updataFile, 0x00, sizeof(updataFile));

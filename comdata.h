@@ -118,6 +118,12 @@ public:
 public:
     hid_device *myHandle;   // USB_HID
 
+    qint64 testNomal;
+    qint64 testNumber32;
+    qint64 testNumberRight;
+    qint64 testNumberWrong;
+    qint64 testError;
+
 //    QRect *gUiRect;
     QSize *gUiSize;
 

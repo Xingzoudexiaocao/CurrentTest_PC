@@ -18,6 +18,7 @@ void Calculate_Tread::run()
     qDebug("计算线程run: %d", this->currentThreadId());
     qint64 CurDifferT_A = 0;
     qint64 CurDifferT_V = 0;
+    qint64 testCnt = 0;
     while (!isStop) {
 
         try {
@@ -88,7 +89,8 @@ void Calculate_Tread::run()
             qDebug() << "计算电压平均值异常";
         }
 
-
+        testCnt++;
+        emit signalUpdateTestData();
         this->msleep(100);
     }
     emit end_Thread();      // 发送信号

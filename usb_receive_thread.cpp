@@ -42,6 +42,7 @@ void USB_Receive_Thread::run()
             {
               if (numBytes == 32)
               {
+                  m_ComData->testNumber32++;
                   connectCount = 0;
                   if(buffer[0] == YMODEM_ACK && buffer[1] == YMODEM_ACK && buffer[2] == YMODEM_ACK && buffer[3] == YMODEM_ACK)
                       emit setAckOrNak(YMODEM_ACK);
@@ -68,6 +69,7 @@ void USB_Receive_Thread::run()
                   }
                   else
                   {
+                      m_ComData->testNomal++;
                       ST_REC_STRUCT *tmp = new ST_REC_STRUCT();
                       memcpy(tmp, buffer, 32);
 //                      qDebug("Received %d bytes, 成功.", numBytes);
@@ -99,14 +101,18 @@ void USB_Receive_Thread::run()
               }
               else
               {
+//                  m_ComData->testNumberRight++;
                   qDebug("Received %d bytes, 数值不对.\n", numBytes);
               }
 
             }
             else
             {
+//                m_ComData->testNumberWrong++;
                 qDebug("Error receiving message.\n");
             }
+
+            m_ComData->testError++;
 //            res = libusb_release_interface(m_UsbHid->dev_handle, 0); //release the claimed interface
 //            if(res !=0)
 //            {
@@ -116,7 +122,7 @@ void USB_Receive_Thread::run()
 //        //    qDebug()<<"Released Interface"<<endl;
             res = -1;   // 置位
             numBytes = -1;
-            QThread::sleep(0);
+//            QThread::sleep(0);
 
             connectCount++;
             if(connectCount == 2000)
@@ -284,9 +290,9 @@ void USB_Receive_Thread::HandleData(ST_REC_STRUCT *bufData)
             {
                 m_ComData->layer_currentIndex = m_ComData->d_currentIndex;
                 m_ComData->layer_BeginTime = now.toMSecsSinceEpoch() - m_ComData->d_currentIndex;
-                mempcpy(m_ComData->layer_timeStamps, m_ComData->d_timeStamps, sizeof(double) * m_ComData->d_currentIndex);
-                memcpy(m_ComData->layer_dataSeriesV, m_ComData->d_dataSeriesV, sizeof(double) * m_ComData->d_currentIndex);
-                memcpy(m_ComData->layer_dataSeriesA, m_ComData->d_dataSeriesA, sizeof(double) * m_ComData->d_currentIndex);
+//                memcpy(m_ComData->layer_timeStamps, m_ComData->d_timeStamps, sizeof(double) * m_ComData->d_currentIndex);
+//                memcpy(m_ComData->layer_dataSeriesV, m_ComData->d_dataSeriesV, sizeof(double) * m_ComData->d_currentIndex);
+//                memcpy(m_ComData->layer_dataSeriesA, m_ComData->d_dataSeriesA, sizeof(double) * m_ComData->d_currentIndex);
             }
             emit get_Vol_Cur_Now(now.toMSecsSinceEpoch(), dataB.d, dataC.d);
       //      qDebug() << "--单次接收的数据：dataB = " << dataB.d << ", dataC =" << dataC.d  << " Time = " << QDateTime::currentDateTime();

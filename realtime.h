@@ -59,6 +59,12 @@ private:
     // The maximum zoom in is 10 seconds.
     static const int zoomInLimit = 1;
 
+    QLabel *m_Test1;
+    QLabel *m_Test2;
+    QLabel *m_Test3;
+    QLabel *m_Test4;
+    QLabel *m_Test5;
+
     QFont    font;
     QFont    font_2;
     QDateTime m_nextDataTime;           // Used by the random number generator to generate realtime data.
@@ -110,9 +116,6 @@ private:
 
     ComData *m_ComData;
     USB_HID *m_UsbHid;
-
-    QPushButton *historyFile;
-    QPushButton *historyOpen;
 
     HistoryView *historyView;
     HistoryDetail *historyDetail;
@@ -173,7 +176,6 @@ private slots:
     QString doubleToTime(double dTime);
     void UpdataOpen();
     void UpdataSend();
-    void HistoryOpen();
 
     void slotAverageValue(int);
     void slotBatteryValue(int);
@@ -209,6 +211,7 @@ public slots:
     void showAverage(void);
     void slotShowTime(qint64 runningT, qint64 remainT);
 
+    void slot_Receive_TestData();
 protected:
 //    virtual void resizeEvent(QResizeEvent *event);
 };
