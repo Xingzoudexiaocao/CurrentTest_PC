@@ -43,6 +43,29 @@ public:
 signals:
 
 private:
+    HISTORY_DATAINFO_STRUCT m_Current_DataInfo;
+    HISTORY_DATAINFO_STRUCT m_Voltage_DataInfo;
+    HISTORY_DATAINFO_STRUCT m_Power_DataInfo;
+    QLabel *m_Currnet_Avg;
+    QLabel *m_Currnet_Max;
+    QLabel *m_Currnet_Min;
+    QLabel *m_Voltage_Avg;
+    QLabel *m_Voltage_Max;
+    QLabel *m_Voltage_Min;
+    QLabel *m_Power_Avg;
+    QLabel *m_Power_Max;
+    QLabel *m_Power_Min;
+
+    float DifferValue;         // maxValue和minValue的差值，若有变化则更新UI
+    qint64 BeginDateTime;       // 数据库起始时间
+    qint64 CountSize;           // 数据库数据个数总和
+    qint64 SelectSize;           // 实际显示的数据个数总和
+    qint64 IntervalValue;       // 波形上相邻的两个点间隔的数据个数 = SelectSize/DataSize + 1
+    QLabel *BeginT;         // 显示起始时间
+    QLabel *LastT;          // 显示结束时间
+    QLabel *BeginSelectT;         // 显示起始时间
+    QLabel *LastSelectT;          // 显示结束时间
+
     QFont    font;
     QPushButton *historyFile;
     QPushButton *historyOpen;
@@ -54,10 +77,11 @@ private:
     QFrame *m_SubFrame;
     DoubleSlider *m_DoubleSlider;
 
-    unsigned long long DataSize;
+    qint64 DataSize;
     double *d_timeStamps;	// The timestamps for the data series
     double *d_dataSeriesV;	// The values for the data series A
     double *d_dataSeriesA;	// The values for the data series B
+    qint64 d_currentIndex;
 //    double d_time[100000];
 //    double d_V[100000];
 //    double d_A[100000];
@@ -84,9 +108,13 @@ private slots:
     void slotSubButtonClick(void);
     void slotHistoryOpen(void);
 
+    void initDisplay(void);     // 显示初始化
+    void loadingDataByTime(qint64, qint64);
+    void updateInfomationDisplay(void);
 public slots:
     void ReceiveTest(void);
     void UpdateChartData(void);
+    void mouseReleaseSlot(void);
 };
 
 #endif // HISTORYDETAIL_H

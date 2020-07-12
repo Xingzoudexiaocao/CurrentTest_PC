@@ -6,6 +6,7 @@
 #include <QPainter>
 #include <QMouseEvent>
 #include <math.h>
+#include <QDebug>
 
 class DoubleSlider : public QWidget
 {
@@ -31,6 +32,7 @@ public slots:
 signals:
     void minValueChanged(float);
     void maxValueChanged(float);
+    void mouseReleaseSignal(void);
 
 private:
 
@@ -54,6 +56,7 @@ protected:
     void paintValueLabel(QPainter* painter);
 
     void mousePressEvent(QMouseEvent* event);
+    void mouseReleaseEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent* event);
 
     void keyPressEvent(QKeyEvent *event);

@@ -31,6 +31,13 @@
 //#define YMODEM_CAN (0x18)
 //#define YMODEM_C (0x43)
 
+typedef struct HISTORY_DATAINFO_STRUCT
+{
+    double average;
+    double maximun;
+    double minimun;
+} HISTORY_DATAINFO_STRUCT;
+
 typedef struct ST_REC_STRUCT
 {
     unsigned char rec[32];
@@ -92,6 +99,7 @@ typedef enum{
 
 static QString compangyName = "一起努力";
 static QString productName = "iSCAN";            // 精密电流测量仪
+static QString appVersionName = "100.000.205";
 
 class ComData
 {
@@ -101,12 +109,12 @@ public:
     //
     // A utility to shift a new data value into a data array
     //
-    static void shiftData_C(char *data, unsigned long long len, char newValue)
+    static void shiftData_C(char *data, qint64 len, char newValue)
     {
         memmove(data, data + 1, sizeof(*data) * (len - 1));
         data[len - 1] = newValue;
     }
-    static void shiftData_D(double *data, unsigned long long len, double newValue)
+    static void shiftData_D(double *data, qint64 len, double newValue)
     {
         memmove(data, data + 1, sizeof(*data) * (len - 1));
         data[len - 1] = newValue;
@@ -152,7 +160,7 @@ public:
     unsigned long long headerLength;
     unsigned char *headerC; //   -89, 89, 62, -67 = (0xA7, 0x59, 0x3E, 0xBD)
     // The number of samples per data series used in this demo
-    unsigned long long DataSize;
+    qint64 DataSize;
     double *d_timeStamps;	// The timestamps for the data series
     double *d_dataSeriesV;	// The values for the data series A
     double *d_dataSeriesA;	// The values for the data series B
@@ -160,7 +168,7 @@ public:
     double d_Avg_V;
     double d_Avg_A;
 
-    unsigned long long d_currentIndex;
+    qint64 d_currentIndex;
 
     unsigned char *updataFile;
     unsigned long long updataFileLen;

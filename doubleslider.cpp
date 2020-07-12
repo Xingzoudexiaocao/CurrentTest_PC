@@ -4,7 +4,7 @@ DoubleSlider::DoubleSlider(QWidget* parent)
     : QWidget(parent)
     , m_min(0.0f)
     , m_max(99.0f)
-    , m_singleStep(0.1f)
+    , m_singleStep(1.0f)
     , m_minValue(0.0f)
     , m_maxValue(99.0f)
     , m_state(None)
@@ -31,17 +31,17 @@ void DoubleSlider::paintValueLabel(QPainter* painter)
     painter->setPen(Qt::black);
     painter->setFont(QFont("Arial",12));
 
-    QString minValueString = QString::number(m_minValue,'f',3);
-    QString maxValueString = QString::number(m_maxValue,'f',3);
+//    QString minValueString = QString::number(m_minValue,'f',0);
+//    QString maxValueString = QString::number(m_maxValue,'f',0);
 
     QFontMetrics metrics = painter->fontMetrics();
-    int mintextWidth = metrics.width(minValueString);
-    int maxtextWidth = metrics.width(maxValueString);
-    int textHeight = metrics.height();
+//    int mintextWidth = metrics.width(minValueString);
+//    int maxtextWidth = metrics.width(maxValueString);
+//    int textHeight = metrics.height();
 
-    //---- paint text
-    painter->drawText(QRectF(2,4,mintextWidth,textHeight),minValueString);
-    painter->drawText(QRectF(width() - maxtextWidth -2, 4, maxtextWidth,textHeight), maxValueString);
+//    //---- paint text
+//    painter->drawText(QRectF(2,4,mintextWidth,textHeight),minValueString);
+//    painter->drawText(QRectF(width() - maxtextWidth -2, 4, maxtextWidth,textHeight), maxValueString);
 
 
     //----- paint label
@@ -72,17 +72,17 @@ void DoubleSlider::paintValueLabel(QPainter* painter)
 
 
     //----- paint groove
-    paintColoredRect(QRect(4,37,width() - 8,2),Qt::gray,painter);
-    paintColoredRect(QRect(minPos + 4,37,maxPos - minPos,2),QColor(51,153,155),painter);
+    paintColoredRect(QRect(4,37,width() - 8,10),Qt::darkCyan,painter);
+    paintColoredRect(QRect(minPos + 4,37,maxPos - minPos,10), QColor(0xFF,0xA5,0x00),painter); // QColor(151,53,155)
 
     //----- handle
 
-    minHandleRegion = QRect(minPos ,30,8,16);
-    maxHandleRegion = QRect(maxPos ,30,8,16);
+    minHandleRegion = QRect(minPos ,30,8,26);
+    maxHandleRegion = QRect(maxPos ,30,8,26);
 
     //-----paint Handle
-    QColor minColor  = (m_state == MinHandle) ? QColor(51,153,155) : Qt::darkGray;
-    QColor maxColor  = (m_state == MaxHandle) ? QColor(51,153,155) : Qt::darkGray;
+    QColor minColor  = (m_state == MinHandle) ? QColor(0xFF,0x63,0x47) : QColor(0xFF,0xA0,0x7A);
+    QColor maxColor  = (m_state == MaxHandle) ? QColor(0xFF,0x63,0x47) : QColor(0xFF,0xA0,0x7A);
     paintColoredRect(minHandleRegion,minColor,painter);
     paintColoredRect(maxHandleRegion,maxColor,painter);
 }
@@ -161,6 +161,7 @@ float DoubleSlider::maxRange() const
 
 void DoubleSlider::mousePressEvent(QMouseEvent* event)
 {
+//    qDebug() << "mousePressEvent";
     if(minHandleRegion.contains(event->pos())){
         m_state = MinHandle;
     }else if(maxHandleRegion.contains(event->pos())){
@@ -179,9 +180,16 @@ void DoubleSlider::mousePressEvent(QMouseEvent* event)
 
     update();
 }
-
+void DoubleSlider::mouseReleaseEvent(QMouseEvent *event)
+{
+//    if(event->buttons() & Qt::LeftButton) {
+//        qDebug() << "mouseReleaseSignal event";
+        emit mouseReleaseSignal();
+//    }
+}
 void DoubleSlider::mouseMoveEvent(QMouseEvent* event)
 {
+//    qDebug() << "mouseMoveEvent event";
     if(event->buttons() & Qt::LeftButton){
         float move = event->x() * (m_max - m_min) * 1.0/ width() + m_min;
 
@@ -206,6 +214,7 @@ void DoubleSlider::mouseMoveEvent(QMouseEvent* event)
 
 void DoubleSlider::keyPressEvent(QKeyEvent *event)
 {
+//    qDebug() << "key event";
     QWidget::keyPressEvent(event);
 
     if(event->key() == Qt::Key_Left){

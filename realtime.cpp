@@ -9,6 +9,7 @@
 #include <QApplication>
 #include <QDesktopWidget>
 
+#include <algorithm>
 using namespace std;
 
 static const int DataInterval = 10;
@@ -644,6 +645,12 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     ThirdLine2->setFrameShape(QFrame::HLine);
     ThirdLine2->setFrameShadow(QFrame::Sunken);
     ThirdLine2->raise();
+    QLabel *AppVersion = new QLabel(frame_setting);
+    AppVersion->setGeometry(10, 560, 400, 40);
+    AppVersion->setText("软件版本：" + appVersionName);
+    AppVersion->setStyleSheet("QLabel { text-align:left; font-size:20px;}");
+    AppVersion->setFont(font);
+
 
     QLabel *appInfo = new QLabel(frame_setting);
     appInfo->setGeometry(10, 30, 130, 50);
@@ -764,7 +771,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     m_CalculateThread->start(QThread ::LowestPriority);
 
     FixCurrentScale = new QComboBox(frame_2);
-    FixCurrentScale->setGeometry(250, 20, 120, 20);
+    FixCurrentScale->setGeometry(280, 20, 120, 20);
     FixCurrentScale->addItems(QStringList() << "自动量程" << "3000mA" << "1000mA" << "100mA" << "10mA" << "1mA" << "100uA" << "10uA" << "1uA");
     connect(FixCurrentScale, SIGNAL(currentIndexChanged(int)), this, SLOT(slotFixCurrentScale(int)));
     fixCurrentValue = 0;
@@ -792,7 +799,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     m_Test4 = new QLabel(TestFrame);
     m_Test5 = new QLabel(TestFrame);
     connect(m_CalculateThread, SIGNAL(signalUpdateTestData()), this, SLOT(slot_Receive_TestData()));
-//    TestFrame->setVisible(false);
+    TestFrame->setVisible(false);
 //    slot_Receive_TestData();
 }
 
@@ -1207,7 +1214,7 @@ void RealTime::drawChart_Current(void)
     // Set the plotarea at (55, 50) with width 80 pixels less than chart width, and height 80 pixels
     // less than chart height. Use a vertical gradient from light blue (f0f6ff) to sky blue (a0c0ff)
     // as background. Set border to transparent and grid lines to white (ffffff).
-    c->setPlotArea(85, 62, c->getWidth() - 85, c->getHeight() - 100, c->linearGradientColor(0, 50, 0,
+    c->setPlotArea(85, 62, c->getWidth() - 85 - 30, c->getHeight() - 100, c->linearGradientColor(0, 50, 0,
         c->getHeight() - 35, 0xf0f6ff, 0xa0c0ff), -1, Chart::Transparent, 0xffffff, 0xffffff);
 
     // As the data can lie outside the plotarea in a zoomed chart, we need enable clipping.
@@ -1221,7 +1228,7 @@ void RealTime::drawChart_Current(void)
 
     // Add a legend box at (55, 25) using horizontal layout. Use 10pt Arial Bold as font. Set the
     // background and border color to transparent and use line style legend key.
-    LegendBox *b = c->addLegend(55, 25, false, "arialbd.ttf", 10);
+    LegendBox *b = c->addLegend(85, 25, false, "arialbd.ttf", 10);
     b->setBackground(Chart::Transparent);
     b->setLineStyleKey();
 
@@ -1274,9 +1281,10 @@ void RealTime::drawChart_Current(void)
     }
     else
     {
-        sprintf(buffer, " <*bgColor=ffffff*> <*color=0000ff*> <*size=14px*> %.3f uA", 0);
+        sprintf(buffer, " <*bgColor=ffffff*> <*color=0000ff*> <*size=14px*>");
         c->yAxis()->setMinTickInc(20);
         c->yAxis()->setDateScale(0, 120);           // 固定坐标轴0-7.5V
+        c->yAxis()->setLabelFormat("{value|3}");
     }
     layer->addDataSet(viewPortDataSeriesC, 0x0000ff, buffer);
 
@@ -1302,20 +1310,38 @@ void RealTime::drawChart_Current(void)
     // In this demo, the time range can be from many hours to a few seconds. We can need to define
     // the date/time format the various cases.
     //
+
 //    c->yAxis()->setMinTickInc(0);
 //    c->yAxis()->setDateScale(0, 2000);           // 固定坐标轴0-7.5V
-//    double yMax = c->yAxis()->getMaxValue();
-//    qDebug() << "yMax = " << QString::number(yMax, 'f', 3);
-//    if(yMax < 0.001) {
-//        c->yAxis()->setLabelFormat("{value*1000|3}");
-//        c->yAxis()->setTitle("Current ( uA )", "arialbd.ttf", 12);
-//    } else if(yMax < 1000) {
-        c->yAxis()->setLabelFormat("{value|3}");
-        c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12);
-//    } else {
-//        c->yAxis()->setLabelFormat("{value|2}");
-//        c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12);
-//    }
+//    double testD[4] = {1.0, 2.0, 3.0, 4.0};
+//    DoubleArray testArr(testD, 4);
+//    double yMax = *std::max_element(testArr.data, testArr.data + testArr.len);
+    if(m_ComData->d_currentIndex > 1)
+    {
+        if(fixCurrentValue <= 0) {                  // 自动量程
+            double yMax = *std::max_element(viewPortDataSeriesC.data, viewPortDataSeriesC.data + viewPortDataSeriesC.len);
+    //    qDebug() << "yMax = " << QString::number(yMax, 'f', 10);
+            if(yMax < 0.001) {
+                c->yAxis()->setLabelFormat("{={value}*1000|3}");
+                c->yAxis()->setTitle("Current ( uA )", "arialbd.ttf", 12);
+            } else if(yMax < 1000) {
+                c->yAxis()->setLabelFormat("{value|3}");
+                c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12);
+            } else {
+                c->yAxis()->setLabelFormat("{value|2}");
+                c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12);
+            }
+        } else if(fixCurrentValue < 1) {            // uA 级别
+            c->yAxis()->setLabelFormat("{={value}*1000|3}");
+            c->yAxis()->setTitle("Current ( uA )", "arialbd.ttf", 12);
+        } else if(fixCurrentValue < 1000) {         // mA 级别 < 1000mA
+            c->yAxis()->setLabelFormat("{value|3}");
+            c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12);
+        } else {                                    // // mA 级别 >= 1000mA
+            c->yAxis()->setLabelFormat("{value|2}");
+            c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12);
+        }
+    }
 
     // If all ticks are hour algined, we use "hh:nn<*br*>mmm dd" in bold font as the first label of
     // the Day, and "hh:nn" for other labels.
@@ -1433,7 +1459,7 @@ void RealTime::drawChart_Voltage(void)
     // Set the plotarea at (55, 50) with width 80 pixels less than chart width, and height 80 pixels
     // less than chart height. Use a vertical gradient from light blue (f0f6ff) to sky blue (a0c0ff)
     // as background. Set border to transparent and grid lines to white (ffffff).
-    d->setPlotArea(85, 62, d->getWidth() - 85, d->getHeight() - 100, d->linearGradientColor(0, 50, 0,
+    d->setPlotArea(85, 62, d->getWidth() - 85 - 30, d->getHeight() - 100, d->linearGradientColor(0, 50, 0,
         d->getHeight() - 35, 0xf0f6ff, 0xa0c0ff), -1, Chart::Transparent, 0xffffff, 0xffffff);
 
     // As the data can lie outside the plotarea in a zoomed chart, we need enable clipping.
@@ -1447,11 +1473,9 @@ void RealTime::drawChart_Voltage(void)
 
     // Add a legend box at (55, 25) using horizontal layout. Use 10pt Arial Bold as font. Set the
     // background and border color to transparent and use line style legend key.
-    LegendBox *b = d->addLegend(55, 25, false, "arialbd.ttf", 10);
+    LegendBox *b = d->addLegend(85, 25, false, "arialbd.ttf", 10);
     b->setBackground(Chart::Transparent);
     b->setLineStyleKey();
-
-    d->yAxis()->setLabelFormat("{value|3}");
 
     // Set the x and y axis stems to transparent and the label font to 10pt Arial
     d->xAxis()->setColors(Chart::Transparent);
@@ -1491,7 +1515,7 @@ void RealTime::drawChart_Voltage(void)
             sprintf(buffer, " <*bgColor=ffffff*> <*color=00cc00*> <*size=14px*> %.3f V", m_ComData->d_dataSeriesV[m_ComData->d_currentIndex - 1]);
 //        layer->addDataSet(DoubleArray(m_ComData->d_dataSeriesV, m_ComData->d_currentIndex), 0x00cc00, buffer);
     } else {
-        sprintf(buffer, " <*bgColor=ffffff*> <*color=00cc00*> <*size=14px*> %.3f V", 0);
+        sprintf(buffer, " <*bgColor=ffffff*> <*color=00cc00*> <*size=14px*>");
     }
     layer->addDataSet(viewPortDataSeriesB, 0x00cc00, buffer);
     d->yAxis()->setMinTickInc(0.1);
@@ -1517,6 +1541,8 @@ void RealTime::drawChart_Voltage(void)
     // In this demo, the time range can be from many hours to a few seconds. We can need to define
     // the date/time format the various cases.
     //
+
+    d->yAxis()->setLabelFormat("{value|3}");
 
     // If all ticks are hour algined, we use "hh:nn<*br*>mmm dd" in bold font as the first label of
     // the Day, and "hh:nn" for other labels.
@@ -1627,7 +1653,7 @@ void RealTime::drawChart(QChartViewer *viewer, int index)
     // Set the plotarea at (55, 50) with width 80 pixels less than chart width, and height 80 pixels
     // less than chart height. Use a vertical gradient from light blue (f0f6ff) to sky blue (a0c0ff)
     // as background. Set border to transparent and grid lines to white (ffffff).
-    c->setPlotArea(85, 62, c->getWidth() - 85, c->getHeight() - 100, c->linearGradientColor(0, 50, 0,
+    c->setPlotArea(85, 62, c->getWidth() - 85 - 30, c->getHeight() - 100, c->linearGradientColor(0, 50, 0,
         c->getHeight() - 35, 0xf0f6ff, 0xa0c0ff), -1, Chart::Transparent, 0xffffff, 0xffffff);
 
     // As the data can lie outside the plotarea in a zoomed chart, we need enable clipping.

@@ -11,6 +11,7 @@ HistoryDetail::HistoryDetail(QWidget *parent, USB_HID *hid, ComData *comD) : QGr
     d_timeStamps = new double[60000];	// The timestamps for the data series
     d_dataSeriesV = new double[60000];	// The values for the data series A
     d_dataSeriesA = new double[60000];
+    d_currentIndex = 1;
 //    d_timeStamps = d_time;
 //    d_dataSeriesV = d_V;
 //    d_dataSeriesA = d_A;
@@ -63,7 +64,7 @@ HistoryDetail::HistoryDetail(QWidget *parent, USB_HID *hid, ComData *comD) : QGr
     m_ChartViewer->setMouseWheelZoomRatio(1.1);
     m_ChartViewer_2->setMouseWheelZoomRatio(1.1);
 
-    updateChart();      // 初始化显示表格
+//    updateChart();      // 初始化显示表格
 
     m_EjectSubButton = new QPushButton(this);
     m_EjectSubButton->setGeometry(2, 0, parent->width() - 10, 10);
@@ -71,9 +72,9 @@ HistoryDetail::HistoryDetail(QWidget *parent, USB_HID *hid, ComData *comD) : QGr
     connect(m_EjectSubButton, &QAbstractButton::clicked, this, &HistoryDetail::slotSubButtonClick);
 
     m_SubFrame = new QFrame(this);
-    m_SubFrame->setGeometry(2, 10, parent->width() - 10, 300);
+    m_SubFrame->setGeometry(2, 10, parent->width() - 10, 200);
     m_SubFrame->setObjectName("FrameQss");
-    m_SubFrame->setStyleSheet("QFrame#FrameQss {border:1px solid black; background-color: rgb(96, 96, 96, 200);\
+    m_SubFrame->setStyleSheet("QFrame#FrameQss {border:1px solid black; background-color: rgb(210, 210, 210, 180);\
                             border-top-left-radius:4px;         \
                             border-top-right-radius:4px;        \
                             border-bottom-left-radius:4px;      \
@@ -82,19 +83,113 @@ HistoryDetail::HistoryDetail(QWidget *parent, USB_HID *hid, ComData *comD) : QGr
 
     historyFile = new QPushButton(m_SubFrame);
     historyFile->setStyleSheet("QPushButton {font-family:arial; text-align:left; padding:5px; font-size:18px; border:1px solid #000000;}");
-    historyFile->setGeometry(4, 5, 1180-4-360, 30);
+    historyFile->setGeometry(150, 5, parent->width() - 200, 30);
 //    historyFile->setFrameShape(QFrame::NoFrame);
+    historyFile->setToolTip("点击加载文件");
     historyFile->setText("");
-    historyFile->setText("设置线程优先级");
+//    historyFile->setText("设置线程优先级");
     connect(historyFile, &QAbstractButton::clicked, this, &HistoryDetail::slotHistoryOpen);
     historyOpen = new QPushButton( " 加载文件", m_SubFrame);
-    historyOpen->setGeometry(1182-360, 5, 130, 30);
+    historyOpen->setGeometry(10, 5, 130, 30);
     historyOpen->setStyleSheet(bnt_qss2);
     historyOpen->setFont(font);
+    historyOpen->setToolTip("点击加载文件");
     connect(historyOpen, &QAbstractButton::clicked, this, &HistoryDetail::slotHistoryOpen);
 
     m_DoubleSlider = new DoubleSlider(m_SubFrame);
-    m_DoubleSlider->setGeometry(100, 100, 300, 50);
+    m_DoubleSlider->setGeometry(10, 35, parent->width() - 50, 50);
+//    m_DoubleSlider->setLabel("标题");
+    connect(m_DoubleSlider, SIGNAL(mouseReleaseSignal()), this, SLOT(mouseReleaseSlot()));
+//    m_DoubleSlider->setRange(1, 60000);
+//    m_DoubleSlider->setMinValue(1);
+//    m_DoubleSlider->setMaxValue(60000);
+//    m_DoubleSlider->setSingleStep(1);
+
+    QLabel *SliderTitle = new QLabel(m_SubFrame);
+    SliderTitle->setGeometry(parent->width() / 2 - 100, 35, 200, 30);
+    SliderTitle->setStyleSheet("QLabel { text-align:left; font-size:24px; color:#DC143C;}");
+    SliderTitle->setFont(font);
+    SliderTitle->setText("时间轴");
+
+    BeginT = new QLabel(m_SubFrame);
+    BeginT->setGeometry(10, 35, 200, 30);
+    BeginT->setStyleSheet("QLabel {font-family:Arial; text-align:left; font-size:20px; color:#DC143C;}");
+
+    LastT = new QLabel(m_SubFrame);
+    LastT->setGeometry(parent->width() - 150, 35, 200, 30);
+    LastT->setStyleSheet("QLabel {font-family:Arial; text-align:left; font-size:20px; color:#DC143C;}");
+
+
+    BeginSelectT = new QLabel(m_SubFrame);
+    BeginSelectT->setGeometry(parent->width() / 2 - 100 - 200, 100, 200, 30);
+    BeginSelectT->setStyleSheet("QLabel {font-family:Arial; text-align:left; font-size:20px; color:#DC143C;}");
+    LastSelectT = new QLabel(m_SubFrame);
+    LastSelectT->setGeometry(parent->width() / 2 - 100 + 200, 100, 200, 30);
+    LastSelectT->setStyleSheet("QLabel {font-family:Arial; text-align:left; font-size:20px; color:#DC143C;}");
+    QLabel *BeginSelectTitle = new QLabel(m_SubFrame);
+    BeginSelectTitle->setGeometry(parent->width() / 2 - 100 - 200 - 140, 100 - 2, 140, 30);
+    BeginSelectTitle->setStyleSheet("QLabel { text-align:left; font-size:20px; color:#DC143C;}");
+    BeginSelectTitle->setFont(font);
+    BeginSelectTitle->setText("波形起始时间：");
+    QLabel *LastSelectTitle = new QLabel(m_SubFrame);
+    LastSelectTitle->setGeometry(parent->width() / 2 - 100 + 200 - 140, 100 - 2, 140, 30);
+    LastSelectTitle->setStyleSheet("QLabel { text-align:left; font-size:20px; color:#DC143C;}");
+    LastSelectTitle->setFont(font);
+    LastSelectTitle->setText("波形结束时间：");
+
+    m_Currnet_Avg = new QLabel(m_SubFrame);
+    m_Currnet_Avg->setGeometry(parent->width() / 2 - 300, 130, 200, 30);
+    m_Currnet_Avg->setStyleSheet("QLabel {font-family:Arial; text-align:left; font-size:20px; color:#DC143C;}");
+    m_Currnet_Max = new QLabel(m_SubFrame);
+    m_Currnet_Max->setGeometry(parent->width() / 2, 130, 200, 30);
+    m_Currnet_Max->setStyleSheet("QLabel {font-family:Arial; text-align:left; font-size:20px; color:#DC143C;}");
+    m_Currnet_Min = new QLabel(m_SubFrame);
+    m_Currnet_Min->setGeometry(parent->width() / 2 + 300, 130, 200, 30);
+    m_Currnet_Min->setStyleSheet("QLabel {font-family:Arial; text-align:left; font-size:20px; color:#DC143C;}");
+    QLabel *m_Cur_Title1 = new QLabel(m_SubFrame);
+    m_Cur_Title1->setGeometry(parent->width() / 2 - 300 - 120, 130 - 2, 120, 30);
+    m_Cur_Title1->setStyleSheet("QLabel { text-align:left; font-size:20px; color:#DC143C;}");
+    m_Cur_Title1->setFont(font);
+    m_Cur_Title1->setText("电流平均值：");
+    QLabel *m_Cur_Title2 = new QLabel(m_SubFrame);
+    m_Cur_Title2->setGeometry(parent->width() / 2 - 120, 130 - 2, 120, 30);
+    m_Cur_Title2->setStyleSheet("QLabel { text-align:left; font-size:20px; color:#DC143C;}");
+    m_Cur_Title2->setFont(font);
+    m_Cur_Title2->setText("电流最大值：");
+    QLabel *m_Cur_Title3 = new QLabel(m_SubFrame);
+    m_Cur_Title3->setGeometry(parent->width() / 2 + 300 - 120, 130 - 2, 120, 30);
+    m_Cur_Title3->setStyleSheet("QLabel { text-align:left; font-size:20px; color:#DC143C;}");
+    m_Cur_Title3->setFont(font);
+    m_Cur_Title3->setText("电流最小值：");
+
+
+    m_Voltage_Avg = new QLabel(m_SubFrame);
+    m_Voltage_Avg->setGeometry(parent->width() / 2 - 300, 160, 200, 30);
+    m_Voltage_Avg->setStyleSheet("QLabel {font-family:Arial; text-align:left; font-size:20px; color:#DC143C;}");
+    m_Voltage_Max = new QLabel(m_SubFrame);
+    m_Voltage_Max->setGeometry(parent->width() / 2, 160, 200, 30);
+    m_Voltage_Max->setStyleSheet("QLabel {font-family:Arial; text-align:left; font-size:20px; color:#DC143C;}");
+    m_Voltage_Min = new QLabel(m_SubFrame);
+    m_Voltage_Min->setGeometry(parent->width() / 2 + 300, 160, 200, 30);
+    m_Voltage_Min->setStyleSheet("QLabel {font-family:Arial; text-align:left; font-size:20px; color:#DC143C;}");
+    QLabel *m_Vol_Title1 = new QLabel(m_SubFrame);
+    m_Vol_Title1->setGeometry(parent->width() / 2 - 300 - 120, 160 - 2, 120, 30);
+    m_Vol_Title1->setStyleSheet("QLabel { text-align:left; font-size:20px; color:#DC143C;}");
+    m_Vol_Title1->setFont(font);
+    m_Vol_Title1->setText("电压平均值：");
+    QLabel *m_Vol_Title2 = new QLabel(m_SubFrame);
+    m_Vol_Title2->setGeometry(parent->width() / 2 - 120, 160 - 2, 120, 30);
+    m_Vol_Title2->setStyleSheet("QLabel { text-align:left; font-size:20px; color:#DC143C;}");
+    m_Vol_Title2->setFont(font);
+    m_Vol_Title2->setText("电压最大值：");
+    QLabel *m_Vol_Title3 = new QLabel(m_SubFrame);
+    m_Vol_Title3->setGeometry(parent->width() / 2 + 300 - 120, 160 - 2, 120, 30);
+    m_Vol_Title3->setStyleSheet("QLabel { text-align:left; font-size:20px; color:#DC143C;}");
+    m_Vol_Title3->setFont(font);
+    m_Vol_Title3->setText("电压最小值：");
+
+    initDisplay();      // 显示初始化
+    updateInfomationDisplay();
 }
 
 HistoryDetail::~HistoryDetail()
@@ -103,6 +198,140 @@ HistoryDetail::~HistoryDetail()
     delete [] d_timeStamps;
     delete [] d_dataSeriesV;
     delete [] d_dataSeriesA;
+}
+
+void HistoryDetail::mouseReleaseSlot(void)
+{
+//    qDebug() << "moureRelease";
+    const float EPSINON = 0.1;
+    if(abs(DifferValue - m_DoubleSlider->maxValue() + m_DoubleSlider->minValue()) > EPSINON)
+    {
+//        qDebug() << "更新UI";
+        if(m_UsbHid->dev_handle != nullptr)
+        {
+            qDebug() << "请点击暂停采集，再执行该操作！";
+             QMessageBox::critical(this, "提示", "请点击暂停采集，再执行该操作！");
+            return;
+        }
+        DifferValue = m_DoubleSlider->maxValue() - m_DoubleSlider->minValue();
+        BeginSelectT->setText(QDateTime::fromMSecsSinceEpoch(BeginDateTime + (qint64)m_DoubleSlider->minValue() - 1).toString("hh:mm:ss.zzz"));
+        LastSelectT->setText(QDateTime::fromMSecsSinceEpoch(BeginDateTime + (qint64)m_DoubleSlider->maxValue() - 1).toString("hh:mm:ss.zzz"));
+        loadingDataByTime((qint64)m_DoubleSlider->minValue(), (qint64)m_DoubleSlider->maxValue());
+        updateInfomationDisplay();
+    }
+}
+
+void HistoryDetail::initDisplay(void)
+{
+    DifferValue = 0;
+    CountSize = 1;
+    SelectSize = 1;
+    IntervalValue = 1;
+    QDateTime curT = QDateTime::currentDateTime();
+    BeginDateTime = curT.toMSecsSinceEpoch();
+    BeginT->setText(curT.toString("hh:mm:ss.zzz"));
+    LastT->setText(curT.toString("hh:mm:ss.zzz"));
+    BeginSelectT->setText(curT.toString("hh:mm:ss.zzz"));
+    LastSelectT->setText(curT.toString("hh:mm:ss.zzz"));
+
+    m_DoubleSlider->setRange(1, 1);
+    m_DoubleSlider->setMinValue(1);
+    m_DoubleSlider->setMaxValue(1);
+    m_DoubleSlider->setSingleStep(1);
+
+    memset(&m_Current_DataInfo, 0, sizeof (m_Current_DataInfo));
+    memset(&m_Voltage_DataInfo, 0, sizeof (m_Voltage_DataInfo));
+
+
+    updateChart();      // 初始化显示表格
+}
+
+void HistoryDetail::loadingDataByTime(qint64 t1, qint64 t2)
+{
+    if(t1 > CountSize || t2 > CountSize || t1 > t2)
+    {
+        qDebug() << "非法数据";
+        return;
+    }
+    SelectSize = t2 - t1 + 1;
+    IntervalValue = SelectSize / DataSize + 1;
+    qDebug() << "t1 = " << t1 << "t2 = " << t2;
+    qDebug() << "IntervalValue = " << IntervalValue;
+
+    // 根据时间间隔抽取数据库中的数据
+    QSqlQueryModel sqlModel;
+    QString strQuery = "select * from stm32_data where (id % " + QString::number(IntervalValue, 10)
+            + " == 0) and id >= " + QString::number(t1, 10) + " and id <= " + QString::number(t2, 10) + " ";
+//    QString  strQuery = "select * from stm32_data where (id <= 60000)";
+    sqlModel.setQuery(strQuery);
+    while(sqlModel.canFetchMore())
+    {
+        sqlModel.fetchMore();
+    }
+    qDebug()<< "Update Chart Data:" <<sqlModel.rowCount() << QDateTime::currentDateTime();
+    d_currentIndex = sqlModel.rowCount();
+    if(d_currentIndex > DataSize)
+        d_currentIndex = DataSize;
+    for(int i = 0; i < d_currentIndex; i++)
+    {
+        QDateTime now = QDateTime::fromMSecsSinceEpoch(sqlModel.record(i).value("time").toLongLong());
+        *(d_timeStamps + i) = Chart::chartTime2(now.toTime_t())
+                             + ((double)now.time().msec() / 10) * 0.01;     //     / 10 * 0.01
+        *(d_dataSeriesV + i) = sqlModel.record(i).value("voltage").toDouble();
+        *(d_dataSeriesA + i) = sqlModel.record(i).value("current").toDouble();
+    }
+    qDebug()<< "Update Chart Data Success: "<< QDateTime::currentDateTime();
+
+    // 计算选中数据的平均值
+    strQuery = "select avg(current), max(current), min(current), avg(voltage), max(voltage), min(voltage) from stm32_data where id >= "
+            + QString::number(t1, 10) + " and id <= " + QString::number(t2, 10) + " ";
+    sqlModel.setQuery(strQuery);
+//    qDebug() << "个数 = " << sqlModel.record().count();
+//    double curBuf = sqlModel.record(0).value(0).toDouble();
+//    qDebug() << "电流平均值数 = " << QString::number(curBuf, 'f', 10) << QDateTime::currentDateTime();
+//    double volBuf = sqlModel.record(0).value(3).toDouble();
+//    qDebug() << "电压平均值数 = " << QString::number(volBuf, 'f', 10) << QDateTime::currentDateTime();
+    m_Current_DataInfo.average = sqlModel.record(0).value(0).toDouble();
+    m_Current_DataInfo.maximun = sqlModel.record(0).value(1).toDouble();
+    m_Current_DataInfo.minimun = sqlModel.record(0).value(2).toDouble();
+    m_Voltage_DataInfo.average = sqlModel.record(0).value(3).toDouble();
+    m_Voltage_DataInfo.maximun = sqlModel.record(0).value(4).toDouble();
+    m_Voltage_DataInfo.minimun = sqlModel.record(0).value(5).toDouble();
+
+
+
+//    m_HScrollBar->setValue(1000000000);
+//    m_HScrollBar_2->setValue(1000000000);
+//    onHScrollBarChanged(1000000000); // 初始化显示表格
+//    onHScrollBarChanged_2(1000000000);
+//    onViewPortChanged();
+//    onViewPortChanged_2();
+//    m_ChartViewer->setViewPortLeft(1);
+//    m_ChartViewer->updateViewPort(true, false);
+//    m_ChartViewer_2->setViewPortLeft(1);
+//    m_ChartViewer_2->updateViewPort(true, false);
+
+    updateChart();
+}
+
+void HistoryDetail::updateInfomationDisplay(void)
+{
+    if(m_Current_DataInfo.average < 0.001)
+        m_Currnet_Avg->setText(QString::number(m_Current_DataInfo.average * 1000, 'f', 3) + "uA");
+    else
+        m_Currnet_Avg->setText(QString::number(m_Current_DataInfo.average, 'f', 3) + "mA");
+    if(m_Current_DataInfo.maximun < 0.001)
+        m_Currnet_Max->setText(QString::number(m_Current_DataInfo.maximun * 1000, 'f', 3) + "uA");
+    else
+        m_Currnet_Max->setText(QString::number(m_Current_DataInfo.maximun, 'f', 3) + "mA");
+    if(m_Current_DataInfo.minimun < 0.001)
+        m_Currnet_Min->setText(QString::number(m_Current_DataInfo.minimun * 1000, 'f', 3) + "uA");
+    else
+        m_Currnet_Min->setText(QString::number(m_Current_DataInfo.minimun, 'f', 3) + "mA");
+
+    m_Voltage_Avg->setText(QString::number(m_Voltage_DataInfo.average, 'f', 3) + "V");
+    m_Voltage_Max->setText(QString::number(m_Voltage_DataInfo.maximun, 'f', 3) + "V");
+    m_Voltage_Min->setText(QString::number(m_Voltage_DataInfo.minimun, 'f', 3) + "V");
 }
 
 void HistoryDetail::slotSubButtonClick(void)
@@ -147,7 +376,6 @@ void HistoryDetail::ReceiveTest(void)
 void HistoryDetail::LoadingData(QString fileName)
 {
    qDebug() << "update view";
-   qint64 dataCount;
 //   QString ConnectName;
 //   {
        QSqlDatabase myDb;
@@ -167,51 +395,38 @@ void HistoryDetail::LoadingData(QString fileName)
        QSqlQueryModel sqlModel;
        QString   strQuery = "select count(*) from stm32_data";        // select count(*) from table
        sqlModel.setQuery(strQuery);
-       dataCount = sqlModel.record(0).value(0).toLongLong();
+       CountSize = sqlModel.record(0).value(0).toLongLong();
 //       ConnectName = QSqlDatabase::database().connectionName();
 //       myDb.close();
 //   }
 //   QSqlDatabase::removeDatabase(ConnectName);
 
-   if(dataCount < 10000)
+   if(CountSize < 10000)
    {
+       CountSize = 1;
        qDebug() << "数据文件数据量太少！";
        QMessageBox::critical(this, "提示", "无法打开当前文件，文件数据量太少！");
        return;
    }
-   qDebug() << "数据个数 = " << dataCount << QDateTime::currentDateTime();
+   qDebug() << "数据个数 = " << CountSize << QDateTime::currentDateTime();
 
-
-//   strQuery = "select avg(current) from stm32_data where id < 60000";       // 获取1分钟数据
-//   sqlModel.setQuery(strQuery);
-
-//   qDebug() << "个数 = " << sqlModel.record().count();
-//   double curBuf = sqlModel.record(0).value(0).toDouble();
-//   qDebug() << "电流平均值数 = " << QString::number(curBuf, 'f', 10) << QDateTime::currentDateTime();
-
-
-   strQuery = "select * from stm32_data where (id <= 60000)";
+   strQuery = "select time from stm32_data where id= (select min(id) from stm32_data)";        // select count(*) from table
    sqlModel.setQuery(strQuery);
+   BeginDateTime = sqlModel.record(0).value(0).toLongLong();
+   qDebug() << "起始时间 = " << BeginDateTime << QDateTime::fromMSecsSinceEpoch(BeginDateTime) << QDateTime::currentDateTime();
 
-   while(sqlModel.canFetchMore())
-   {
-       sqlModel.fetchMore();
-   }
-   qDebug()<< "Update Chart Data:" <<sqlModel.rowCount() << QDateTime::currentDateTime();
+   // 更新UI
+   BeginT->setText(QDateTime::fromMSecsSinceEpoch(BeginDateTime).toString("hh:mm:ss.zzz"));
+   LastT->setText(QDateTime::fromMSecsSinceEpoch(BeginDateTime + CountSize - 1).toString("hh:mm:ss.zzz"));
+   m_DoubleSlider->setRange(1, CountSize);
+   m_DoubleSlider->setMinValue(1);
+   m_DoubleSlider->setMaxValue(CountSize);
+   m_DoubleSlider->setSingleStep(1);
+   BeginSelectT->setText(QDateTime::fromMSecsSinceEpoch(BeginDateTime).toString("hh:mm:ss.zzz"));
+   LastSelectT->setText(QDateTime::fromMSecsSinceEpoch(BeginDateTime + CountSize - 1).toString("hh:mm:ss.zzz"));
 
-   for(int i = 0; i < sqlModel.rowCount(); i++)
-   {
-//       *(d_timeStamps + i) = sqlModel.record(i).value("time").toLongLong();
-       QDateTime now = QDateTime::fromMSecsSinceEpoch(sqlModel.record(i).value("time").toLongLong());
-       *(d_timeStamps + i) = Chart::chartTime2(now.toTime_t())
-                            + ((double)now.time().msec() / 10) * 0.01;     //     / 10 * 0.01
-       *(d_dataSeriesV + i) = sqlModel.record(i).value("voltage").toDouble();
-       *(d_dataSeriesA + i) = sqlModel.record(i).value("current").toDouble();
-   }
-   qDebug()<< "Update Chart Data Success: "<< QDateTime::currentDateTime();
-
-   updateChart();
-//   UpdateChartData();
+   loadingDataByTime((qint64)m_DoubleSlider->minValue(), (qint64)m_DoubleSlider->maxValue());
+   updateInfomationDisplay();
 }
 
 void HistoryDetail::ClearData(void)
@@ -221,22 +436,6 @@ void HistoryDetail::ClearData(void)
 
 void HistoryDetail::UpdateChartData(void)
 {
-    QSqlQueryModel sqlModel;
-    QString strQuery = "select * from stm32_data where (id <= 600000)";
-    sqlModel.setQuery(strQuery);
-    while(sqlModel.canFetchMore())
-    {
-        sqlModel.fetchMore();
-    }
-    qDebug()<< "Update Chart Data:" <<sqlModel.rowCount() << QDateTime::currentDateTime();
-
-    for(int i = 0; i < sqlModel.rowCount(); i++)
-    {
-        *(d_timeStamps + i) = sqlModel.record(i).value("time").toLongLong();
-        *(d_dataSeriesV + i) = sqlModel.record(i).value("voltage").toLongLong();
-        *(d_dataSeriesA + i) = sqlModel.record(i).value("current").toLongLong();
-    }
-    qDebug()<< "Update Chart Data Success: "<< QDateTime::currentDateTime();
 
 }
 
@@ -285,7 +484,8 @@ void HistoryDetail::onHScrollBarChanged_2(int value)
         // Set the view port based on the scroll bar
         int scrollBarLen = m_HScrollBar_2->maximum() + m_HScrollBar_2->pageStep();
         m_ChartViewer_2->setViewPortLeft(value / (double)scrollBarLen);
-
+//        qDebug() << "scrollBarLen = " << scrollBarLen;
+//        qDebug() << "value = " << value;
         // Update the chart display without updating the image maps. (We can delay updating
         // the image map until scrolling is completed and the chart display is stable.)
         m_ChartViewer_2->updateViewPort(true, false);
@@ -343,11 +543,11 @@ void HistoryDetail::drawChart(QChartViewer *viewer, int index)
     DoubleArray viewPortDataSeriesB;
     DoubleArray viewPortDataSeriesC;
 
-    if (DataSize > 0)
+    if (d_currentIndex >= 0)
     {
         // Get the array indexes that corresponds to the visible start and end dates
-        int startIndex = (int)floor(Chart::bSearch(DoubleArray(d_timeStamps, DataSize), viewPortStartDate));
-        int endIndex = (int)ceil(Chart::bSearch(DoubleArray(d_timeStamps, DataSize), viewPortEndDate));
+        int startIndex = (int)floor(Chart::bSearch(DoubleArray(d_timeStamps, d_currentIndex), viewPortStartDate));
+        int endIndex = (int)ceil(Chart::bSearch(DoubleArray(d_timeStamps, d_currentIndex), viewPortEndDate));
         int noOfPoints = endIndex - startIndex + 1;
 
         // Extract the visible data
@@ -371,7 +571,7 @@ void HistoryDetail::drawChart(QChartViewer *viewer, int index)
     // Set the plotarea at (55, 50) with width 80 pixels less than chart width, and height 80 pixels
     // less than chart height. Use a vertical gradient from light blue (f0f6ff) to sky blue (a0c0ff)
     // as background. Set border to transparent and grid lines to white (ffffff).
-    c->setPlotArea(55, 62, c->getWidth() - 85, c->getHeight() - 100, c->linearGradientColor(0, 50, 0,
+    c->setPlotArea(85, 62, c->getWidth() - 85 - 30, c->getHeight() - 100, c->linearGradientColor(0, 50, 0,
         c->getHeight() - 35, 0xf0f6ff, 0xa0c0ff), -1, Chart::Transparent, 0xffffff, 0xffffff);
 
     // As the data can lie outside the plotarea in a zoomed chart, we need enable clipping.
@@ -385,7 +585,7 @@ void HistoryDetail::drawChart(QChartViewer *viewer, int index)
 
     // Add a legend box at (55, 25) using horizontal layout. Use 10pt Arial Bold as font. Set the
     // background and border color to transparent and use line style legend key.
-    LegendBox *b = c->addLegend(55, 25, false, "arialbd.ttf", 10);
+    LegendBox *b = c->addLegend(85, 25, false, "arialbd.ttf", 10);
     b->setBackground(Chart::Transparent);
     b->setLineStyleKey();
 
@@ -425,25 +625,24 @@ void HistoryDetail::drawChart(QChartViewer *viewer, int index)
     layer->setXData(viewPortTimeStamps);
     char buffer[1024];
     if(index == 0) {
-        if(DataSize > 0) {
-            sprintf(buffer, " <*bgColor=ffffff*> <*color=00cc00*> <*size=14px*> %.3f V", d_dataSeriesV[DataSize - 1]);
-//        layer->addDataSet(DoubleArray(m_ComData->d_dataSeriesV, m_ComData->d_currentIndex), 0x00cc00, buffer);
+        if(d_currentIndex >= 0) {
+            sprintf(buffer, " <*bgColor=ffffff*> <*color=00cc00*> <*size=14px*>");   //  %.3f V  , d_dataSeriesV[DataSize - 1]
         }
-        layer->addDataSet(viewPortDataSeriesB, 0x00cc00);   // , buffer
+        layer->addDataSet(viewPortDataSeriesB, 0x00cc00, buffer);   // , buffer
         c->yAxis()->setMinTickInc(0.1);
         c->yAxis()->setDateScale(0, 7.5);           // 固定坐标轴0-7.5V
     }
     else if(index == 1) {
-        if(DataSize > 0) {
-            double d = d_dataSeriesA[DataSize - 1];
-            if(d < 1) {
-                sprintf(buffer, " <*bgColor=ffffff*> <*color=0000ff*> <*size=14px*> %.3f uA", d * 1000);
-            } else {
-                sprintf(buffer, " <*bgColor=ffffff*> <*color=0000ff*> <*size=14px*> %.2f mA", d);
-            }
-    //        layer->addDataSet(DoubleArray(m_ComData->d_dataSeriesA, m_ComData->d_currentIndex), 0x00ff, buffer);
+        if(d_currentIndex >= 0) {
+//            double d = d_dataSeriesA[DataSize - 1];
+//            if(d < 1) {
+//                sprintf(buffer, " <*bgColor=ffffff*> <*color=0000ff*> <*size=14px*> %.3f uA", d * 1000);
+//            } else {
+//                sprintf(buffer, " <*bgColor=ffffff*> <*color=0000ff*> <*size=14px*> %.2f mA", d);
+//            }
+            sprintf(buffer, " <*bgColor=ffffff*> <*color=0000ff*> <*size=14px*>");
         }
-        layer->addDataSet(viewPortDataSeriesC, 0x0000ff);       // , buffer
+        layer->addDataSet(viewPortDataSeriesC, 0x0000ff, buffer);       // , buffer
 //        c->yAxis()->setMinTickInc(0.1);
 //        if(fixCurrentValue > 0)
 //            c->yAxis()->setDateScale(0, fixCurrentValue);
@@ -455,7 +654,7 @@ void HistoryDetail::drawChart(QChartViewer *viewer, int index)
     //================================================================================
 
     // Set the x-axis as a date/time axis with the scale according to the view port x range.
-    if (DataSize > 0)
+    if (d_currentIndex >= 0)
         c->xAxis()->setDateScale(viewPortStartDate, viewPortEndDate);
 
     // For the automatic axis labels, set the minimum spacing to 75/30 pixels for the x/y axis.
@@ -470,6 +669,25 @@ void HistoryDetail::drawChart(QChartViewer *viewer, int index)
     // In this demo, the time range can be from many hours to a few seconds. We can need to define
     // the date/time format the various cases.
     //
+
+    c->yAxis()->setLabelFormat("{value|3}");
+    if(index == 1)
+    {
+        double yMax = *std::max_element(viewPortDataSeriesC.data, viewPortDataSeriesC.data + viewPortDataSeriesC.len);
+        if(yMax <= 0)
+            yMax = 120;
+//    qDebug() << "yMax = " << QString::number(yMax, 'f', 10);
+        if(yMax < 0.001) {
+            c->yAxis()->setLabelFormat("{={value}*1000|3}");
+            c->yAxis()->setTitle("Current ( uA )", "arialbd.ttf", 12);
+        } else if(yMax < 1000) {
+            c->yAxis()->setLabelFormat("{value|3}");
+            c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12);
+        } else {
+            c->yAxis()->setLabelFormat("{value|2}");
+            c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12);
+        }
+    }
 
     // If all ticks are hour algined, we use "hh:nn<*br*>mmm dd" in bold font as the first label of
     // the Day, and "hh:nn" for other labels.
@@ -486,7 +704,7 @@ void HistoryDetail::drawChart(QChartViewer *viewer, int index)
     c->xAxis()->setLabelFormat("{value|hh:nn:ss}");
 
     // We make sure the tick increment must be at least 1 second.
-    c->xAxis()->setMinTickInc(0.001);
+    c->xAxis()->setMinTickInc(IntervalValue / 1000);       // 0.001
 
     //================================================================================
     // Output the chart
@@ -591,18 +809,26 @@ void HistoryDetail::trackLineLabel(XYChart *c, int mouseX, int index)
 
 void HistoryDetail::onChartUpdateTimer(QChartViewer *viewer)
 {
-    static const int initialFullRange = 60;
-    static const int zoomInLimit = 1;
+    qint64 initialFullRange = 60;
+    qint64 zoomInLimit = 1;
 
-    if (DataSize > 0)
+    initialFullRange = initialFullRange * IntervalValue;
+    zoomInLimit = zoomInLimit * IntervalValue;
+
+    if (d_currentIndex > 0)
     {
         //
         // As we added more data, we may need to update the full range of the viewport.
         //
 
-        double startDate = d_timeStamps[0];
-        double endDate = d_timeStamps[DataSize - 1];
+        double startDate = 0;
+        double endDate = 0;
 
+        if (d_currentIndex > 1)
+        {
+            startDate = d_timeStamps[0];
+            endDate = d_timeStamps[m_ComData->d_currentIndex - 1];
+        }
         // Use the initialFullRange (which is 60 seconds in this demo) if this is sufficient.
         double duration = endDate - startDate;
         if (duration < initialFullRange)
