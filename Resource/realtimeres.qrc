@@ -24,5 +24,6 @@
         <file>Triangle_Down.png</file>
         <file>Triangle_Disable.png</file>
         <file>Triangle_Up.png</file>
+        <file>logo-Artery.png</file>
     </qresource>
 </RCC>

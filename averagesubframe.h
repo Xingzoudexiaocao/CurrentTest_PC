@@ -7,6 +7,7 @@
 #include <QLabel>
 #include <QDebug>
 #include <QDateTime>
+#include <QFontDatabase>
 
 class AverageSubFrame : public QFrame
 {
@@ -22,6 +23,8 @@ public:
 
     void initFrameDisplay(void);
 private:
+    QFont font;
+
     qint8 CurVolFlag;       // 电流电压标志位：1电流；2电压；
     qint8 keyValue;         // T1/T2标志位：1=T1；2=T2；
     QRadioButton *T1_Text;

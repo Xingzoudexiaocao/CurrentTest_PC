@@ -4,32 +4,46 @@ AverageSubFrame::AverageSubFrame(QFrame *parent) : QFrame(parent)
 {
     // size(200, 100)
     this->setObjectName("FrameQss");
-    this->setStyleSheet("QFrame#FrameQss {border:1px solid black; background-color: rgb(96, 96, 96, 50);\
+    this->setStyleSheet("QFrame#FrameQss {border:1px solid black; background-color: rgb(96, 96, 96, 100);\
                             border-top-left-radius:4px;         \
                             border-top-right-radius:4px;        \
                             border-bottom-left-radius:4px;      \
                             border-bottom-right-radius:4px}");
     keyValue = 1;
+
+    int fontId = QFontDatabase::addApplicationFont(":/ZhuoJianGanLanJianTi.ttf");
+    QStringList fontFamilies = QFontDatabase::applicationFontFamilies(fontId);
+    font.setFamily(fontFamilies.at(0));
+    QString qssRadio = "QRadioButton { border-radius: 2px; color:red; text-align:left; padding:2px; font-size:14px;} \
+            QRadioButton::indicator:checked { background-color: red; } \
+            QRadioButton::indicator:unchecked { background-color: white; }";
+    QString qssLabel_1 = "QLabel { color:red; text-align:left; padding:2px; font-size:14px;}";
+    QString qssLabel_2 = "QLabel { color:red; text-align:left; padding:2px; font-size:20px;}";
+
     T1_Text = new QRadioButton(this);
     T1_Text->setText("T1 = 00:00:00.000");
-    T1_Text->setGeometry(5, 0, 200, 25);
-    T1_Text->setStyleSheet("QRadioButton {color:red;}");
+    T1_Text->setGeometry(5, 10, 300, 25);
+    T1_Text->setStyleSheet(qssRadio);      // QRadioButton {color:red;}
+    T1_Text->setFont(font);
     T1_Text->setChecked(true);
     connect(T1_Text, SIGNAL(clicked(bool)), this, SLOT(slotButtonT1Check(bool)));
 //    connect(T1_Text, &QAbstractButton::clicked, this, &AverageSubFrame::slotButtonCheck());
     T2_Text = new QRadioButton(this);
     T2_Text->setText("T2 = 00:00:00.000");
-    T2_Text->setGeometry(5, 25, 200, 25);
-    T2_Text->setStyleSheet("QRadioButton {color:red;}");
+    T2_Text->setGeometry(5, 35, 300, 25);
+    T2_Text->setStyleSheet(qssRadio);      // QRadioButton {color:red;}
+    T2_Text->setFont(font);
     connect(T2_Text, SIGNAL(clicked(bool)), this, SLOT(slotButtonT2Check(bool)));
     T2_T1_Label = new QLabel(this);
     T2_T1_Label->setText("T2-T1 = 00:00:00.000");
-    T2_T1_Label->setGeometry(5, 50, 200, 25);
-    T2_T1_Label->setStyleSheet("QLabel {color:red;}");
+    T2_T1_Label->setGeometry(5, 60, 300, 25);
+    T2_T1_Label->setStyleSheet(qssLabel_1);      // QRadioButton {color:red;}
+    T2_T1_Label->setFont(font);
     AverageLabel = new QLabel(this);
     AverageLabel->setText("平均值 = --");
-    AverageLabel->setGeometry(5, 75, 200, 25);
-    AverageLabel->setStyleSheet("QLabel {color:red;}");
+    AverageLabel->setGeometry(5, 85, 300, 25);
+    AverageLabel->setStyleSheet(qssLabel_2);      // QRadioButton {color:red;}
+    AverageLabel->setFont(font);
 }
 
 qint8 AverageSubFrame::getKeyValue(void)

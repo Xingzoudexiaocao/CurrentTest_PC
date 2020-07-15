@@ -90,7 +90,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     connect(settingBtn, &QAbstractButton::clicked, this, &RealTime::onSettingBtn);
 //    QPushButton *bbb = new QPushButton(QIcon(":/play.png"),"", frame);
 //    bbb->setGeometry(150, 8, 100, 100);
-    QPixmap pixmap(":/logo.png");
+    QPixmap pixmap(":/logo-Artery.png");
     QLabel *label = new QLabel(frame_1);
     label->setGeometry(150, 3, 100, 95);
     label->setPixmap(pixmap.scaled(label->size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
@@ -725,6 +725,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     averageValue->setMaximum(60);
     averageValue->setSingleStep(1);
 //    averageValue->setSuffix(" 秒");
+    averageValue->setStyleSheet("QSpinBox { text-align:left; padding:2px; font-size:20px;}");
     averageValue->setFont(font);
     averageValue->setValue(m_ComData->SettingAverageTime);
     connect(averageValue, SIGNAL(valueChanged(int)), SLOT(slotAverageValue(int)));
@@ -735,11 +736,12 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     batteryCapacityInfo->setFont(font_2);
     batteryCapacityInfo->setText("电池容量:");      //             mAh
     batteryCapacity = new QSpinBox(frame_setting);
-    batteryCapacity->setGeometry(520, 225, 140, 30);
+    batteryCapacity->setGeometry(530, 225, 200, 30);
     batteryCapacity->setMinimum(1000);
     batteryCapacity->setMaximum(50000);
     batteryCapacity->setSingleStep(1000);
     batteryCapacity->setSuffix(" mAh");
+    batteryCapacity->setStyleSheet("QSpinBox { text-align:left; padding:2px; font-size:20px;}");
     batteryCapacity->setFont(font);
     batteryCapacity->setValue(m_ComData->SettingBatteryCapacity);
     connect(batteryCapacity, SIGNAL(valueChanged(int)), SLOT(slotBatteryValue(int)));
@@ -750,12 +752,13 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     batteryVoltageLimitTitle->setFont(font_2);
     batteryVoltageLimitTitle->setText("△V电量起始电压:");
     batteryVoltageBegin = new QDoubleSpinBox(frame_setting);
-    batteryVoltageBegin->setGeometry(225, 265, 100, 30);
-    batteryVoltageBegin->setMinimum(1.000);
-    batteryVoltageBegin->setMaximum(7.500);
-    batteryVoltageBegin->setSingleStep(0.100);
+    batteryVoltageBegin->setGeometry(220, 265, 140, 30);
+    batteryVoltageBegin->setMinimum(1.00);
+    batteryVoltageBegin->setMaximum(7.50);
+    batteryVoltageBegin->setSingleStep(0.10);
     batteryVoltageBegin->setSuffix(" V");
-    batteryVoltageBegin->setDecimals(3);
+    batteryVoltageBegin->setDecimals(2);
+    batteryVoltageBegin->setStyleSheet("QDoubleSpinBox { text-align:left; padding:2px; font-size:20px;}");
     batteryVoltageBegin->setFont(font);
     batteryVoltageBegin->setValue(m_ComData->SettingDifferVBegin);
     connect(batteryVoltageBegin, SIGNAL(valueChanged(double)), SLOT(slotDifferVBegin(double)));
@@ -766,12 +769,13 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     batteryVoltageLimitTitle_2->setFont(font_2);
     batteryVoltageLimitTitle_2->setText("△V电量截止电压:");
     batteryVoltageEnd = new QDoubleSpinBox(frame_setting);
-    batteryVoltageEnd->setGeometry(615, 265, 100, 30);
-    batteryVoltageEnd->setMinimum(1.000);
-    batteryVoltageEnd->setMaximum(7.500);
-    batteryVoltageEnd->setSingleStep(0.100);
+    batteryVoltageEnd->setGeometry(610, 265, 140, 30);
+    batteryVoltageEnd->setMinimum(1.00);
+    batteryVoltageEnd->setMaximum(7.50);
+    batteryVoltageEnd->setSingleStep(0.10);
     batteryVoltageEnd->setSuffix(" V");
-    batteryVoltageEnd->setDecimals(3);
+    batteryVoltageEnd->setDecimals(2);
+    batteryVoltageEnd->setStyleSheet("QDoubleSpinBox { text-align:left; padding:2px; font-size:20px;}");
     batteryVoltageEnd->setFont(font);
     batteryVoltageEnd->setValue(m_ComData->SettingDifferVEnd);
     connect(batteryVoltageEnd, SIGNAL(valueChanged(double)), SLOT(slotDifferVEnd(double)));
@@ -789,12 +793,12 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     m_SubButton_Vol->setToolTip("点击弹出平均值界面");
     m_SubButton_Vol->setEnabled(false);
     m_SubFrame_Cur = new AverageSubFrame(frame_2);
-    m_SubFrame_Cur->setGeometry(m_ComData->gUiSize->width() - 510, 45, 200, 100);
+    m_SubFrame_Cur->setGeometry(m_ComData->gUiSize->width() - 510 - 100, 45, 300, 120);
     m_SubFrame_Cur->setCurVolFlag(1);
     connect(this, SIGNAL(singalCurUpdateT1AndT2(qint8, qint64)), m_SubFrame_Cur, SLOT(slotUpdateT1AndT2(qint8, qint64)));
     m_SubFrame_Cur->setVisible(false);
     m_SubFrame_Vol = new AverageSubFrame(frame_2);
-    m_SubFrame_Vol->setGeometry(m_ComData->gUiSize->width() - 510, 13 + (m_ComData->gUiSize->height() - 78 - 10) / 2 - 14 + 30, 200, 100);
+    m_SubFrame_Vol->setGeometry(m_ComData->gUiSize->width() - 510 - 100, 13 + (m_ComData->gUiSize->height() - 78 - 10) / 2 - 14 + 30, 300, 120);
     m_SubFrame_Vol->setCurVolFlag(2);
     connect(this, SIGNAL(singalVolUpdateT1AndT2(qint8, qint64)), m_SubFrame_Vol, SLOT(slotUpdateT1AndT2(qint8, qint64)));
     m_SubFrame_Vol->setVisible(false);
@@ -2143,6 +2147,8 @@ void RealTime::onConnectUSB()
 //            send_CMD(0x20);     // 读取各个档位的校验值
             averageValue->setEnabled(false);
             batteryCapacity->setEnabled(false);
+            batteryVoltageBegin->setEnabled(false);
+            batteryVoltageEnd->setEnabled(false);
             tabWidget->setCurrentIndex(0);  // 跳到第一页
    //     }
     }
@@ -2176,6 +2182,8 @@ void RealTime::onDisConnectUSB()
 
     averageValue->setEnabled(true);
     batteryCapacity->setEnabled(true);
+    batteryVoltageBegin->setEnabled(true);
+    batteryVoltageEnd->setEnabled(true);
 //    historyView->ClearData();       // 清除历史数据
     historyDetail->ClearData();
 
