@@ -94,6 +94,8 @@ typedef enum{
     IS_VERIFIED,
     AVERAGE_VALUE,
     BATTERY_CAPACITY_VALUE,
+    DIFFER_V_BEGIN,
+    DIFFER_V_END,
     ALL_DATA
 } SETTINGDATA;
 
@@ -156,6 +158,8 @@ public:
     qint64 SettingAverageTime;          // 设定的平均值计算时间
     double SettingBatteryCapacity;      // 设定的电池容量
     double UseringBatteryCapacity;      // 已使用电池容量
+    double SettingDifferVBegin;         // ^V电量计算起始电压
+    double SettingDifferVEnd;           // ^V电量计算截止电压
     // 串口收发数据头码
     unsigned long long headerLength;
     unsigned char *headerC; //   -89, 89, 62, -67 = (0xA7, 0x59, 0x3E, 0xBD)

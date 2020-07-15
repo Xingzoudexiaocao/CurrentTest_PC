@@ -122,7 +122,8 @@ private:
 
     QSpinBox *averageValue;
     QSpinBox *batteryCapacity;
-    QDoubleSpinBox *batteryVoltageLimit;
+    QDoubleSpinBox *batteryVoltageBegin;
+    QDoubleSpinBox *batteryVoltageEnd;
 
     QLabel *bTotalCap;          // 总容量
     QLabel *bRemainCap;         // 剩余容量
@@ -180,6 +181,9 @@ private slots:
 
     void slotAverageValue(int);
     void slotBatteryValue(int);
+
+    void slotDifferVBegin(double);
+    void slotDifferVEnd(double);
 
     void onSettingBtn(void);
 

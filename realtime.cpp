@@ -748,16 +748,33 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     batteryVoltageLimitTitle->setGeometry(10, 260, 400, 40);
     batteryVoltageLimitTitle->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:24px;}");
     batteryVoltageLimitTitle->setFont(font_2);
-    batteryVoltageLimitTitle->setText("电池放电截止电压:");
-    batteryVoltageLimit = new QDoubleSpinBox(frame_setting);
-    batteryVoltageLimit->setGeometry(225, 265, 100, 30);
-    batteryVoltageLimit->setMinimum(1.000);
-    batteryVoltageLimit->setMaximum(7.500);
-    batteryVoltageLimit->setSingleStep(0.100);
-    batteryVoltageLimit->setSuffix(" V");
-    batteryVoltageLimit->setFont(font);
-    batteryVoltageLimit->setValue(m_ComData->SettingBatteryCapacity);
-//    connect(batteryVoltageLimit, SIGNAL(valueChanged(int)), SLOT(slotBatteryValue(int)));
+    batteryVoltageLimitTitle->setText("△V电量起始电压:");
+    batteryVoltageBegin = new QDoubleSpinBox(frame_setting);
+    batteryVoltageBegin->setGeometry(225, 265, 100, 30);
+    batteryVoltageBegin->setMinimum(1.000);
+    batteryVoltageBegin->setMaximum(7.500);
+    batteryVoltageBegin->setSingleStep(0.100);
+    batteryVoltageBegin->setSuffix(" V");
+    batteryVoltageBegin->setDecimals(3);
+    batteryVoltageBegin->setFont(font);
+    batteryVoltageBegin->setValue(m_ComData->SettingDifferVBegin);
+    connect(batteryVoltageBegin, SIGNAL(valueChanged(double)), SLOT(slotDifferVBegin(double)));
+
+    QLabel *batteryVoltageLimitTitle_2 = new QLabel(frame_setting);
+    batteryVoltageLimitTitle_2->setGeometry(400, 260, 400, 40);
+    batteryVoltageLimitTitle_2->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:24px;}");
+    batteryVoltageLimitTitle_2->setFont(font_2);
+    batteryVoltageLimitTitle_2->setText("△V电量截止电压:");
+    batteryVoltageEnd = new QDoubleSpinBox(frame_setting);
+    batteryVoltageEnd->setGeometry(615, 265, 100, 30);
+    batteryVoltageEnd->setMinimum(1.000);
+    batteryVoltageEnd->setMaximum(7.500);
+    batteryVoltageEnd->setSingleStep(0.100);
+    batteryVoltageEnd->setSuffix(" V");
+    batteryVoltageEnd->setDecimals(3);
+    batteryVoltageEnd->setFont(font);
+    batteryVoltageEnd->setValue(m_ComData->SettingDifferVEnd);
+    connect(batteryVoltageEnd, SIGNAL(valueChanged(double)), SLOT(slotDifferVEnd(double)));
 
     m_SubButton_Cur = new QPushButton(frame_2);
     m_SubButton_Cur->setGeometry(m_ComData->gUiSize->width() - 360, 15, 50, 30);
@@ -2826,6 +2843,18 @@ void RealTime::slotBatteryValue(int val)
     m_ComData->SettingBatteryCapacity = val;
     m_ComData->WriteData(BATTERY_CAPACITY_VALUE);
     bTotalCap->setText(QString::number(m_ComData->SettingBatteryCapacity));
+}
+
+void RealTime::slotDifferVBegin(double val)
+{
+    m_ComData->SettingDifferVBegin = val;
+    m_ComData->WriteData(DIFFER_V_BEGIN);
+}
+
+void RealTime::slotDifferVEnd(double val)
+{
+    m_ComData->SettingDifferVEnd = val;
+    m_ComData->WriteData(DIFFER_V_END);
 }
 
 void RealTime::onSettingBtn(void)

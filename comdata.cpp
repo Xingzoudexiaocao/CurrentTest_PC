@@ -63,6 +63,20 @@ ComData::ComData()
         WriteData(BATTERY_CAPACITY_VALUE);
     }
     qDebug() << "SettingBatteryCapacity = " << SettingBatteryCapacity;
+    if(!ReadData(DIFFER_V_BEGIN))
+    {
+        qDebug() << "读取^V电量起始电压失败";
+        SettingDifferVBegin = 5.0;      // 初始化5000mAh
+        WriteData(DIFFER_V_BEGIN);
+    }
+    qDebug() << "SettingDifferVBegin = " << SettingDifferVBegin;
+    if(!ReadData(DIFFER_V_END))
+    {
+        qDebug() << "读取^V电量截止电压失败";
+        SettingDifferVEnd = 5.0;      // 初始化5000mAh
+        WriteData(DIFFER_V_END);
+    }
+    qDebug() << "SettingDifferVEnd = " << SettingDifferVEnd;
 }
 
 ComData::~ComData()
@@ -122,6 +136,14 @@ bool ComData::WriteData(int dataI)
             app.setValue("battery_capacity_value", SettingBatteryCapacity);
             return 1;
             break;
+        case DIFFER_V_BEGIN:
+        app.setValue("differ_voltage_begin", SettingDifferVBegin);
+        return 1;
+        break;
+        case DIFFER_V_END:
+        app.setValue("differ_voltage_end", SettingDifferVEnd);
+        return 1;
+        break;
         case ALL_DATA:
             break;
         default: break;
@@ -164,6 +186,24 @@ bool ComData::ReadData(int dataI)
             else
                 return 0;
             break;
+        case DIFFER_V_BEGIN:
+        if(app.value("differ_voltage_begin").toString().length())
+        {
+            SettingDifferVBegin = app.value("differ_voltage_begin").toDouble();
+            return 1;
+        }
+        else
+            return 0;
+        break;
+        case DIFFER_V_END:
+        if(app.value("differ_voltage_end").toString().length())
+        {
+            SettingDifferVEnd = app.value("differ_voltage_end").toDouble();
+            return 1;
+        }
+        else
+            return 0;
+        break;
         case ALL_DATA:
             break;
         default: break;
