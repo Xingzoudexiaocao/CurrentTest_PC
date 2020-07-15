@@ -724,6 +724,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     averageValue->setMinimum(1);
     averageValue->setMaximum(60);
     averageValue->setSingleStep(1);
+//    averageValue->setSuffix(" 秒");
     averageValue->setFont(font);
     averageValue->setValue(m_ComData->SettingAverageTime);
     connect(averageValue, SIGNAL(valueChanged(int)), SLOT(slotAverageValue(int)));
@@ -732,15 +733,31 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     batteryCapacityInfo->setGeometry(400, 220, 400, 40);
     batteryCapacityInfo->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:24px;}");
     batteryCapacityInfo->setFont(font_2);
-    batteryCapacityInfo->setText("电池容量:            mAh");
+    batteryCapacityInfo->setText("电池容量:");      //             mAh
     batteryCapacity = new QSpinBox(frame_setting);
-    batteryCapacity->setGeometry(520, 225, 120, 30);
+    batteryCapacity->setGeometry(520, 225, 140, 30);
     batteryCapacity->setMinimum(1000);
     batteryCapacity->setMaximum(50000);
     batteryCapacity->setSingleStep(1000);
+    batteryCapacity->setSuffix(" mAh");
     batteryCapacity->setFont(font);
     batteryCapacity->setValue(m_ComData->SettingBatteryCapacity);
     connect(batteryCapacity, SIGNAL(valueChanged(int)), SLOT(slotBatteryValue(int)));
+
+    QLabel *batteryVoltageLimitTitle = new QLabel(frame_setting);
+    batteryVoltageLimitTitle->setGeometry(10, 260, 400, 40);
+    batteryVoltageLimitTitle->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:24px;}");
+    batteryVoltageLimitTitle->setFont(font_2);
+    batteryVoltageLimitTitle->setText("电池放电截止电压:");
+    batteryVoltageLimit = new QDoubleSpinBox(frame_setting);
+    batteryVoltageLimit->setGeometry(225, 265, 100, 30);
+    batteryVoltageLimit->setMinimum(1.000);
+    batteryVoltageLimit->setMaximum(7.500);
+    batteryVoltageLimit->setSingleStep(0.100);
+    batteryVoltageLimit->setSuffix(" V");
+    batteryVoltageLimit->setFont(font);
+    batteryVoltageLimit->setValue(m_ComData->SettingBatteryCapacity);
+//    connect(batteryVoltageLimit, SIGNAL(valueChanged(int)), SLOT(slotBatteryValue(int)));
 
     m_SubButton_Cur = new QPushButton(frame_2);
     m_SubButton_Cur->setGeometry(m_ComData->gUiSize->width() - 360, 15, 50, 30);

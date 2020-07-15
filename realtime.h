@@ -122,6 +122,7 @@ private:
 
     QSpinBox *averageValue;
     QSpinBox *batteryCapacity;
+    QDoubleSpinBox *batteryVoltageLimit;
 
     QLabel *bTotalCap;          // 总容量
     QLabel *bRemainCap;         // 剩余容量
