@@ -17,6 +17,9 @@
 #endif
 
 #define isDebuf           // 是否调试模式
+#define iSCAN_STM32     1       // 产品for STM32
+#define iSCAN_ARTERY    2       // 产品for ARTERY
+#define MCU_TYPE  iSCAN_ARTERY
 //#define appUpdataDebug    // APP升级部分区别，调试时用,判断是否对bin文件加密处理
 
 #define YMODEM_SOH (0x01)
@@ -127,12 +130,6 @@ public:
 
 public:
     hid_device *myHandle;   // USB_HID
-
-    qint64 testNomal;
-    qint64 testNumber32;
-    qint64 testNumberRight;
-    qint64 testNumberWrong;
-    qint64 testError;
 
 //    QRect *gUiRect;
     QSize *gUiSize;

@@ -90,7 +90,11 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     connect(settingBtn, &QAbstractButton::clicked, this, &RealTime::onSettingBtn);
 //    QPushButton *bbb = new QPushButton(QIcon(":/play.png"),"", frame);
 //    bbb->setGeometry(150, 8, 100, 100);
-    QPixmap pixmap(":/logo-Artery.png");
+    #if (MCU_TYPE == iSCAN_STM32)
+        QPixmap pixmap(":/logo.png");
+    #elif  (MCU_TYPE == iSCAN_ARTERY)
+        QPixmap pixmap(":/logo-Artery.png");
+    #endif
     QLabel *label = new QLabel(frame_1);
     label->setGeometry(150, 3, 100, 95);
     label->setPixmap(pixmap.scaled(label->size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
@@ -828,17 +832,6 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     SendVerifyCmd = new QTimer(this);
     connect(SendVerifyCmd, SIGNAL(timeout()), this, SLOT(slotSendVerifyCmd()));
     SendVerifyCount = 0;
-
-    QFrame *TestFrame = new QFrame(this);
-    TestFrame->setGeometry(600, 100, 600, 600);
-    m_Test1 = new QLabel(TestFrame);
-    m_Test2 = new QLabel(TestFrame);
-    m_Test3 = new QLabel(TestFrame);
-    m_Test4 = new QLabel(TestFrame);
-    m_Test5 = new QLabel(TestFrame);
-    connect(m_CalculateThread, SIGNAL(signalUpdateTestData()), this, SLOT(slot_Receive_TestData()));
-    TestFrame->setVisible(false);
-//    slot_Receive_TestData();
 }
 
 RealTime::~RealTime()
@@ -859,31 +852,6 @@ RealTime::~RealTime()
 //    }
 }
 
-void RealTime::slot_Receive_TestData(void)
-{
-    m_Test1->setGeometry(6, 100, 600, 40);
-    m_Test1->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:18px; color:red;}");
-    m_Test1->setText("m_ComData->testNomal = " + QString::number(m_ComData->testNomal));
-
-    m_Test2->setGeometry(6, 140, 600, 40);
-    m_Test2->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:18px; color:red;}");
-    m_Test2->setText("m_ComData->testNumber32 = " + QString::number(m_ComData->testNumber32));
-
-
-    m_Test3->setGeometry(6, 180, 600, 40);
-    m_Test3->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:18px; color:red;}");
-    m_Test3->setText("m_ComData->testNumberRight = " + QString::number(m_ComData->testNumberRight));
-
-    m_Test4->setGeometry(6, 220, 600, 40);
-    m_Test4->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:18px; color:red;}");
-    m_Test4->setText("m_ComData->testNumberWrong = " + QString::number(m_ComData->testNumberWrong));
-
-    m_Test5->setGeometry(6, 260, 600, 40);
-    m_Test5->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:18px; color:red;}");
-    m_Test5->setText("m_ComData->testError = " + QString::number(m_ComData->testError));
-
-
-}
 
 //void RealTime::resizeEvent(QResizeEvent *event)
 //{

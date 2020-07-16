@@ -19,7 +19,6 @@ signals:
     void end_Thread();
     void signalUpdateCurAverage(qint64, double);
     void signalUpdateVolAverage(qint64, double);
-    void signalUpdateTestData(void);
 
 protected:
     void run();

@@ -42,7 +42,6 @@ void USB_Receive_Thread::run()
             {
               if (numBytes == 32)
               {
-                  m_ComData->testNumber32++;
                   connectCount = 0;
                   if(buffer[0] == YMODEM_ACK && buffer[1] == YMODEM_ACK && buffer[2] == YMODEM_ACK && buffer[3] == YMODEM_ACK)
                       emit setAckOrNak(YMODEM_ACK);
@@ -69,7 +68,6 @@ void USB_Receive_Thread::run()
                   }
                   else
                   {
-                      m_ComData->testNomal++;
                       ST_REC_STRUCT *tmp = new ST_REC_STRUCT();
                       memcpy(tmp, buffer, 32);
 //                      qDebug("Received %d bytes, 成功.", numBytes);
@@ -112,7 +110,6 @@ void USB_Receive_Thread::run()
                 qDebug("Error receiving message.\n");
             }
 
-            m_ComData->testError++;
 //            res = libusb_release_interface(m_UsbHid->dev_handle, 0); //release the claimed interface
 //            if(res !=0)
 //            {
