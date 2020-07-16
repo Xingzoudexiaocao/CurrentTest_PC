@@ -818,6 +818,21 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     connect(FixCurrentScale, SIGNAL(currentIndexChanged(int)), this, SLOT(slotFixCurrentScale(int)));
     fixCurrentValue = 0;
 
+    QFrame *DeviceStateFrame = new QFrame(this);
+    DeviceStateFrame->setGeometry(m_ComData->gUiSize->width() - 600 - 20, 2, 600, 25);
+//    DeviceStateFrame->setObjectName("FrameQss");
+//    DeviceStateFrame->setStyleSheet(frame_qss);
+    sDeviceStates = new QLabel (DeviceStateFrame);
+    sDeviceStates->setGeometry(5, 0, 200, 25);
+    sDeviceStates->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:20px;}");
+    sDeviceStates->setFont(font);
+    sDeviceStates->setText("设备状态：未连接");
+    sRemainTime = new QLabel (DeviceStateFrame);
+    sRemainTime->setGeometry(220, 0, 380, 25);
+    sRemainTime->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:20px;}");
+    sRemainTime->setFont(font);
+    sRemainTime->setText("运行时间:0时0分0秒");
+
 //    // 保存按键代码
 //    download = new QPushButton(QIcon(":/save.png"), "导出", frameTop);
 //    download->setGeometry(195, 4, 80, 30);

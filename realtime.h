@@ -129,6 +129,9 @@ private:
     QTimer *SendVerifyCmd;       // 发送校验字节
     qint16 SendVerifyCount;     // 发送校验字节计数
 
+    QLabel *sDeviceStates;  // 设备状态
+    QLabel *sRemainTime;    // 运行时间
+
     QComboBox *FixCurrentScale;
     double fixCurrentValue;
 
