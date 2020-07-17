@@ -826,12 +826,13 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     sDeviceStates->setGeometry(5, 0, 200, 25);
     sDeviceStates->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:20px;}");
     sDeviceStates->setFont(font);
-    sDeviceStates->setText("设备状态：未连接");
+    sDeviceStates->setText("设备状态：未启动");
     sRemainTime = new QLabel (DeviceStateFrame);
     sRemainTime->setGeometry(220, 0, 380, 25);
     sRemainTime->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:20px;}");
     sRemainTime->setFont(font);
     sRemainTime->setText("运行时间:0时0分0秒");
+    connect(m_CalculateThread, SIGNAL(signalUpdateWorkingTime(qint64, qint64, qint64)), this, SLOT(slotUpdateWorkingTime(qint64, qint64, qint64)));
 
 //    // 保存按键代码
 //    download = new QPushButton(QIcon(":/save.png"), "导出", frameTop);
@@ -2077,6 +2078,8 @@ void RealTime::onConnectUSB()
         disconnectUSB->setEnabled(true);
         qDebug() << "连接成功";
 
+        sDeviceStates->setText("设备状态：已启动");
+        sRemainTime->setText("运行时间:0时0分0秒");
         emit CreateSqilite();
         m_SqliteThread->isStop = false;
         m_SqliteThread->start(QThread ::LowPriority);
@@ -2191,6 +2194,7 @@ void RealTime::thread_receive_finished()
         memcpy(m_ComData->layer_dataSeriesA, m_ComData->d_dataSeriesA, sizeof(double) * m_ComData->layer_currentIndex);
 //        download->setEnabled(true);
 
+        sDeviceStates->setText("设备状态：未启动");
         qDebug() << "关闭成功";
     }
     else
@@ -2395,6 +2399,14 @@ void RealTime::slotShowTime(qint64 runningT, qint64 remainT)
         bRemainTimeHour->setGeometry(120 + 30, 120 + 8 - 8 - 10, 80, 40);
     else
         bRemainTimeHour->setGeometry(120 + 15, 160 + 8 - 8 - 10, 80, 40);
+}
+
+void RealTime::slotUpdateWorkingTime(qint64 hour, qint64 minter, qint64 second)
+{
+    if(m_UsbHid->dev_handle != nullptr)
+    {
+        sRemainTime->setText("运行时间:" + QString::number(hour) + "时" + QString::number(minter) +"分" + QString::number(second) +"秒");
+    }
 }
 
 void RealTime::linkUs(QString str)

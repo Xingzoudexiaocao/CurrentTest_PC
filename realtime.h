@@ -213,6 +213,8 @@ public slots:
     void showAverage(void);
     void slotShowTime(qint64 runningT, qint64 remainT);
 
+    void slotUpdateWorkingTime(qint64, qint64, qint64);
+
 protected:
 //    virtual void resizeEvent(QResizeEvent *event);
 };

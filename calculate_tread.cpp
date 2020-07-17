@@ -18,6 +18,8 @@ void Calculate_Tread::run()
     qDebug("计算线程run: %d", this->currentThreadId());
     qint64 CurDifferT_A = 0;
     qint64 CurDifferT_V = 0;
+    qint64 emitCnt = 0;
+    qint64 workingHour = 0, workingMinter = 0, workingSecond = 0;
     while (!isStop) {
 
         try {
@@ -87,7 +89,16 @@ void Calculate_Tread::run()
         } catch (...) {
             qDebug() << "计算电压平均值异常";
         }
-
+        emitCnt++;
+        if(emitCnt >= 10)
+        {
+            emitCnt = 0;
+            qint64 buf = m_ComData->RunningCount / 60000;
+            workingHour = buf / 60;
+            workingMinter = buf % 60;
+            workingSecond = (m_ComData->RunningCount % 60000) / 1000;
+            emit signalUpdateWorkingTime(workingHour, workingMinter, workingSecond);
+        }
         this->msleep(100);
     }
     emit end_Thread();      // 发送信号
