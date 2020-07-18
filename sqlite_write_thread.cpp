@@ -148,14 +148,40 @@ void Sqlite_Write_Thread::CreateSqlite_T(void)
 void Sqlite_Write_Thread::writeSqliteData(qint64 time, double vol, double cur)
 {
 //    qDebug() << "出错了吗";
-    static long long s_Count = 0;
+    static qint64 runningMinute =  0;
+    static qint64 remainMinute = 0;
+    static qint64 s_Count = 0;
+    static qint64 differ_Count = 0;
+    static double differ_value = 0;
 //    qDebug("测试数据", this->currentThreadId());
     DB_WRITE_STRUCT buf;
     buf.time = time; buf.vol = vol; buf.cur = cur;          // QDateTime::currentDateTime().toMSecsSinceEpoch()
     m_DbData.append(buf);
 
     m_ComData->d_calculateValue.currentSumSecond += cur;         // mA
+    differ_value += cur;
     m_ComData->d_calculateValue.voltageSum += vol;  m_ComData->d_calculateValue.currentSum += cur;
+    if(vol <= m_ComData->SettingDifferVBegin) {
+        if(m_ComData->d_calculateValue.differCountBegin < DIFFER_COUNT_VALUE)
+            m_ComData->d_calculateValue.differCountBegin ++;
+    }
+    if(vol <= m_ComData->SettingDifferVEnd) {
+        if(m_ComData->d_calculateValue.differCountEnd < DIFFER_COUNT_VALUE)
+            m_ComData->d_calculateValue.differCountEnd ++;
+    }
+    differ_Count++;
+    if(differ_Count >= 1000)
+    {
+        differ_Count = 0;
+        if(m_ComData->d_calculateValue.differCountBegin < DIFFER_COUNT_VALUE) {
+            m_ComData->d_calculateValue.differEnergy = 0;
+            emit show_DifferVoltage();
+        } else if(m_ComData->d_calculateValue.differCountBegin >= DIFFER_COUNT_VALUE && m_ComData->d_calculateValue.differCountEnd < DIFFER_COUNT_VALUE) {
+            m_ComData->d_calculateValue.differEnergy += ((differ_value / 1000) / 3600);
+            emit show_DifferVoltage();
+        }
+        differ_value = 0;
+    }
     s_Count++;
     if(s_Count >= 1000 * m_ComData->SettingAverageTime)
     {
@@ -173,10 +199,14 @@ void Sqlite_Write_Thread::writeSqliteData(qint64 time, double vol, double cur)
 
         // 更新电池信息UI
 //         qDebug() << "m_ComData->RunningCount" << m_ComData->RunningCount;
-        qint64 runningMinute =  m_ComData->RunningCount / 60000;
-        qint64 remainMinute = 0;
-        remainMinute = (m_ComData->SettingBatteryCapacity - m_ComData->d_calculateValue.energySum) / m_ComData->d_Avg_A * 60;
-        emit show_time(runningMinute, remainMinute);
+        if(m_ComData->d_calculateValue.energySum < m_ComData->SettingBatteryCapacity)       // 电池未放完电才更新时间
+        {
+            runningMinute =  m_ComData->RunningCount / 60000;
+            remainMinute = (m_ComData->SettingBatteryCapacity - m_ComData->d_calculateValue.energySum) / m_ComData->d_Avg_A * 60;
+        } else {
+            remainMinute = 0;
+        }
 
+        emit show_time(runningMinute, remainMinute);
     }
 }

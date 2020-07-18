@@ -17,8 +17,8 @@ public:
 
 signals:
     void end_Thread();
-    void signalUpdateCurAverage(qint64, double);
-    void signalUpdateVolAverage(qint64, double);
+    void signalUpdateCurAverage(qint64, double, double, double);
+    void signalUpdateVolAverage(qint64, double, double, double);
     void signalUpdateWorkingTime(qint64, qint64, qint64);
 
 protected:

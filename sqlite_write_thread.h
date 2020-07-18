@@ -25,6 +25,7 @@ public:
 signals:
     void emitQBoxTip(QString);
     void end_Thread();
+    void show_DifferVoltage();
     void show_Average();
     void show_Energy();
     void show_time(qint64 runingT, qint64 remainT);

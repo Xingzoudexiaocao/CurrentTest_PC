@@ -31,6 +31,8 @@ private:
     QRadioButton *T2_Text;
     QLabel *T2_T1_Label;
     QLabel *AverageLabel;
+    QLabel *MaxLabel;
+    QLabel *MinLabel;
 
 signals:
 
@@ -41,7 +43,7 @@ private slots:
 
 public slots:
     void slotUpdateT1AndT2(qint8, qint64);
-    void slotUpdateAverage(qint64, double);
+    void slotUpdateAverage(qint64, double, double, double);
 };
 
 #endif // AVERAGESUBFRAME_H

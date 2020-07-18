@@ -44,6 +44,16 @@ AverageSubFrame::AverageSubFrame(QFrame *parent) : QFrame(parent)
     AverageLabel->setGeometry(5, 85, 300, 25);
     AverageLabel->setStyleSheet(qssLabel_2);      // QRadioButton {color:red;}
     AverageLabel->setFont(font);
+    MaxLabel = new QLabel(this);
+    MaxLabel->setText("最大值 = --");
+    MaxLabel->setGeometry(5, 110, 300, 25);
+    MaxLabel->setStyleSheet(qssLabel_2);      // QRadioButton {color:red;}
+    MaxLabel->setFont(font);
+    MinLabel = new QLabel(this);
+    MinLabel->setText("最小值 = --");
+    MinLabel->setGeometry(5, 135, 300, 25);
+    MinLabel->setStyleSheet(qssLabel_2);      // QRadioButton {color:red;}
+    MinLabel->setFont(font);
 }
 
 qint8 AverageSubFrame::getKeyValue(void)
@@ -72,6 +82,8 @@ void AverageSubFrame::initFrameDisplay(void)
     T2_Text->setText("T2 = 00:00:00.000");
     T2_T1_Label->setText("T2-T1 = 00:00:00.000");
     AverageLabel->setText("平均值 = --");
+    MaxLabel->setText("最大值 = --");
+    MinLabel->setText("最小值 = --");
 }
 
 void AverageSubFrame::slotButtonT1Check(bool val)
@@ -94,7 +106,7 @@ void AverageSubFrame::slotUpdateT1AndT2(qint8 T1OrT2, qint64 Time)
         T2_Text->setText("T2 = " + QDateTime::fromMSecsSinceEpoch(Time).toString("hh:mm:ss.zzz"));
 }
 
-void AverageSubFrame::slotUpdateAverage(qint64 DifferT, double avergeVal)
+void AverageSubFrame::slotUpdateAverage(qint64 DifferT, double avergeVal, double maxVal, double minVal)
 {
     T2_T1_Label->setText("T2-T1 = " + QDateTime::fromMSecsSinceEpoch(DifferT).toString("00:mm:ss.zzz"));
     if(CurVolFlag == 1)
@@ -103,9 +115,19 @@ void AverageSubFrame::slotUpdateAverage(qint64 DifferT, double avergeVal)
             AverageLabel->setText("平均值 = " + QString::number(avergeVal * 1000, 'f', 3) + "uA");
         else
             AverageLabel->setText("平均值 = " + QString::number(avergeVal, 'f', 3) + "mA");
+        if(maxVal < 1)
+            MaxLabel->setText("最大值 = " + QString::number(maxVal * 1000, 'f', 3) + "uA");
+        else
+            MaxLabel->setText("最大值 = " + QString::number(maxVal, 'f', 3) + "mA");
+        if(minVal < 1)
+            MinLabel->setText("最小值 = " + QString::number(minVal * 1000, 'f', 3) + "uA");
+        else
+            MinLabel->setText("最小值 = " + QString::number(minVal, 'f', 3) + "mA");
     }
     else if(CurVolFlag == 2)
     {
         AverageLabel->setText("平均值 = " + QString::number(avergeVal, 'f', 3) + "V");
+        MaxLabel->setText("最大值 = " + QString::number(maxVal, 'f', 3) + "V");
+        MinLabel->setText("最小值 = " + QString::number(minVal, 'f', 3) + "V");
     }
 }

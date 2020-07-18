@@ -22,6 +22,8 @@
 #define MCU_TYPE  iSCAN_ARTERY
 //#define appUpdataDebug    // APP升级部分区别，调试时用,判断是否对bin文件加密处理
 
+#define DIFFER_COUNT_VALUE      1000
+
 #define YMODEM_SOH (0x01)
 #define YMODEM_STX (0x02)
 #define YMODEM_EOT (0x04)
@@ -85,6 +87,10 @@ typedef struct DB_CALCULATE_STRUCT
 
     double energySum = 0;
     double currentSumSecond = 0;
+
+    qint16 differCountBegin = 0;        // 16位
+    qint16 differCountEnd = 0;
+    double differEnergy = 0;
 } DB_CALCULATE_STRUCT;
 
 union d_And_c

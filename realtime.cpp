@@ -260,23 +260,23 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
 //    frame_6->setFrameShape(QFrame::Panel);
     frame_6->setObjectName("FrameQss");
     frame_6->setStyleSheet(frame_qss);
-    QLabel *batteryInfo = new QLabel(frame_6);
-    batteryInfo->setGeometry(0, -3, 250, 30);
-    batteryInfo->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:24px;}");
-    batteryInfo->setFont(font);
-    batteryInfo->setText("电池信息：");
+//    QLabel *batteryInfo = new QLabel(frame_6);
+//    batteryInfo->setGeometry(0, -3, 250, 30);
+//    batteryInfo->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:24px;}");
+//    batteryInfo->setFont(font);
+//    batteryInfo->setText("电池信息：");
     QLabel *totalCapacity = new QLabel(frame_6);
-    totalCapacity->setGeometry(0, 30 - 2 - 10, 250, 40);
+    totalCapacity->setGeometry(0, 30 - 2 - 10 - 24, 250, 40);
     totalCapacity->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:24px;}");
     totalCapacity->setFont(font);
-    totalCapacity->setText("总容量：");
+    totalCapacity->setText("电池容量：");
     QLabel *totalCapacityUnit = new QLabel(frame_6);
-    totalCapacityUnit->setGeometry(200, 30 - 10, 250, 40);
+    totalCapacityUnit->setGeometry(200, 30 - 10 - 24, 250, 40);
     totalCapacityUnit->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:18px;}");
     totalCapacityUnit->setFont(font);
     totalCapacityUnit->setText("mAh");
     bTotalCap = new QLabel(frame_6);
-    bTotalCap->setGeometry(110, 30 + 5 - 10, 80, 40);
+    bTotalCap->setGeometry(120, 30 + 5 - 10 - 24, 80 + 10, 40);
 //    bTotalCap->setStyleSheet("QLabel {font-family:arial; text-align:left; padding:2px; font-size:24px;}");
     bTotalCap->setStyleSheet("QLabel { text-align:left; padding:0px; font-size:30px; color:black; }");
     bTotalCap->setFont(font_VAW);
@@ -284,12 +284,12 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     bTotalCap->setFrameShape(QFrame::NoFrame);
     bTotalCap->setText(QString::number(m_ComData->SettingBatteryCapacity));
     QLabel *remainCapacity = new QLabel(frame_6);
-    remainCapacity->setGeometry(0, 60 - 4 - 10, 250, 40);
+    remainCapacity->setGeometry(0, 60 - 4 - 10 - 25, 250, 40);
     remainCapacity->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:24px;}");
     remainCapacity->setFont(font);
     remainCapacity->setText("剩余容量：");
     bRemainCap = new QLabel(frame_6);
-    bRemainCap->setGeometry(140, 60 + 8 - 4 - 10, 100, 40);
+    bRemainCap->setGeometry(140, 60 + 8 - 4 - 10 - 25, 100, 40);
 //    bRemainCap->setStyleSheet("QLabel {font-family:arial; text-align:left; padding:2px; font-size:24px;}");
     bRemainCap->setStyleSheet("QLabel { text-align:left; padding:0px; font-size:30px; color:black; }");
     bRemainCap->setFont(font_VAW);
@@ -297,43 +297,61 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     bRemainCap->setFrameShape(QFrame::NoFrame);
     bRemainCap->setText("100%");
     QLabel *workingTime = new QLabel(frame_6);
-    workingTime->setGeometry(0, 90 - 6 - 10, 260, 40);
+    workingTime->setGeometry(0, 90 - 6 - 10 - 26, 260, 40);
     workingTime->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:24px;}");
     workingTime->setFont(font);
-    workingTime->setText("运行时间：   时  分");
+    workingTime->setText("已用时间：   时  分");
     bRunningTimeHour = new QLabel(frame_6);
-    bRunningTimeHour->setGeometry(120, 90 + 8 - 6 - 10, 80, 40);
+    bRunningTimeHour->setGeometry(120, 90 + 8 - 6 - 10 - 26, 80, 40);
     bRunningTimeHour->setStyleSheet("QLabel { text-align:left; padding:0px; font-size:30px; color:black; }");
     bRunningTimeHour->setFont(font_VAW);
     bRunningTimeHour->setAlignment(Qt::AlignLeft);
     bRunningTimeHour->setFrameShape(QFrame::NoFrame);
     bRunningTimeHour->setText(" -");
     bRunningTimeMinute = new QLabel(frame_6);
-    bRunningTimeMinute->setGeometry(197, 90 + 8 - 6 - 10, 40, 40);
+    bRunningTimeMinute->setGeometry(197, 90 + 8 - 6 - 10 - 26, 40, 40);
     bRunningTimeMinute->setStyleSheet("QLabel { text-align:left; padding:0px; font-size:30px; color:black; }");
     bRunningTimeMinute->setFont(font_VAW);
     bRunningTimeMinute->setAlignment(Qt::AlignLeft);
     bRunningTimeMinute->setFrameShape(QFrame::NoFrame);
     bRunningTimeMinute->setText(" -");
     QLabel *remainTime = new QLabel(frame_6);
-    remainTime->setGeometry(0, 120 - 8 - 10, 260, 40);
+    remainTime->setGeometry(0, 120 - 8 - 10 - 27, 260, 40);
     remainTime->setStyleSheet("QLabel { text-align:left; padding:1px; font-size:24px;}");
     remainTime->setFont(font);
     remainTime->setText("剩余时间：   时  分");
     bRemainTimeHour = new QLabel(frame_6);
-    bRemainTimeHour->setGeometry(120, 120 + 8 - 8 - 10, 80, 40);
+    bRemainTimeHour->setGeometry(120, 120 + 8 - 8 - 10 - 27, 80, 40);
     bRemainTimeHour->setStyleSheet("QLabel { text-align:left; padding:0px; font-size:30px; color:black; }");
     bRemainTimeHour->setFont(font_VAW);
     bRemainTimeHour->setAlignment(Qt::AlignLeft);
     bRemainTimeHour->setFrameShape(QFrame::NoFrame);
     bRemainTimeHour->setText(" -");
     bRemainTimeMinute = new QLabel(frame_6);
-    bRemainTimeMinute->setGeometry(197, 120 + 8 - 8 - 10, 40, 40);
+    bRemainTimeMinute->setGeometry(197, 120 + 8 - 8 - 10 - 27, 40, 40);
     bRemainTimeMinute->setStyleSheet("QLabel { text-align:left; padding:0px; font-size:30px; color:black; }");
     bRemainTimeMinute->setFont(font_VAW);
     bRemainTimeMinute->setAlignment(Qt::AlignLeft);
     bRemainTimeMinute->setFrameShape(QFrame::NoFrame);
     bRemainTimeMinute->setText(" -");
+    QLabel *DifferVCapacity = new QLabel(frame_6);
+    DifferVCapacity->setGeometry(0, 103, 250, 40);
+    DifferVCapacity->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:24px;}");
+    DifferVCapacity->setFont(font);
+    DifferVCapacity->setText("△V电量：");
+    QLabel *DifferCapacityUnit = new QLabel(frame_6);
+    DifferCapacityUnit->setGeometry(200, 103 + 2, 250, 40);
+    DifferCapacityUnit->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:18px;}");
+    DifferCapacityUnit->setFont(font);
+    DifferCapacityUnit->setText("mAh");
+    bDifferCap = new QLabel(frame_6);
+    bDifferCap->setGeometry(120, 103 + 7, 80, 40);
+//    bDifferCap->setStyleSheet("QLabel {font-family:arial; text-align:left; padding:2px; font-size:24px;}");
+    bDifferCap->setStyleSheet("QLabel { text-align:right; padding:0px; font-size:30px; color:black; }");
+    bDifferCap->setFont(font_VAW);
+    bDifferCap->setAlignment(Qt::AlignRight);
+    bDifferCap->setFrameShape(QFrame::NoFrame);
+    bDifferCap->setText(QString::number(m_ComData->d_calculateValue.differEnergy, 'f', 0));
 
     QFrame *frame_5 = new QFrame(frame);
     frame_5->setGeometry(0, 560, 250, 280);
@@ -554,6 +572,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
 
     m_SqliteThread = new Sqlite_Write_Thread(this, m_UsbHid, m_ComData);    // 新建线程
     connect(m_SqliteThread,SIGNAL(end_Thread()),this, SLOT(thread_sqlite_finished()));
+    connect(m_SqliteThread,SIGNAL(show_DifferVoltage()),this, SLOT(slotShowDifferVoltage()));
     connect(m_SqliteThread,SIGNAL(show_Energy()),this, SLOT(slotShowEnergy()));
     connect(m_SqliteThread,SIGNAL(show_Average()),this, SLOT(showAverage()));
     connect(m_SqliteThread,SIGNAL(show_time(qint64, qint64)),this, SLOT(slotShowTime(qint64, qint64)));
@@ -739,16 +758,29 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     batteryCapacityInfo->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:24px;}");
     batteryCapacityInfo->setFont(font_2);
     batteryCapacityInfo->setText("电池容量:");      //             mAh
+    batteryCapacity_2 = new QSpinBox(frame_setting);
+    batteryCapacity_2->setGeometry(530+20, 225, 200, 30);
+    batteryCapacity_2->setMinimum(50);
+    batteryCapacity_2->setMaximum(100000);
+    batteryCapacity_2->setSingleStep(10);
+//    batteryCapacity_2->setSuffix(" mAh");
+    batteryCapacity_2->setStyleSheet("QSpinBox { text-align:left; padding:2px; font-size:20px;}");  //  background-color:white;
+    batteryCapacity_2->setFont(font);
+//    batteryCapacity_2->setFrame(QFrame::NoFrame);
+    batteryCapacity_2->setValue(m_ComData->SettingBatteryCapacity);
+    connect(batteryCapacity_2, SIGNAL(valueChanged(int)), SLOT(slotBatteryValue_2(int)));
     batteryCapacity = new QSpinBox(frame_setting);
     batteryCapacity->setGeometry(530, 225, 200, 30);
-    batteryCapacity->setMinimum(1000);
-    batteryCapacity->setMaximum(50000);
+    batteryCapacity->setMinimum(50);
+    batteryCapacity->setMaximum(100000);
     batteryCapacity->setSingleStep(1000);
     batteryCapacity->setSuffix(" mAh");
-    batteryCapacity->setStyleSheet("QSpinBox { text-align:left; padding:2px; font-size:20px;}");
+    batteryCapacity->setStyleSheet("QSpinBox { text-align:left; padding:2px; font-size:20px;}");    //  background-color:white;
     batteryCapacity->setFont(font);
+//    batteryCapacity->setFrame(QFrame::NoFrame);
     batteryCapacity->setValue(m_ComData->SettingBatteryCapacity);
     connect(batteryCapacity, SIGNAL(valueChanged(int)), SLOT(slotBatteryValue(int)));
+
 
     QLabel *batteryVoltageLimitTitle = new QLabel(frame_setting);
     batteryVoltageLimitTitle->setGeometry(10, 260, 400, 40);
@@ -757,7 +789,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     batteryVoltageLimitTitle->setText("△V电量起始电压:");
     batteryVoltageBegin = new QDoubleSpinBox(frame_setting);
     batteryVoltageBegin->setGeometry(220, 265, 140, 30);
-    batteryVoltageBegin->setMinimum(1.00);
+    batteryVoltageBegin->setMinimum(2.50);
     batteryVoltageBegin->setMaximum(7.50);
     batteryVoltageBegin->setSingleStep(0.10);
     batteryVoltageBegin->setSuffix(" V");
@@ -774,7 +806,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     batteryVoltageLimitTitle_2->setText("△V电量截止电压:");
     batteryVoltageEnd = new QDoubleSpinBox(frame_setting);
     batteryVoltageEnd->setGeometry(610, 265, 140, 30);
-    batteryVoltageEnd->setMinimum(1.00);
+    batteryVoltageEnd->setMinimum(2.50);
     batteryVoltageEnd->setMaximum(7.50);
     batteryVoltageEnd->setSingleStep(0.10);
     batteryVoltageEnd->setSuffix(" V");
@@ -797,19 +829,19 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     m_SubButton_Vol->setToolTip("点击弹出平均值界面");
     m_SubButton_Vol->setEnabled(false);
     m_SubFrame_Cur = new AverageSubFrame(frame_2);
-    m_SubFrame_Cur->setGeometry(m_ComData->gUiSize->width() - 510 - 100, 45, 300, 120);
+    m_SubFrame_Cur->setGeometry(m_ComData->gUiSize->width() - 510 - 100, 45, 300, 170);
     m_SubFrame_Cur->setCurVolFlag(1);
     connect(this, SIGNAL(singalCurUpdateT1AndT2(qint8, qint64)), m_SubFrame_Cur, SLOT(slotUpdateT1AndT2(qint8, qint64)));
     m_SubFrame_Cur->setVisible(false);
     m_SubFrame_Vol = new AverageSubFrame(frame_2);
-    m_SubFrame_Vol->setGeometry(m_ComData->gUiSize->width() - 510 - 100, 13 + (m_ComData->gUiSize->height() - 78 - 10) / 2 - 14 + 30, 300, 120);
+    m_SubFrame_Vol->setGeometry(m_ComData->gUiSize->width() - 510 - 100, 13 + (m_ComData->gUiSize->height() - 78 - 10) / 2 - 14 + 30, 300, 170);
     m_SubFrame_Vol->setCurVolFlag(2);
     connect(this, SIGNAL(singalVolUpdateT1AndT2(qint8, qint64)), m_SubFrame_Vol, SLOT(slotUpdateT1AndT2(qint8, qint64)));
     m_SubFrame_Vol->setVisible(false);
 
     m_CalculateThread = new Calculate_Tread(this, m_UsbHid, m_ComData);
-    connect(m_CalculateThread, SIGNAL(signalUpdateCurAverage(qint64, double)), m_SubFrame_Cur, SLOT(slotUpdateAverage(qint64, double)));
-    connect(m_CalculateThread, SIGNAL(signalUpdateVolAverage(qint64, double)), m_SubFrame_Vol, SLOT(slotUpdateAverage(qint64, double)));
+    connect(m_CalculateThread, SIGNAL(signalUpdateCurAverage(qint64, double, double, double)), m_SubFrame_Cur, SLOT(slotUpdateAverage(qint64, double, double, double)));
+    connect(m_CalculateThread, SIGNAL(signalUpdateVolAverage(qint64, double, double, double)), m_SubFrame_Vol, SLOT(slotUpdateAverage(qint64, double, double, double)));
     m_CalculateThread->start(QThread ::LowestPriority);
 
     FixCurrentScale = new QComboBox(frame_2);
@@ -819,7 +851,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     fixCurrentValue = 0;
 
     QFrame *DeviceStateFrame = new QFrame(this);
-    DeviceStateFrame->setGeometry(m_ComData->gUiSize->width() - 600 - 20, 2, 600, 25);
+    DeviceStateFrame->setGeometry(m_ComData->gUiSize->width() - 500 - 20, 2, 500, 25);
 //    DeviceStateFrame->setObjectName("FrameQss");
 //    DeviceStateFrame->setStyleSheet(frame_qss);
     sDeviceStates = new QLabel (DeviceStateFrame);
@@ -828,7 +860,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     sDeviceStates->setFont(font);
     sDeviceStates->setText("设备状态：未启动");
     sRemainTime = new QLabel (DeviceStateFrame);
-    sRemainTime->setGeometry(220, 0, 380, 25);
+    sRemainTime->setGeometry(220, 0, 280, 25);
     sRemainTime->setStyleSheet("QLabel { text-align:left; padding:2px; font-size:20px;}");
     sRemainTime->setFont(font);
     sRemainTime->setText("运行时间:0时0分0秒");
@@ -1297,7 +1329,7 @@ void RealTime::drawChart_Current(void)
             sprintf(buffer, " <*bgColor=ffffff*> <*color=0000ff*> <*size=14px*> %.2f mA", d);
         }
 //        layer->addDataSet(DoubleArray(m_ComData->d_dataSeriesA, m_ComData->d_currentIndex), 0x00ff, buffer);
-        //        c->yAxis()->setMinTickInc(0.000001);        // 设置最小间隔
+            c->yAxis()->setMinTickInc(0.000001);        // 设置最小间隔
             if(fixCurrentValue > 0)
                 c->yAxis()->setDateScale(0, fixCurrentValue);
     }
@@ -2347,6 +2379,10 @@ void RealTime::showVAW(double v, double mA)
     }
 }
 
+void RealTime::slotShowDifferVoltage(void)
+{
+    bDifferCap->setText(QString::number(m_ComData->d_calculateValue.differEnergy, 'f', 0));
+}
 void RealTime::slotShowEnergy(void)
 {
     m_Energy->setText(QString::number(m_ComData->d_calculateValue.energySum, 'f', 2));
@@ -2375,30 +2411,30 @@ void RealTime::slotShowTime(qint64 runningT, qint64 remainT)
     bRunningTimeHour->setText(QString::number(runningT / 60));
     bRunningTimeMinute->setText(QString::number(runningT % 60));
     if(runningT % 60 < 10)
-        bRunningTimeMinute->setGeometry(197 + 15, 90 + 8 - 6 - 10, 40, 40);
+        bRunningTimeMinute->setGeometry(197 + 15, 90 + 8 - 6 - 10 - 26, 40, 40);
     else
-        bRunningTimeMinute->setGeometry(197, 90 + 8 - 6 - 10, 40, 40);
+        bRunningTimeMinute->setGeometry(197, 90 + 8 - 6 - 10 - 26, 40, 40);
     if(runningT / 60 >= 100)
-        bRunningTimeHour->setGeometry(120, 90 + 8 - 6 - 10, 80, 40);
+        bRunningTimeHour->setGeometry(120, 90 + 8 - 6 - 10, 80 - 26, 40);
     else if(runningT / 60 < 10)
-        bRunningTimeHour->setGeometry(120 + 30, 90 + 8 - 6 - 10, 80, 40);
+        bRunningTimeHour->setGeometry(120 + 30, 90 + 8 - 6 - 10 - 26, 80, 40);
     else
-        bRunningTimeHour->setGeometry(120 + 15, 90 + 8 - 6 - 10, 80, 40);
+        bRunningTimeHour->setGeometry(120 + 15, 90 + 8 - 6 - 10 - 26, 80, 40);
 
     if(remainT > 60000 - 1)
         remainT = 60000 - 1;
     bRemainTimeHour->setText(QString::number(remainT / 60));
     bRemainTimeMinute->setText(QString::number(remainT % 60));
     if(remainT % 60 < 10)
-        bRemainTimeMinute->setGeometry(197 + 15, 120 + 8 - 8 - 10, 40, 40);
+        bRemainTimeMinute->setGeometry(197 + 15, 120 + 8 - 8 - 10 - 27, 40, 40);
     else
-        bRemainTimeMinute->setGeometry(197, 120 + 8 - 8 - 10, 40, 40);
+        bRemainTimeMinute->setGeometry(197, 120 + 8 - 8 - 10 - 27, 40, 40);
     if(remainT / 60 >= 100)
-        bRemainTimeHour->setGeometry(120, 120 + 8 - 8 - 10, 80, 40);
+        bRemainTimeHour->setGeometry(120, 120 + 8 - 8 - 10 - 27, 80, 40);
     else if(remainT / 60 < 10)
-        bRemainTimeHour->setGeometry(120 + 30, 120 + 8 - 8 - 10, 80, 40);
+        bRemainTimeHour->setGeometry(120 + 30, 120 + 8 - 8 - 10 - 27, 80, 40);
     else
-        bRemainTimeHour->setGeometry(120 + 15, 160 + 8 - 8 - 10, 80, 40);
+        bRemainTimeHour->setGeometry(120 + 15, 160 + 8 - 8 - 10 - 27, 80, 40);
 }
 
 void RealTime::slotUpdateWorkingTime(qint64 hour, qint64 minter, qint64 second)
@@ -2841,23 +2877,41 @@ void RealTime::slotAverageValue(int val)
     m_ComData->WriteData(AVERAGE_VALUE);
 }
 
+void RealTime::slotBatteryValue_2(int val)
+{
+    m_ComData->SettingBatteryCapacity = val;
+    m_ComData->WriteData(BATTERY_CAPACITY_VALUE);
+    bTotalCap->setText(QString::number(m_ComData->SettingBatteryCapacity));
+    batteryCapacity->setValue(batteryCapacity_2->value());      // 更新实际显示的值
+}
 void RealTime::slotBatteryValue(int val)
 {
     m_ComData->SettingBatteryCapacity = val;
     m_ComData->WriteData(BATTERY_CAPACITY_VALUE);
     bTotalCap->setText(QString::number(m_ComData->SettingBatteryCapacity));
+    batteryCapacity_2->setValue(batteryCapacity->value());      // 更新实际显示的值
 }
 
 void RealTime::slotDifferVBegin(double val)
 {
     m_ComData->SettingDifferVBegin = val;
     m_ComData->WriteData(DIFFER_V_BEGIN);
+
+    if(batteryVoltageBegin->value() < batteryVoltageEnd->value())
+    {
+        batteryVoltageEnd->setValue(val);
+    }
 }
 
 void RealTime::slotDifferVEnd(double val)
 {
     m_ComData->SettingDifferVEnd = val;
     m_ComData->WriteData(DIFFER_V_END);
+
+    if(batteryVoltageBegin->value() < batteryVoltageEnd->value())
+    {
+        batteryVoltageBegin->setValue(val);
+    }
 }
 
 void RealTime::onSettingBtn(void)

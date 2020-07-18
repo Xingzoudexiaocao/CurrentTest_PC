@@ -30,26 +30,36 @@ void Calculate_Tread::run()
                 CurDifferT_A = m_ComData->T2_Cur_Index - m_ComData->T1_Cur_Index;
 
                 double sunCurrent = 0;
+                double maxCurrent = 0;
+                double minCurrent = 10000;  // 最大10A
 
                 if(CurDifferT_A == 0)
-                    emit signalUpdateCurAverage(0, m_ComData->layer_dataSeriesA[m_ComData->T2_Cur_Index - 1]);
+                    emit signalUpdateCurAverage(0, m_ComData->layer_dataSeriesA[m_ComData->T2_Cur_Index - 1], m_ComData->layer_dataSeriesA[m_ComData->T2_Cur_Index - 1], m_ComData->layer_dataSeriesA[m_ComData->T2_Cur_Index - 1]);
                 else if(CurDifferT_A > 0) {
                     for(qint64 i = m_ComData->T1_Cur_Index; i < m_ComData->T2_Cur_Index; i++)
                     {
                         sunCurrent += m_ComData->layer_dataSeriesA[i - 1];
+                        if( m_ComData->layer_dataSeriesA[i - 1] > maxCurrent)
+                            maxCurrent = m_ComData->layer_dataSeriesA[i - 1];
+                        if( m_ComData->layer_dataSeriesA[i - 1] < minCurrent)
+                            minCurrent = m_ComData->layer_dataSeriesA[i - 1];
                     }
                     if(CurDifferT_A != 0)
                         sunCurrent = sunCurrent / CurDifferT_A;
-                    emit signalUpdateCurAverage(CurDifferT_A, sunCurrent);
+                    emit signalUpdateCurAverage(CurDifferT_A, sunCurrent, maxCurrent, minCurrent);
                 } else if(CurDifferT_A < 0) {
                     CurDifferT_A = 0 - CurDifferT_A;
                     for(qint64 i = m_ComData->T2_Cur_Index; i < m_ComData->T1_Cur_Index; i++)
                     {
                         sunCurrent += m_ComData->layer_dataSeriesA[i - 1];
+                        if( m_ComData->layer_dataSeriesA[i - 1] > maxCurrent)
+                            maxCurrent = m_ComData->layer_dataSeriesA[i - 1];
+                        if( m_ComData->layer_dataSeriesA[i - 1] < minCurrent)
+                            minCurrent = m_ComData->layer_dataSeriesA[i - 1];
                     }
                     if(CurDifferT_A != 0)
                         sunCurrent = sunCurrent / CurDifferT_A;
-                    emit signalUpdateCurAverage(CurDifferT_A, sunCurrent);
+                    emit signalUpdateCurAverage(CurDifferT_A, sunCurrent, maxCurrent, minCurrent);
                 }
 
             }
@@ -64,25 +74,35 @@ void Calculate_Tread::run()
             {
                 CurDifferT_V = m_ComData->T2_Vol_Index - m_ComData->T1_Vol_Index;
 
-                double sunCurrent = 0;
+                double sunVoltage = 0;
+                double maxVoltage = 0;
+                double minVoltage = 7.5;  // 最大7.5V
 
                 if(CurDifferT_V == 0)
-                    emit signalUpdateVolAverage(0, m_ComData->layer_dataSeriesV[m_ComData->T2_Vol_Index - 1]);
+                    emit signalUpdateVolAverage(0, m_ComData->layer_dataSeriesV[m_ComData->T2_Vol_Index - 1], m_ComData->layer_dataSeriesV[m_ComData->T2_Vol_Index - 1], m_ComData->layer_dataSeriesV[m_ComData->T2_Vol_Index - 1]);
                 else if (CurDifferT_V > 0) {
                     for(qint64 i = m_ComData->T1_Vol_Index; i < m_ComData->T2_Vol_Index; i++)
                     {
-                        sunCurrent += m_ComData->layer_dataSeriesV[i - 1];
+                        sunVoltage += m_ComData->layer_dataSeriesV[i - 1];
+                        if( m_ComData->layer_dataSeriesV[i - 1] > maxVoltage)
+                            maxVoltage = m_ComData->layer_dataSeriesV[i - 1];
+                        if( m_ComData->layer_dataSeriesV[i - 1] < minVoltage)
+                            minVoltage = m_ComData->layer_dataSeriesV[i - 1];
                     }
-                    sunCurrent = sunCurrent / CurDifferT_V;
-                    emit signalUpdateVolAverage(CurDifferT_V, sunCurrent);
+                    sunVoltage = sunVoltage / CurDifferT_V;
+                    emit signalUpdateVolAverage(CurDifferT_V, sunVoltage, maxVoltage, minVoltage);
                 } else if (CurDifferT_V < 0) {
                     CurDifferT_V = 0 - CurDifferT_V;
                     for(qint64 i = m_ComData->T2_Vol_Index; i < m_ComData->T1_Vol_Index; i++)
                     {
-                        sunCurrent += m_ComData->layer_dataSeriesV[i - 1];
+                        sunVoltage += m_ComData->layer_dataSeriesV[i - 1];
+                        if( m_ComData->layer_dataSeriesV[i - 1] > maxVoltage)
+                            maxVoltage = m_ComData->layer_dataSeriesV[i - 1];
+                        if( m_ComData->layer_dataSeriesV[i - 1] < minVoltage)
+                            minVoltage = m_ComData->layer_dataSeriesV[i - 1];
                     }
-                    sunCurrent = sunCurrent / CurDifferT_V;
-                    emit signalUpdateVolAverage(CurDifferT_V, sunCurrent);
+                    sunVoltage = sunVoltage / CurDifferT_V;
+                    emit signalUpdateVolAverage(CurDifferT_V, sunVoltage, maxVoltage, minVoltage);
                 }
 
             }

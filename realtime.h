@@ -115,6 +115,7 @@ private:
     HistoryDetail *historyDetail;
 
     QSpinBox *averageValue;
+    QSpinBox *batteryCapacity_2;
     QSpinBox *batteryCapacity;
     QDoubleSpinBox *batteryVoltageBegin;
     QDoubleSpinBox *batteryVoltageEnd;
@@ -125,6 +126,7 @@ private:
     QLabel *bRunningTimeMinute;       // 运行时间
     QLabel *bRemainTimeHour;        // 剩余时间
     QLabel *bRemainTimeMinute;        // 剩余时间
+    QLabel *bDifferCap;          // 总容量
 
     QTimer *SendVerifyCmd;       // 发送校验字节
     qint16 SendVerifyCount;     // 发送校验字节计数
@@ -177,6 +179,7 @@ private slots:
     void UpdataSend();
 
     void slotAverageValue(int);
+    void slotBatteryValue_2(int);
     void slotBatteryValue(int);
 
     void slotDifferVBegin(double);
@@ -209,6 +212,7 @@ public slots:
 
     void slotQBoxTip(QString);
 
+    void slotShowDifferVoltage(void);
     void slotShowEnergy(void);
     void showAverage(void);
     void slotShowTime(qint64 runningT, qint64 remainT);

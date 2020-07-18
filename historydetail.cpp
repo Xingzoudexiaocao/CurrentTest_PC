@@ -643,7 +643,7 @@ void HistoryDetail::drawChart(QChartViewer *viewer, int index)
             sprintf(buffer, " <*bgColor=ffffff*> <*color=0000ff*> <*size=14px*>");
         }
         layer->addDataSet(viewPortDataSeriesC, 0x0000ff, buffer);       // , buffer
-//        c->yAxis()->setMinTickInc(0.1);
+        c->yAxis()->setMinTickInc(0.000001);
 //        if(fixCurrentValue > 0)
 //            c->yAxis()->setDateScale(0, fixCurrentValue);
     }
