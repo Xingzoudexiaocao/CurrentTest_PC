@@ -103,7 +103,7 @@ HistoryDetail::HistoryDetail(QWidget *parent, USB_HID *hid, ComData *comD) : QGr
     m_SubFrame->setVisible(false);
 
     historyFile = new QPushButton(m_SubFrame);
-    historyFile->setStyleSheet("QPushButton {font-family:arial; text-align:left; padding:5px; font-size:18px; border:1px solid #000000;}");
+    historyFile->setStyleSheet("QPushButton {font-family:arial; text-align:left; padding:2px; font-size:18px; border:1px solid #000000;}");
     historyFile->setGeometry(150, 5, parent->width() - 200, 30);
 //    historyFile->setFrameShape(QFrame::NoFrame);
     historyFile->setToolTip("点击加载文件");
@@ -417,7 +417,7 @@ void HistoryDetail::loadingDataByTime(qint64 t1, qint64 t2)
     // 根据时间间隔抽取数据库中的数据
     QSqlQueryModel sqlModel;
     QString strQuery = "select * from stm32_data where (id % " + QString::number(IntervalValue, 10)
-            + " == 1) and id >= " + QString::number(t1, 10) + " and id <= " + QString::number(t2, 10) + " ";
+            + " == 0) and id >= " + QString::number(t1, 10) + " and id <= " + QString::number(t2, 10) + " ";
 //    QString  strQuery = "select * from stm32_data where (id <= 60000)";
     sqlModel.setQuery(strQuery);
     while(sqlModel.canFetchMore())
@@ -444,7 +444,7 @@ void HistoryDetail::loadingDataByTime(qint64 t1, qint64 t2)
     T1_DateTime = sqlModel.record(0).value("time").toLongLong();
     T2_DateTime = sqlModel.record(sqlModel.rowCount() - 1).value("time").toLongLong();
 
-//    qDebug()<< "T1_DateTime 和 T2_DateTime" << T1_DateTime << T2_DateTime << d_currentIndex;
+    qDebug()<< "T1_DateTime 和 T2_DateTime" << T1_DateTime << T2_DateTime << d_currentIndex;
 
     // 计算选中数据的平均值
     strQuery = "select avg(current), max(current), min(current), avg(voltage), max(voltage), min(voltage) from stm32_data where id >= "
