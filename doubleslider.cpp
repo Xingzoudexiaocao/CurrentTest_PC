@@ -73,7 +73,7 @@ void DoubleSlider::paintValueLabel(QPainter* painter)
 
     //----- paint groove
     paintColoredRect(QRect(4,37,width() - 8,10),Qt::darkCyan,painter);
-    paintColoredRect(QRect(minPos + 4,37,maxPos - minPos,10), QColor(0xFF,0xA5,0x00),painter); // QColor(151,53,155)
+    paintColoredRect(QRect(minPos + 4,37,maxPos - minPos,10), QColor(0xFF,0x63,0x47),painter); // QColor(151,53,155)
 
     //----- handle
 
@@ -81,8 +81,8 @@ void DoubleSlider::paintValueLabel(QPainter* painter)
     maxHandleRegion = QRect(maxPos ,30,8,26);
 
     //-----paint Handle
-    QColor minColor  = (m_state == MinHandle) ? QColor(0xFF,0x63,0x47) : QColor(0xFF,0xA0,0x7A);
-    QColor maxColor  = (m_state == MaxHandle) ? QColor(0xFF,0x63,0x47) : QColor(0xFF,0xA0,0x7A);
+    QColor minColor  = (m_state == MinHandle) ? QColor(0xFF,0xA5,0x00) : QColor(0xFF,0xA0,0x7A);
+    QColor maxColor  = (m_state == MaxHandle) ? QColor(0xFF,0xA5,0x00) : QColor(0xFF,0xA0,0x7A);
     paintColoredRect(minHandleRegion,minColor,painter);
     paintColoredRect(maxHandleRegion,maxColor,painter);
 }

@@ -26,6 +26,8 @@
 #include <QFontDatabase>
 #include <QFileDialog>
 #include <QApplication>
+#include <QRadioButton>
+#include <QComboBox>
 
 #include <algorithm>
 using namespace std;      //这一句也不能少
@@ -43,6 +45,24 @@ public:
 signals:
 
 private:
+    double fixCurrentValue;
+    qint8 keyValue;         // T1/T2标志位：1=T1；2=T2；
+    QRadioButton *T1_Text;
+    QRadioButton *T2_Text;
+    QLabel *T2_T1_Label;
+    QLabel *T2_T1_Currnet_Avg;
+    QLabel *T2_T1_Currnet_Max;
+    QLabel *T2_T1_Currnet_Min;
+    QLabel *T2_T1_Voltage_Avg;
+    QLabel *T2_T1_Voltage_Max;
+    QLabel *T2_T1_Voltage_Min;
+    HISTORY_DATAINFO_STRUCT T2_T1_Current_DataInfo;
+    HISTORY_DATAINFO_STRUCT T2_T1_Voltage_DataInfo;
+
+    qint64 T1_Index;        // 波形T1起始索引
+    qint64 T2_Index;        // 波形T2起始索引
+    qint64 T1_DateTime;        // 波形T1对应的时间
+    qint64 T2_DateTime;        // 波形T2对应的时间
     HISTORY_DATAINFO_STRUCT m_Current_DataInfo;
     HISTORY_DATAINFO_STRUCT m_Voltage_DataInfo;
     HISTORY_DATAINFO_STRUCT m_Power_DataInfo;
@@ -70,6 +90,9 @@ private:
     QPushButton *historyFile;
     QPushButton *historyOpen;
 
+    QPushButton *ZoomMax;
+    QPushButton *ZoomMin;
+
     ComData *m_ComData;
     USB_HID *m_UsbHid;
 
@@ -95,7 +118,15 @@ private:
     void trackLineLabel(XYChart *c, int mouseX, int index);    // Draw track cursor
     void updateControls(QChartViewer *viewer, QScrollBar *bar);      // Update other controls as viewport changes
 private slots:
+    void slotButtonT1Check(bool);
+    void slotButtonT2Check(bool);
+    void UpdateT1T2Display(void);
+    void getT1T2DataFromSqlite(qint64, qint64);
+    void slotFixCurrentScale(int);
+
     void updateChart();                 // Update the chart.
+    void onMouseClick(QMouseEvent *);
+    void onMouseClick_2(QMouseEvent *);
     void onMouseMovePlotArea(QMouseEvent *);
     void onMouseMovePlotArea_2(QMouseEvent *);
     void onMouseUsageChanged(int mouseUsage);       // Pointer/zoom in/zoom out button clicked
@@ -108,12 +139,16 @@ private slots:
     void slotSubButtonClick(void);
     void slotHistoryOpen(void);
 
+    void slotZoomMaxClick(void);
+    void slotZoomMinClick(void);
+
     void initDisplay(void);     // 显示初始化
     void loadingDataByTime(qint64, qint64);
     void updateInfomationDisplay(void);
+
+    QString doubleToTime(double dTime);
 public slots:
     void ReceiveTest(void);
-    void UpdateChartData(void);
     void mouseReleaseSlot(void);
 };
 

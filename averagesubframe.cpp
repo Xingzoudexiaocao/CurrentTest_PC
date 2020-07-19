@@ -4,7 +4,7 @@ AverageSubFrame::AverageSubFrame(QFrame *parent) : QFrame(parent)
 {
     // size(200, 100)
     this->setObjectName("FrameQss");
-    this->setStyleSheet("QFrame#FrameQss {border:1px solid black; background-color: rgb(96, 96, 96, 100);\
+    this->setStyleSheet("QFrame#FrameQss {border:1px solid black; background-color: rgb(240, 248, 255, 200);\
                             border-top-left-radius:4px;         \
                             border-top-right-radius:4px;        \
                             border-bottom-left-radius:4px;      \
@@ -14,11 +14,11 @@ AverageSubFrame::AverageSubFrame(QFrame *parent) : QFrame(parent)
     int fontId = QFontDatabase::addApplicationFont(":/ZhuoJianGanLanJianTi.ttf");
     QStringList fontFamilies = QFontDatabase::applicationFontFamilies(fontId);
     font.setFamily(fontFamilies.at(0));
-    QString qssRadio = "QRadioButton { border-radius: 2px; color:red; text-align:left; padding:2px; font-size:14px;} \
+    QString qssRadio = "QRadioButton { border-radius: 2px; color:#DC143C; text-align:left; padding:2px; font-size:14px;font-weight:bold;} \
             QRadioButton::indicator:checked { background-color: red; } \
-            QRadioButton::indicator:unchecked { background-color: white; }";
-    QString qssLabel_1 = "QLabel { color:red; text-align:left; padding:2px; font-size:14px;}";
-    QString qssLabel_2 = "QLabel { color:red; text-align:left; padding:2px; font-size:20px;}";
+            QRadioButton::indicator:unchecked { background-color: #808080; }";
+    QString qssLabel_1 = "QLabel { color:#DC143C; text-align:left; padding:2px; font-size:14px;font-weight:bold;}";
+    QString qssLabel_2 = "QLabel { color:#DC143C; text-align:left; padding:2px; font-size:20px;font-weight:bold;}";
 
     T1_Text = new QRadioButton(this);
     T1_Text->setText("T1 = 00:00:00.000");

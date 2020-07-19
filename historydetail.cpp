@@ -16,7 +16,7 @@ HistoryDetail::HistoryDetail(QWidget *parent, USB_HID *hid, ComData *comD) : QGr
 //    d_dataSeriesV = d_V;
 //    d_dataSeriesA = d_A;
 
-    QString bnt_qss2 = "QPushButton{border-image: url(:/ButtonNormal.png);color:white; border:1px solid black;text-align:left; padding:2px; font-size:22px;\
+    QString bnt_qss2 = "QPushButton{border-image: url(:/ButtonNormal.png);color:white; border:1px solid black;text-align:center; padding:2px; font-size:22px;\
             border-top-left-radius:8px;         \
             border-top-right-radius:8px;        \
             border-bottom-left-radius:8px;     \
@@ -34,6 +34,8 @@ HistoryDetail::HistoryDetail(QWidget *parent, USB_HID *hid, ComData *comD) : QGr
     connect(m_ChartViewer, SIGNAL(viewPortChanged()),this, SLOT(onViewPortChanged()));
     connect(m_ChartViewer, SIGNAL(mouseMovePlotArea(QMouseEvent*)), this,
         SLOT(onMouseMovePlotArea(QMouseEvent*)));
+    connect(m_ChartViewer, SIGNAL(clicked(QMouseEvent*)),
+        SLOT(onMouseClick(QMouseEvent*)));
 
     // Horizontal scroll bar
     m_HScrollBar = new QScrollBar(Qt::Horizontal, this);
@@ -46,6 +48,8 @@ HistoryDetail::HistoryDetail(QWidget *parent, USB_HID *hid, ComData *comD) : QGr
     connect(m_ChartViewer_2, SIGNAL(viewPortChanged()),this, SLOT(onViewPortChanged_2()));
     connect(m_ChartViewer_2, SIGNAL(mouseMovePlotArea(QMouseEvent*)), this,
         SLOT(onMouseMovePlotArea_2(QMouseEvent*)));
+    connect(m_ChartViewer_2, SIGNAL(clicked(QMouseEvent*)),
+        SLOT(onMouseClick_2(QMouseEvent*)));
 
     // Horizontal scroll bar
     m_HScrollBar_2 = new QScrollBar(Qt::Horizontal, this);
@@ -71,10 +75,27 @@ HistoryDetail::HistoryDetail(QWidget *parent, USB_HID *hid, ComData *comD) : QGr
     m_EjectSubButton->setStyleSheet(bnt_qss2);
     connect(m_EjectSubButton, &QAbstractButton::clicked, this, &HistoryDetail::slotSubButtonClick);
 
+    QLabel *volTitle = new QLabel(this);
+    volTitle->setGeometry((m_ComData->gUiSize->width() - 280) / 2 - 80, 8 + (m_ComData->gUiSize->height() - 78 - 10) / 2 - 14, 300, 30);
+    volTitle->setStyleSheet("QLabel {text-align:left; padding:0px; font-size:28px; background-color:white;}");
+    volTitle->setText("电压测量波形图");
+    volTitle->setFont(font);
+    QLabel *curTitle = new QLabel(this);
+    curTitle->setGeometry((m_ComData->gUiSize->width() - 280) / 2 - 80, 13, 300, 30);
+    curTitle->setStyleSheet("QLabel {text-align:left; padding:0px; font-size:28px; background-color:white;}");
+    curTitle->setText("电流测量波形图");
+    curTitle->setFont(font);
+
+    QComboBox *FixCurrentScale = new QComboBox(this);
+    FixCurrentScale->setGeometry(280, 20, 120, 20);
+    FixCurrentScale->addItems(QStringList() << "自动量程" << "3000mA" << "1000mA" << "100mA" << "10mA" << "1mA" << "100uA" << "10uA" << "1uA");
+    connect(FixCurrentScale, SIGNAL(currentIndexChanged(int)), this, SLOT(slotFixCurrentScale(int)));
+    fixCurrentValue = 0;
+
     m_SubFrame = new QFrame(this);
-    m_SubFrame->setGeometry(2, 10, parent->width() - 10, 200);
+    m_SubFrame->setGeometry(2, 10, parent->width() - 10, 300);
     m_SubFrame->setObjectName("FrameQss");
-    m_SubFrame->setStyleSheet("QFrame#FrameQss {border:1px solid black; background-color: rgb(210, 210, 210, 180);\
+    m_SubFrame->setStyleSheet("QFrame#FrameQss {border:1px solid black; background-color: rgb(240, 248, 255, 200);\
                             border-top-left-radius:4px;         \
                             border-top-right-radius:4px;        \
                             border-bottom-left-radius:4px;      \
@@ -107,89 +128,192 @@ HistoryDetail::HistoryDetail(QWidget *parent, USB_HID *hid, ComData *comD) : QGr
 
     QLabel *SliderTitle = new QLabel(m_SubFrame);
     SliderTitle->setGeometry(parent->width() / 2 - 100, 35, 200, 30);
-    SliderTitle->setStyleSheet("QLabel { text-align:left; font-size:24px; color:#DC143C;}");
+    SliderTitle->setStyleSheet("QLabel { text-align:left; font-size:24px; color:#DC143C;font-weight:bold;}");      // DC143C
     SliderTitle->setFont(font);
     SliderTitle->setText("时间轴");
 
     BeginT = new QLabel(m_SubFrame);
     BeginT->setGeometry(10, 35, 200, 30);
-    BeginT->setStyleSheet("QLabel {font-family:Arial; text-align:left; font-size:20px; color:#DC143C;}");
+    BeginT->setStyleSheet("QLabel {font-family:Arial; text-align:left; font-size:20px; color:#DC143C;font-weight:bold;}");
 
     LastT = new QLabel(m_SubFrame);
     LastT->setGeometry(parent->width() - 150, 35, 200, 30);
-    LastT->setStyleSheet("QLabel {font-family:Arial; text-align:left; font-size:20px; color:#DC143C;}");
+    LastT->setStyleSheet("QLabel {font-family:Arial; text-align:left; font-size:20px; color:#DC143C;font-weight:bold;}");
 
+    QFrame *firstLine1 = new QFrame(m_SubFrame);
+    firstLine1->setGeometry(QRect(parent->width() / 2 - 500, 90, 1000, 2));
+    firstLine1->setFrameShape(QFrame::HLine);
+    firstLine1->setFrameShadow(QFrame::Sunken);
+    firstLine1->setStyleSheet("QFrame {color:#000000;border:2px solid black;}");
+    firstLine1->raise();
 
     BeginSelectT = new QLabel(m_SubFrame);
-    BeginSelectT->setGeometry(parent->width() / 2 - 100 - 200, 100, 200, 30);
-    BeginSelectT->setStyleSheet("QLabel {font-family:Arial; text-align:left; font-size:20px; color:#DC143C;}");
+    BeginSelectT->setGeometry(parent->width() / 2 - 100 - 200, 95, 200, 30);
+    BeginSelectT->setStyleSheet("QLabel {font-family:Arial; text-align:left; font-size:20px; color:#FF6347;font-weight:bold;}");
     LastSelectT = new QLabel(m_SubFrame);
-    LastSelectT->setGeometry(parent->width() / 2 - 100 + 200, 100, 200, 30);
-    LastSelectT->setStyleSheet("QLabel {font-family:Arial; text-align:left; font-size:20px; color:#DC143C;}");
+    LastSelectT->setGeometry(parent->width() / 2 - 100 + 200, 95, 200, 30);
+    LastSelectT->setStyleSheet("QLabel {font-family:Arial; text-align:left; font-size:20px; color:#FF6347;font-weight:bold;}");
     QLabel *BeginSelectTitle = new QLabel(m_SubFrame);
-    BeginSelectTitle->setGeometry(parent->width() / 2 - 100 - 200 - 140, 100 - 2, 140, 30);
-    BeginSelectTitle->setStyleSheet("QLabel { text-align:left; font-size:20px; color:#DC143C;}");
+    BeginSelectTitle->setGeometry(parent->width() / 2 - 100 - 200 - 140, 95 - 2, 140, 30);
+    BeginSelectTitle->setStyleSheet("QLabel { text-align:left; font-size:20px; color:#FF6347;font-weight:bold;}");
     BeginSelectTitle->setFont(font);
     BeginSelectTitle->setText("波形起始时间：");
     QLabel *LastSelectTitle = new QLabel(m_SubFrame);
-    LastSelectTitle->setGeometry(parent->width() / 2 - 100 + 200 - 140, 100 - 2, 140, 30);
-    LastSelectTitle->setStyleSheet("QLabel { text-align:left; font-size:20px; color:#DC143C;}");
+    LastSelectTitle->setGeometry(parent->width() / 2 - 100 + 200 - 140, 95 - 2, 140, 30);
+    LastSelectTitle->setStyleSheet("QLabel { text-align:left; font-size:20px; color:#FF6347;font-weight:bold;}");
     LastSelectTitle->setFont(font);
     LastSelectTitle->setText("波形结束时间：");
 
     m_Currnet_Avg = new QLabel(m_SubFrame);
-    m_Currnet_Avg->setGeometry(parent->width() / 2 - 300, 130, 200, 30);
-    m_Currnet_Avg->setStyleSheet("QLabel {font-family:Arial; text-align:left; font-size:20px; color:#DC143C;}");
+    m_Currnet_Avg->setGeometry(parent->width() / 2 - 300, 120, 200, 30);
+    m_Currnet_Avg->setStyleSheet("QLabel {font-family:Arial; text-align:left; font-size:20px; color:#FF6347;font-weight:bold;}");
     m_Currnet_Max = new QLabel(m_SubFrame);
-    m_Currnet_Max->setGeometry(parent->width() / 2, 130, 200, 30);
-    m_Currnet_Max->setStyleSheet("QLabel {font-family:Arial; text-align:left; font-size:20px; color:#DC143C;}");
+    m_Currnet_Max->setGeometry(parent->width() / 2, 120, 200, 30);
+    m_Currnet_Max->setStyleSheet("QLabel {font-family:Arial; text-align:left; font-size:20px; color:#FF6347;font-weight:bold;}");
     m_Currnet_Min = new QLabel(m_SubFrame);
-    m_Currnet_Min->setGeometry(parent->width() / 2 + 300, 130, 200, 30);
-    m_Currnet_Min->setStyleSheet("QLabel {font-family:Arial; text-align:left; font-size:20px; color:#DC143C;}");
+    m_Currnet_Min->setGeometry(parent->width() / 2 + 300, 120, 200, 30);
+    m_Currnet_Min->setStyleSheet("QLabel {font-family:Arial; text-align:left; font-size:20px; color:#FF6347;font-weight:bold;}");
     QLabel *m_Cur_Title1 = new QLabel(m_SubFrame);
-    m_Cur_Title1->setGeometry(parent->width() / 2 - 300 - 120, 130 - 2, 120, 30);
-    m_Cur_Title1->setStyleSheet("QLabel { text-align:left; font-size:20px; color:#DC143C;}");
+    m_Cur_Title1->setGeometry(parent->width() / 2 - 300 - 120, 120 - 2, 120, 30);
+    m_Cur_Title1->setStyleSheet("QLabel { text-align:left; font-size:20px; color:#FF6347;font-weight:bold;}");
     m_Cur_Title1->setFont(font);
     m_Cur_Title1->setText("电流平均值：");
     QLabel *m_Cur_Title2 = new QLabel(m_SubFrame);
-    m_Cur_Title2->setGeometry(parent->width() / 2 - 120, 130 - 2, 120, 30);
-    m_Cur_Title2->setStyleSheet("QLabel { text-align:left; font-size:20px; color:#DC143C;}");
+    m_Cur_Title2->setGeometry(parent->width() / 2 - 120, 120 - 2, 120, 30);
+    m_Cur_Title2->setStyleSheet("QLabel { text-align:left; font-size:20px; color:#FF6347;font-weight:bold;}");
     m_Cur_Title2->setFont(font);
     m_Cur_Title2->setText("电流最大值：");
     QLabel *m_Cur_Title3 = new QLabel(m_SubFrame);
-    m_Cur_Title3->setGeometry(parent->width() / 2 + 300 - 120, 130 - 2, 120, 30);
-    m_Cur_Title3->setStyleSheet("QLabel { text-align:left; font-size:20px; color:#DC143C;}");
+    m_Cur_Title3->setGeometry(parent->width() / 2 + 300 - 120, 120 - 2, 120, 30);
+    m_Cur_Title3->setStyleSheet("QLabel { text-align:left; font-size:20px; color:#FF6347;font-weight:bold;}");
     m_Cur_Title3->setFont(font);
     m_Cur_Title3->setText("电流最小值：");
 
 
     m_Voltage_Avg = new QLabel(m_SubFrame);
-    m_Voltage_Avg->setGeometry(parent->width() / 2 - 300, 160, 200, 30);
-    m_Voltage_Avg->setStyleSheet("QLabel {font-family:Arial; text-align:left; font-size:20px; color:#DC143C;}");
+    m_Voltage_Avg->setGeometry(parent->width() / 2 - 300, 145, 200, 30);
+    m_Voltage_Avg->setStyleSheet("QLabel {font-family:Arial; text-align:left; font-size:20px; color:#FF6347;font-weight:bold;}");
     m_Voltage_Max = new QLabel(m_SubFrame);
-    m_Voltage_Max->setGeometry(parent->width() / 2, 160, 200, 30);
-    m_Voltage_Max->setStyleSheet("QLabel {font-family:Arial; text-align:left; font-size:20px; color:#DC143C;}");
+    m_Voltage_Max->setGeometry(parent->width() / 2, 145, 200, 30);
+    m_Voltage_Max->setStyleSheet("QLabel {font-family:Arial; text-align:left; font-size:20px; color:#FF6347;font-weight:bold;}");
     m_Voltage_Min = new QLabel(m_SubFrame);
-    m_Voltage_Min->setGeometry(parent->width() / 2 + 300, 160, 200, 30);
-    m_Voltage_Min->setStyleSheet("QLabel {font-family:Arial; text-align:left; font-size:20px; color:#DC143C;}");
+    m_Voltage_Min->setGeometry(parent->width() / 2 + 300, 145, 200, 30);
+    m_Voltage_Min->setStyleSheet("QLabel {font-family:Arial; text-align:left; font-size:20px; color:#FF6347;font-weight:bold;}");
     QLabel *m_Vol_Title1 = new QLabel(m_SubFrame);
-    m_Vol_Title1->setGeometry(parent->width() / 2 - 300 - 120, 160 - 2, 120, 30);
-    m_Vol_Title1->setStyleSheet("QLabel { text-align:left; font-size:20px; color:#DC143C;}");
+    m_Vol_Title1->setGeometry(parent->width() / 2 - 300 - 120, 145 - 2, 120, 30);
+    m_Vol_Title1->setStyleSheet("QLabel { text-align:left; font-size:20px; color:#FF6347;font-weight:bold;}");
     m_Vol_Title1->setFont(font);
     m_Vol_Title1->setText("电压平均值：");
     QLabel *m_Vol_Title2 = new QLabel(m_SubFrame);
-    m_Vol_Title2->setGeometry(parent->width() / 2 - 120, 160 - 2, 120, 30);
-    m_Vol_Title2->setStyleSheet("QLabel { text-align:left; font-size:20px; color:#DC143C;}");
+    m_Vol_Title2->setGeometry(parent->width() / 2 - 120, 145 - 2, 120, 30);
+    m_Vol_Title2->setStyleSheet("QLabel { text-align:left; font-size:20px; color:#FF6347; font-weight:bold;}");
     m_Vol_Title2->setFont(font);
     m_Vol_Title2->setText("电压最大值：");
     QLabel *m_Vol_Title3 = new QLabel(m_SubFrame);
-    m_Vol_Title3->setGeometry(parent->width() / 2 + 300 - 120, 160 - 2, 120, 30);
-    m_Vol_Title3->setStyleSheet("QLabel { text-align:left; font-size:20px; color:#DC143C;}");
+    m_Vol_Title3->setGeometry(parent->width() / 2 + 300 - 120, 145 - 2, 120, 30);
+    m_Vol_Title3->setStyleSheet("QLabel { text-align:left; font-size:20px; color:#FF6347; font-weight:bold;}");
     m_Vol_Title3->setFont(font);
     m_Vol_Title3->setText("电压最小值：");
 
+    QFrame *firstLine2 = new QFrame(m_SubFrame);
+    firstLine2->setGeometry(QRect(parent->width() / 2 - 500, 175, 1000, 2));
+    firstLine2->setFrameShape(QFrame::HLine);
+    firstLine2->setFrameShadow(QFrame::Sunken);
+    firstLine2->setStyleSheet("QFrame {color:#000000;border:2px solid black;}");
+    firstLine2->raise();
+
+    // 显示T1---------T2
+    QString qssRadio = "QRadioButton {font-family:arial; border-radius: 2px; color:#DC143C; text-align:left; font-size:20px;font-weight:bold;} \
+            QRadioButton::indicator:checked { background-color: red; } \
+            QRadioButton::indicator:unchecked { background-color: #808080; }";
+    QString qssLabel_1 = "QLabel {font-family:arial; color:#DC143C; text-align:left; font-size:20px;font-weight:bold;}";
+    QString qssLabel_2 = "QLabel { color:#DC143C; text-align:left; font-size:20px;font-weight:bold;}";
+
+    T1_Text = new QRadioButton(m_SubFrame);
+    T1_Text->setGeometry(parent->width() / 2 - 300 - 120, 180 - 2, 200, 30);
+    T1_Text->setStyleSheet(qssRadio);      // QRadioButton {color:red;}
+    T1_Text->setFont(font);
+    T1_Text->setChecked(true);
+    connect(T1_Text, SIGNAL(clicked(bool)), this, SLOT(slotButtonT1Check(bool)));
+//    connect(T1_Text, &QAbstractButton::clicked, this, &AverageSubFrame::slotButtonCheck());
+    T2_Text = new QRadioButton(m_SubFrame);
+    T2_Text->setGeometry(parent->width() / 2 - 120, 180 - 2, 200, 30);
+    T2_Text->setStyleSheet(qssRadio);      // QRadioButton {color:red;}
+    T2_Text->setFont(font);
+    connect(T2_Text, SIGNAL(clicked(bool)), this, SLOT(slotButtonT2Check(bool)));
+    T2_T1_Label = new QLabel(m_SubFrame);
+    T2_T1_Label->setGeometry(parent->width() / 2 + 300 - 120, 180 - 2, 200, 30);
+    T2_T1_Label->setStyleSheet(qssLabel_1);      // QRadioButton {color:red;}
+    T2_T1_Label->setFont(font);
+
+    T2_T1_Currnet_Avg = new QLabel(m_SubFrame);
+    T2_T1_Currnet_Avg->setGeometry(parent->width() / 2 - 300, 205, 200, 30);
+    T2_T1_Currnet_Avg->setStyleSheet(qssLabel_1);
+    T2_T1_Currnet_Max = new QLabel(m_SubFrame);
+    T2_T1_Currnet_Max->setGeometry(parent->width() / 2, 205, 200, 30);
+    T2_T1_Currnet_Max->setStyleSheet(qssLabel_1);
+    T2_T1_Currnet_Min = new QLabel(m_SubFrame);
+    T2_T1_Currnet_Min->setGeometry(parent->width() / 2 + 300, 205, 200, 30);
+    T2_T1_Currnet_Min->setStyleSheet(qssLabel_1);
+    QLabel *T2_T1_Cur_Title1 = new QLabel(m_SubFrame);
+    T2_T1_Cur_Title1->setGeometry(parent->width() / 2 - 300 - 120, 205 - 2, 120, 30);
+    T2_T1_Cur_Title1->setStyleSheet(qssLabel_2);
+    T2_T1_Cur_Title1->setFont(font);
+    T2_T1_Cur_Title1->setText("电流平均值：");
+    QLabel *T2_T1_Cur_Title2 = new QLabel(m_SubFrame);
+    T2_T1_Cur_Title2->setGeometry(parent->width() / 2 - 120, 205 - 2, 120, 30);
+    T2_T1_Cur_Title2->setStyleSheet(qssLabel_2);
+    T2_T1_Cur_Title2->setFont(font);
+    T2_T1_Cur_Title2->setText("电流最大值：");
+    QLabel *T2_T1_Cur_Title3 = new QLabel(m_SubFrame);
+    T2_T1_Cur_Title3->setGeometry(parent->width() / 2 + 300 - 120, 205 - 2, 120, 30);
+    T2_T1_Cur_Title3->setStyleSheet(qssLabel_2);
+    T2_T1_Cur_Title3->setFont(font);
+    T2_T1_Cur_Title3->setText("电流最小值：");
+
+
+    T2_T1_Voltage_Avg = new QLabel(m_SubFrame);
+    T2_T1_Voltage_Avg->setGeometry(parent->width() / 2 - 300, 230, 200, 30);
+    T2_T1_Voltage_Avg->setStyleSheet(qssLabel_1);
+    T2_T1_Voltage_Max = new QLabel(m_SubFrame);
+    T2_T1_Voltage_Max->setGeometry(parent->width() / 2, 230, 200, 30);
+    T2_T1_Voltage_Max->setStyleSheet(qssLabel_1);
+    T2_T1_Voltage_Min = new QLabel(m_SubFrame);
+    T2_T1_Voltage_Min->setGeometry(parent->width() / 2 + 300, 230, 200, 30);
+    T2_T1_Voltage_Min->setStyleSheet(qssLabel_1);
+    QLabel *T2_T1_Vol_Title1 = new QLabel(m_SubFrame);
+    T2_T1_Vol_Title1->setGeometry(parent->width() / 2 - 300 - 120, 230 - 2, 120, 30);
+    T2_T1_Vol_Title1->setStyleSheet(qssLabel_2);
+    T2_T1_Vol_Title1->setFont(font);
+    T2_T1_Vol_Title1->setText("电压平均值：");
+    QLabel *T2_T1_Vol_Title2 = new QLabel(m_SubFrame);
+    T2_T1_Vol_Title2->setGeometry(parent->width() / 2 - 120, 230 - 2, 120, 30);
+    T2_T1_Vol_Title2->setStyleSheet(qssLabel_2);
+    T2_T1_Vol_Title2->setFont(font);
+    T2_T1_Vol_Title2->setText("电压最大值：");
+    QLabel *T2_T1_Vol_Title3 = new QLabel(m_SubFrame);
+    T2_T1_Vol_Title3->setGeometry(parent->width() / 2 + 300 - 120, 230 - 2, 120, 30);
+    T2_T1_Vol_Title3->setStyleSheet(qssLabel_2);
+    T2_T1_Vol_Title3->setFont(font);
+    T2_T1_Vol_Title3->setText("电压最小值：");
+
+    ZoomMax = new QPushButton( "时间轴定位至T1-T2", m_SubFrame);
+    ZoomMax->setGeometry(parent->width() / 2 - 250 - 10, 260, 250, 30);
+    ZoomMax->setStyleSheet(bnt_qss2);
+    ZoomMax->setFont(font);
+    ZoomMax->setToolTip("点击将波形显示放大至T1-T2");
+    connect(ZoomMax, &QAbstractButton::clicked, this, &HistoryDetail::slotZoomMaxClick);
+    ZoomMin = new QPushButton( "时间轴定位至全局", m_SubFrame);
+    ZoomMin->setGeometry(parent->width() / 2 + 10, 260, 250, 30);
+    ZoomMin->setStyleSheet(bnt_qss2);
+    ZoomMin->setFont(font);
+    ZoomMin->setToolTip("点击将波形显示缩小至整个时间轴");
+    connect(ZoomMin, &QAbstractButton::clicked, this, &HistoryDetail::slotZoomMinClick);
+
+
     initDisplay();      // 显示初始化
     updateInfomationDisplay();
+    UpdateT1T2Display();
 }
 
 HistoryDetail::~HistoryDetail()
@@ -200,12 +324,30 @@ HistoryDetail::~HistoryDetail()
     delete [] d_dataSeriesA;
 }
 
+void HistoryDetail::slotButtonT1Check(bool val)
+{
+//    qDebug() << "Click ButtonT1 = " << val;
+    keyValue = 1;
+}
+
+void HistoryDetail::slotButtonT2Check(bool val)
+{
+//    qDebug() << "Click ButtonT2 = " << val;
+    keyValue = 2;
+}
+
 void HistoryDetail::mouseReleaseSlot(void)
 {
-//    qDebug() << "moureRelease";
-    const float EPSINON = 0.1;
-    if(abs(DifferValue - m_DoubleSlider->maxValue() + m_DoubleSlider->minValue()) > EPSINON)
+    if(m_UsbHid->dev_handle != nullptr)
     {
+        qDebug() << "USB正在运行，无法加载文件！";
+         QMessageBox::critical(this, "提示", "USB正在运行，无法执行该操作！");
+        return;
+    }
+//    qDebug() << "moureRelease" << m_DoubleSlider->minValue() << m_DoubleSlider->maxValue();
+//    const float EPSINON = 0.1;
+//    if(abs(DifferValue - m_DoubleSlider->maxValue() + m_DoubleSlider->minValue()) > EPSINON)
+//    {
 //        qDebug() << "更新UI";
         if(m_UsbHid->dev_handle != nullptr)
         {
@@ -213,12 +355,13 @@ void HistoryDetail::mouseReleaseSlot(void)
              QMessageBox::critical(this, "提示", "请点击暂停采集，再执行该操作！");
             return;
         }
-        DifferValue = m_DoubleSlider->maxValue() - m_DoubleSlider->minValue();
+//        DifferValue = m_DoubleSlider->maxValue() - m_DoubleSlider->minValue();
         BeginSelectT->setText(QDateTime::fromMSecsSinceEpoch(BeginDateTime + (qint64)m_DoubleSlider->minValue() - 1).toString("hh:mm:ss.zzz"));
         LastSelectT->setText(QDateTime::fromMSecsSinceEpoch(BeginDateTime + (qint64)m_DoubleSlider->maxValue() - 1).toString("hh:mm:ss.zzz"));
         loadingDataByTime((qint64)m_DoubleSlider->minValue(), (qint64)m_DoubleSlider->maxValue());
         updateInfomationDisplay();
-    }
+        UpdateT1T2Display();
+//    }
 }
 
 void HistoryDetail::initDisplay(void)
@@ -227,6 +370,11 @@ void HistoryDetail::initDisplay(void)
     CountSize = 1;
     SelectSize = 1;
     IntervalValue = 1;
+    T1_DateTime = 0;
+    T2_DateTime = 0;
+    d_currentIndex = 1;
+
+    historyFile->setText("");
     QDateTime curT = QDateTime::currentDateTime();
     BeginDateTime = curT.toMSecsSinceEpoch();
     BeginT->setText(curT.toString("hh:mm:ss.zzz"));
@@ -241,6 +389,14 @@ void HistoryDetail::initDisplay(void)
 
     memset(&m_Current_DataInfo, 0, sizeof (m_Current_DataInfo));
     memset(&m_Voltage_DataInfo, 0, sizeof (m_Voltage_DataInfo));
+
+    keyValue = 1;
+    T1_Text->setText("T1 = " + curT.toString("hh:mm:ss.zzz"));
+    T2_Text->setText("T2 = " + curT.toString("hh:mm:ss.zzz"));
+    T2_T1_Label->setText("T2-T1 = 00:00:00.000");
+
+    memset(&T2_T1_Current_DataInfo, 0, sizeof (T2_T1_Current_DataInfo));
+    memset(&T2_T1_Voltage_DataInfo, 0, sizeof (T2_T1_Voltage_DataInfo));
 
 
     updateChart();      // 初始化显示表格
@@ -261,7 +417,7 @@ void HistoryDetail::loadingDataByTime(qint64 t1, qint64 t2)
     // 根据时间间隔抽取数据库中的数据
     QSqlQueryModel sqlModel;
     QString strQuery = "select * from stm32_data where (id % " + QString::number(IntervalValue, 10)
-            + " == 0) and id >= " + QString::number(t1, 10) + " and id <= " + QString::number(t2, 10) + " ";
+            + " == 1) and id >= " + QString::number(t1, 10) + " and id <= " + QString::number(t2, 10) + " ";
 //    QString  strQuery = "select * from stm32_data where (id <= 60000)";
     sqlModel.setQuery(strQuery);
     while(sqlModel.canFetchMore())
@@ -281,6 +437,14 @@ void HistoryDetail::loadingDataByTime(qint64 t1, qint64 t2)
         *(d_dataSeriesA + i) = sqlModel.record(i).value("current").toDouble();
     }
     qDebug()<< "Update Chart Data Success: "<< QDateTime::currentDateTime();
+
+    T1_Index = 1;
+    T2_Index = d_currentIndex;
+
+    T1_DateTime = sqlModel.record(0).value("time").toLongLong();
+    T2_DateTime = sqlModel.record(sqlModel.rowCount() - 1).value("time").toLongLong();
+
+//    qDebug()<< "T1_DateTime 和 T2_DateTime" << T1_DateTime << T2_DateTime << d_currentIndex;
 
     // 计算选中数据的平均值
     strQuery = "select avg(current), max(current), min(current), avg(voltage), max(voltage), min(voltage) from stm32_data where id >= "
@@ -340,6 +504,53 @@ void HistoryDetail::slotSubButtonClick(void)
         m_SubFrame->setVisible(false);
     else
         m_SubFrame->setVisible(true);
+}
+
+void HistoryDetail::slotZoomMaxClick(void)
+{
+    if(m_UsbHid->dev_handle != nullptr)
+    {
+        qDebug() << "USB正在运行，无法加载文件！";
+         QMessageBox::critical(this, "提示", "USB正在运行，无法执行该操作！");
+        return;
+    }
+    if(T1_DateTime <= 0 || T2_DateTime <= 0)
+    {
+        qDebug() << "没有选中T1和T2！";
+        return;
+    }
+    qint64 t_begin = 0, t_end = 0;
+    if(T1_DateTime <= T2_DateTime) {
+        t_begin = T1_DateTime; t_end = T2_DateTime;
+    } else {
+        t_begin = T2_DateTime; t_end = T1_DateTime;
+    }
+    m_DoubleSlider->setMinValue(T1_DateTime - BeginDateTime + 1);
+    m_DoubleSlider->setMaxValue(T2_DateTime - BeginDateTime + 1);
+
+    BeginSelectT->setText(QDateTime::fromMSecsSinceEpoch(T1_DateTime).toString("hh:mm:ss.zzz"));
+    LastSelectT->setText(QDateTime::fromMSecsSinceEpoch(T2_DateTime).toString("hh:mm:ss.zzz"));
+    loadingDataByTime((qint64)m_DoubleSlider->minValue(), (qint64)m_DoubleSlider->maxValue());
+    updateInfomationDisplay();
+    UpdateT1T2Display();
+}
+
+void HistoryDetail::slotZoomMinClick(void)
+{
+    if(m_UsbHid->dev_handle != nullptr)
+    {
+        qDebug() << "USB正在运行，无法加载文件！";
+         QMessageBox::critical(this, "提示", "USB正在运行，无法执行该操作！");
+        return;
+    }
+    m_DoubleSlider->setMinValue(1);
+    m_DoubleSlider->setMaxValue(CountSize);
+
+    BeginSelectT->setText(QDateTime::fromMSecsSinceEpoch(BeginDateTime + (qint64)m_DoubleSlider->minValue() - 1).toString("hh:mm:ss.zzz"));
+    LastSelectT->setText(QDateTime::fromMSecsSinceEpoch(BeginDateTime + (qint64)m_DoubleSlider->maxValue() - 1).toString("hh:mm:ss.zzz"));
+    loadingDataByTime((qint64)m_DoubleSlider->minValue(), (qint64)m_DoubleSlider->maxValue());
+    updateInfomationDisplay();
+    UpdateT1T2Display();
 }
 
 void HistoryDetail::slotHistoryOpen(void)
@@ -427,16 +638,98 @@ void HistoryDetail::LoadingData(QString fileName)
 
    loadingDataByTime((qint64)m_DoubleSlider->minValue(), (qint64)m_DoubleSlider->maxValue());
    updateInfomationDisplay();
+   UpdateT1T2Display();
+}
+
+void HistoryDetail::slotFixCurrentScale(int val)
+{
+//    qDebug() << "val = " << val;
+    double fixArr[9] = {0, 3000, 1000, 100, 10, 1, 0.1, 0.01, 0.001};
+    try {
+        fixCurrentValue = fixArr[val];
+        drawChart(m_ChartViewer_2, 1);        // 重新绘制表格
+    } catch (...) {
+
+    }
+
 }
 
 void HistoryDetail::ClearData(void)
 {
-
+    initDisplay();      // 显示初始化
+    updateInfomationDisplay();
+    UpdateT1T2Display();
 }
 
-void HistoryDetail::UpdateChartData(void)
+void HistoryDetail::getT1T2DataFromSqlite(qint64 t1, qint64 t2)
 {
+    static qint64 differT = 0;
+    qint64 t_begin = 0, t_end = 0;
+    if(t1 <= t2) {
+        t_begin = t1; t_end = t2;
+    } else {
+        t_begin = t2; t_end = t1;
+    }
+    if(differT == t_end - t_begin) {
+        qDebug() << "数据无变化";
+        return;
+    } else {
+        differT = t_end - t_begin;
+    }
 
+    // 根据时间间隔抽取数据库中的数据
+    QSqlQueryModel sqlModel;
+    // 计算选中数据的平均值
+    QString strQuery = "select avg(current), max(current), min(current), avg(voltage), max(voltage), min(voltage) from stm32_data where time >= "
+            + QString::number(t_begin, 10) + " and time <= " + QString::number(t_end, 10) + " ";
+    sqlModel.setQuery(strQuery);
+//    qDebug() << "个数 = " << sqlModel.record().count();
+//    double curBuf = sqlModel.record(0).value(0).toDouble();
+//    qDebug() << "电流平均值数 = " << QString::number(curBuf, 'f', 10) << QDateTime::currentDateTime();
+//    double volBuf = sqlModel.record(0).value(3).toDouble();
+//    qDebug() << "电压平均值数 = " << QString::number(volBuf, 'f', 10) << QDateTime::currentDateTime();
+    T2_T1_Current_DataInfo.average = sqlModel.record(0).value(0).toDouble();
+    T2_T1_Current_DataInfo.maximun = sqlModel.record(0).value(1).toDouble();
+    T2_T1_Current_DataInfo.minimun = sqlModel.record(0).value(2).toDouble();
+    T2_T1_Voltage_DataInfo.average = sqlModel.record(0).value(3).toDouble();
+    T2_T1_Voltage_DataInfo.maximun = sqlModel.record(0).value(4).toDouble();
+    T2_T1_Voltage_DataInfo.minimun = sqlModel.record(0).value(5).toDouble();
+}
+
+void HistoryDetail::UpdateT1T2Display(void)
+{
+    if(T1_DateTime <= 0 || T2_DateTime <= 0)
+    {
+        T1_Text->setText("T1 = 00:00:00.000");
+        T2_Text->setText("T2 = 00:00:00.000");
+        T2_T1_Label->setText("T2-T1 = 00:00:00.000");
+        memset(&T2_T1_Current_DataInfo, 0, sizeof (T2_T1_Current_DataInfo));
+        memset(&T2_T1_Voltage_DataInfo, 0, sizeof (T2_T1_Voltage_DataInfo));
+    } else {
+        T1_Text->setText("T1 = " + QDateTime::fromMSecsSinceEpoch(T1_DateTime).toString("hh:mm:ss.zzz"));
+        T2_Text->setText("T2 = " + QDateTime::fromMSecsSinceEpoch(T2_DateTime).toString("hh:mm:ss.zzz"));
+        qint64 DifferT = std::abs(T2_DateTime - T1_DateTime);
+        T2_T1_Label->setText("T2-T1 = " + QDateTime::fromMSecsSinceEpoch(DifferT).toString("00:mm:ss.zzz"));
+
+        getT1T2DataFromSqlite(T1_DateTime, T2_DateTime);        // 获取值
+   }
+
+    if(T2_T1_Current_DataInfo.average < 0.001)
+        T2_T1_Currnet_Avg->setText(QString::number(T2_T1_Current_DataInfo.average * 1000, 'f', 3) + "uA");
+    else
+        T2_T1_Currnet_Avg->setText(QString::number(T2_T1_Current_DataInfo.average, 'f', 3) + "mA");
+    if(T2_T1_Current_DataInfo.maximun < 0.001)
+        T2_T1_Currnet_Max->setText(QString::number(T2_T1_Current_DataInfo.maximun * 1000, 'f', 3) + "uA");
+    else
+        T2_T1_Currnet_Max->setText(QString::number(T2_T1_Current_DataInfo.maximun, 'f', 3) + "mA");
+    if(T2_T1_Current_DataInfo.minimun < 0.001)
+        T2_T1_Currnet_Min->setText(QString::number(T2_T1_Current_DataInfo.minimun * 1000, 'f', 3) + "uA");
+    else
+        T2_T1_Currnet_Min->setText(QString::number(T2_T1_Current_DataInfo.minimun, 'f', 3) + "mA");
+
+    T2_T1_Voltage_Avg->setText(QString::number(T2_T1_Voltage_DataInfo.average, 'f', 3) + "V");
+    T2_T1_Voltage_Max->setText(QString::number(T2_T1_Voltage_DataInfo.maximun, 'f', 3) + "V");
+    T2_T1_Voltage_Min->setText(QString::number(T2_T1_Voltage_DataInfo.minimun, 'f', 3) + "V");
 }
 
 void HistoryDetail::updateChart()
@@ -447,6 +740,70 @@ void HistoryDetail::updateChart()
     onChartUpdateTimer(m_ChartViewer_2);
 }
 
+void HistoryDetail::onMouseClick(QMouseEvent *)
+{
+//    if(m_UsbHid->dev_handle != nullptr)
+//    {
+//        qDebug() << "USB正在运行，无法加载文件！";
+//         QMessageBox::critical(this, "提示", "USB正在运行，无法执行该操作！");
+//        return;
+//    }
+    if(d_currentIndex <= 1)
+    {
+        qDebug() << "没有加载数据";
+        return;
+    }
+    XYChart *c = (XYChart *)m_ChartViewer->getChart();
+    double xValue = c->getNearestXValue(m_ChartViewer->getPlotAreaMouseX());
+    QString bufT = c->xAxis()->getFormattedLabel(xValue, "yyyy-mm-dd hh:nn:ss.fff");
+//    qint64 bufT_Nomal = QDateTime::fromString(bufT, "yyyy-MM-dd hh:mm:ss.zzz").toMSecsSinceEpoch();
+//    qDebug() << "bufT_Nomal = " << QDateTime::fromMSecsSinceEpoch(bufT_Nomal).toString("yyyy-MM-dd hh:mm:ss.zzz");
+    if(keyValue == 1) {
+        T1_DateTime = QDateTime::fromString(bufT, "yyyy-MM-dd hh:mm:ss.zzz").toMSecsSinceEpoch();
+        T1_Index = (T1_DateTime - (BeginDateTime + (qint64)m_DoubleSlider->minValue() - 1)) / IntervalValue + 1;
+        qDebug() << "T1_Index = " << T1_Index;
+    } else if(keyValue == 2) {
+        T2_DateTime = QDateTime::fromString(bufT, "yyyy-MM-dd hh:mm:ss.zzz").toMSecsSinceEpoch();
+        T2_Index = (T2_DateTime - (BeginDateTime + (qint64)m_DoubleSlider->minValue() - 1)) / IntervalValue + 1;
+        qDebug() << "T2_Index = " << T2_Index;
+    }
+
+    updateChart();
+
+    UpdateT1T2Display();
+}
+void HistoryDetail::onMouseClick_2(QMouseEvent *)
+{
+//    if(m_UsbHid->dev_handle != nullptr)
+//    {
+//        qDebug() << "USB正在运行，无法加载文件！";
+//         QMessageBox::critical(this, "提示", "USB正在运行，无法执行该操作！");
+//        return;
+//    }
+    if(d_currentIndex <= 1)
+    {
+        qDebug() << "没有加载数据";
+        return;
+    }
+    XYChart *c = (XYChart *)m_ChartViewer_2->getChart();
+    double xValue = c->getNearestXValue(m_ChartViewer_2->getPlotAreaMouseX());
+    QString bufT = c->xAxis()->getFormattedLabel(xValue, "yyyy-mm-dd hh:nn:ss.fff");
+//    qint64 bufT_Nomal = QDateTime::fromString(bufT, "yyyy-MM-dd hh:mm:ss.zzz").toMSecsSinceEpoch();
+//    qDebug() << "bufT_Nomal = " << QDateTime::fromMSecsSinceEpoch(bufT_Nomal).toString("yyyy-MM-dd hh:mm:ss.zzz");
+    if(keyValue == 1) {
+        T1_DateTime = QDateTime::fromString(bufT, "yyyy-MM-dd hh:mm:ss.zzz").toMSecsSinceEpoch();
+        T1_Index = (T1_DateTime - (BeginDateTime + (qint64)m_DoubleSlider->minValue() - 1)) / IntervalValue + 1;
+        qDebug() << "T1_Index = " << T1_Index;
+    } else if(keyValue == 2) {
+        T2_DateTime = QDateTime::fromString(bufT, "yyyy-MM-dd hh:mm:ss.zzz").toMSecsSinceEpoch();
+        T2_Index = (T2_DateTime - (BeginDateTime + (qint64)m_DoubleSlider->minValue() - 1)) / IntervalValue + 1;
+        qDebug() << "T2_Index = " << T2_Index;
+    }
+
+    updateChart();
+
+    UpdateT1T2Display();
+}
 void HistoryDetail::onMouseMovePlotArea(QMouseEvent *)
 {
     trackLineLabel((XYChart *)m_ChartViewer->getChart(), m_ChartViewer->getPlotAreaMouseX(), 0);
@@ -644,8 +1001,8 @@ void HistoryDetail::drawChart(QChartViewer *viewer, int index)
         }
         layer->addDataSet(viewPortDataSeriesC, 0x0000ff, buffer);       // , buffer
         c->yAxis()->setMinTickInc(0.000001);
-//        if(fixCurrentValue > 0)
-//            c->yAxis()->setDateScale(0, fixCurrentValue);
+        if(fixCurrentValue > 0)
+            c->yAxis()->setDateScale(0, fixCurrentValue);
     }
 
 
@@ -670,20 +1027,30 @@ void HistoryDetail::drawChart(QChartViewer *viewer, int index)
     // the date/time format the various cases.
     //
 
-    c->yAxis()->setLabelFormat("{value|3}");
-    if(index == 1)
+    if(index == 0)
+        c->yAxis()->setLabelFormat("{value|3}");
+    else if(index == 1)
     {
-        double yMax = *std::max_element(viewPortDataSeriesC.data, viewPortDataSeriesC.data + viewPortDataSeriesC.len);
-        if(yMax <= 0)
-            yMax = 120;
-//    qDebug() << "yMax = " << QString::number(yMax, 'f', 10);
-        if(yMax < 0.001) {
+        if(fixCurrentValue <= 0) {                  // 自动量程
+            double yMax = *std::max_element(viewPortDataSeriesC.data, viewPortDataSeriesC.data + viewPortDataSeriesC.len);
+    //    qDebug() << "yMax = " << QString::number(yMax, 'f', 10);
+            if(yMax < 0.001) {
+                c->yAxis()->setLabelFormat("{={value}*1000|3}");
+                c->yAxis()->setTitle("Current ( uA )", "arialbd.ttf", 12);
+            } else if(yMax < 1000) {
+                c->yAxis()->setLabelFormat("{value|3}");
+                c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12);
+            } else {
+                c->yAxis()->setLabelFormat("{value|2}");
+                c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12);
+            }
+        } else if(fixCurrentValue < 1) {            // uA 级别
             c->yAxis()->setLabelFormat("{={value}*1000|3}");
             c->yAxis()->setTitle("Current ( uA )", "arialbd.ttf", 12);
-        } else if(yMax < 1000) {
+        } else if(fixCurrentValue < 1000) {         // mA 级别 < 1000mA
             c->yAxis()->setLabelFormat("{value|3}");
             c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12);
-        } else {
+        } else {                                    // // mA 级别 >= 1000mA
             c->yAxis()->setLabelFormat("{value|2}");
             c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12);
         }
@@ -710,6 +1077,17 @@ void HistoryDetail::drawChart(QChartViewer *viewer, int index)
     // Output the chart
     //================================================================================
 
+    if(T1_Index > 0 && T1_Index <= d_currentIndex)      //
+    {
+        QString buf = "T1 = " + (QString)c->xAxis()->getFormattedLabel(*(d_timeStamps + T1_Index - 1), "hh:nn:ss.fff");     // yyyy-mm-dd
+        c->xAxis()->addMark(*(d_timeStamps + T1_Index - 1), 0xFF4500, buf.toLatin1().data())->setLineWidth(2);
+    }
+    if(T2_Index > 0 && T2_Index <= d_currentIndex)
+    {
+        QString buf = "T2 = " + (QString)c->xAxis()->getFormattedLabel(*(d_timeStamps + T2_Index - 1), "hh:nn:ss.fff");     // yyyy-mm-dd
+        c->xAxis()->addMark(*(d_timeStamps + T2_Index - 1), 0xFF4500, buf.toLatin1().data())->setLineWidth(2);
+    }
+
     // We need to update the track line too. If the mouse is moving on the chart (eg. if
     // the user drags the mouse on the chart to scroll it), the track line will be updated
     // in the MouseMovePlotArea event. Otherwise, we need to update the track line here.
@@ -724,6 +1102,16 @@ void HistoryDetail::drawChart(QChartViewer *viewer, int index)
     viewer->setChart(c);
 }
 
+QString HistoryDetail::doubleToTime(double dTime)
+{
+    QDateTime now = QDateTime::currentDateTime();
+    double currentTime = Chart::chartTime2(now.toTime_t())
+                         + ((double)now.time().msec() / 10) * 0.01;     //     / 10 * 0.01
+
+    QDateTime dt =  QDateTime::fromMSecsSinceEpoch(now.toMSecsSinceEpoch() - (qint64)currentTime + (qint64)dTime);
+    QString ret = dt.toString("yyyy-MM-dd hh:mm:ss.zzz");
+    return ret;
+}
 
 void HistoryDetail::trackLineLabel(XYChart *c, int mouseX, int index)
 {
@@ -734,7 +1122,9 @@ void HistoryDetail::trackLineLabel(XYChart *c, int mouseX, int index)
     PlotArea *plotArea = c->getPlotArea();
 
     // Get the data x-value that is nearest to the mouse, and find its pixel coordinate.
+//    qDebug() << "mouseX = " << mouseX;
     double xValue = c->getNearestXValue(mouseX);
+//    qDebug() << "xValue = " << QString::number(xValue, 'f', 10);
     int xCoor = c->getXCoor(xValue);
     if (xCoor < plotArea->getLeftX())
         return;
@@ -779,15 +1169,15 @@ void HistoryDetail::trackLineLabel(XYChart *c, int mouseX, int index)
                 std::ostringstream label;
                 if(index == 0) {
                     label << "<*font,bgColor=" << hex << color << "*> "
-                        << c->formatValue(dataSet->getValue(xIndex), "{value|P4}") << "V" << " <*font*>";
+                        << c->formatValue(dataSet->getValue(xIndex), "{value|3}") << "V" << " <*font*>";
                 } else if(index == 1) {
                     double bufD = dataSet->getValue(xIndex);
                     if(bufD < 1) {
                         label << "<*font,bgColor=" << hex << color << "*> "
-                            << c->formatValue(bufD * 1000, "{value|P4}") << "uA" << " <*font*>";
+                            << c->formatValue(bufD * 1000, "{value|3}") << "uA" << " <*font*>";
                     } else {
                         label << "<*font,bgColor=" << hex << color << "*> "
-                            << c->formatValue(bufD, "{value|P4}") << "mA" << " <*font*>";
+                            << c->formatValue(bufD, "{value|3}") << "mA" << " <*font*>";
                     }
                 }
 
