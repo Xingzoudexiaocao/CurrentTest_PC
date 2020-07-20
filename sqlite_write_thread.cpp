@@ -202,7 +202,10 @@ void Sqlite_Write_Thread::writeSqliteData(qint64 time, double vol, double cur)
         if(m_ComData->d_calculateValue.energySum < m_ComData->SettingBatteryCapacity)       // 电池未放完电才更新时间
         {
             runningMinute =  m_ComData->RunningCount / 60000;
-            remainMinute = (m_ComData->SettingBatteryCapacity - m_ComData->d_calculateValue.energySum) / m_ComData->d_Avg_A * 60;
+            if(m_ComData->d_Avg_A <= 0)
+                remainMinute = 60000;
+            else
+                remainMinute = (m_ComData->SettingBatteryCapacity - m_ComData->d_calculateValue.energySum) / m_ComData->d_Avg_A * 60;
         } else {
             remainMinute = 0;
         }

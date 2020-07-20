@@ -466,16 +466,19 @@ void HistoryDetail::loadingDataByTime(qint64 t1, qint64 t2)
 
 //    m_HScrollBar->setValue(1000000000);
 //    m_HScrollBar_2->setValue(1000000000);
-//    onHScrollBarChanged(1000000000); // 初始化显示表格
-//    onHScrollBarChanged_2(1000000000);
-//    onViewPortChanged();
-//    onViewPortChanged_2();
+
 //    m_ChartViewer->setViewPortLeft(1);
 //    m_ChartViewer->updateViewPort(true, false);
 //    m_ChartViewer_2->setViewPortLeft(1);
 //    m_ChartViewer_2->updateViewPort(true, false);
 
     updateChart();
+//    onHScrollBarChanged(0); // 初始化显示表格
+//    onHScrollBarChanged_2(0);
+    m_ChartViewer->setViewPortWidth(1);
+    m_ChartViewer_2->setViewPortWidth(1);
+    onViewPortChanged();
+    onViewPortChanged_2();
 }
 
 void HistoryDetail::updateInfomationDisplay(void)
@@ -823,8 +826,10 @@ void HistoryDetail::onMouseUsageChanged(int mouseUsage)
 
 void HistoryDetail::onHScrollBarChanged(int value)
 {
-    if (!m_ChartViewer->isInViewPortChangedEvent())
-    {
+//    qDebug() << "测试滑条位置" << value;
+//    if (!m_ChartViewer->isInViewPortChangedEvent())
+//    {
+//         qDebug() << "进来了吗";
         // Set the view port based on the scroll bar
         int scrollBarLen = m_HScrollBar->maximum() + m_HScrollBar->pageStep();
         m_ChartViewer->setViewPortLeft(value / (double)scrollBarLen);
@@ -832,25 +837,39 @@ void HistoryDetail::onHScrollBarChanged(int value)
         // Update the chart display without updating the image maps. (We can delay updating
         // the image map until scrolling is completed and the chart display is stable.)
         m_ChartViewer->updateViewPort(true, false);
-    }
-}
-void HistoryDetail::onHScrollBarChanged_2(int value)
-{
-    if (!m_ChartViewer_2->isInViewPortChangedEvent())
-    {
-        // Set the view port based on the scroll bar
-        int scrollBarLen = m_HScrollBar_2->maximum() + m_HScrollBar_2->pageStep();
+
         m_ChartViewer_2->setViewPortLeft(value / (double)scrollBarLen);
-//        qDebug() << "scrollBarLen = " << scrollBarLen;
-//        qDebug() << "value = " << value;
+
         // Update the chart display without updating the image maps. (We can delay updating
         // the image map until scrolling is completed and the chart display is stable.)
         m_ChartViewer_2->updateViewPort(true, false);
-    }
+//    }
+
+}
+void HistoryDetail::onHScrollBarChanged_2(int value)
+{
+//    if (!m_ChartViewer_2->isInViewPortChangedEvent())
+//    {
+        // Set the view port based on the scroll bar
+        int scrollBarLen_2 = m_HScrollBar_2->maximum() + m_HScrollBar_2->pageStep();
+        m_ChartViewer_2->setViewPortLeft(value / (double)scrollBarLen_2);
+
+        // Update the chart display without updating the image maps. (We can delay updating
+        // the image map until scrolling is completed and the chart display is stable.)
+        m_ChartViewer_2->updateViewPort(true, false);
+
+        m_ChartViewer->setViewPortLeft(value / (double)scrollBarLen_2);
+
+        // Update the chart display without updating the image maps. (We can delay updating
+        // the image map until scrolling is completed and the chart display is stable.)
+        m_ChartViewer->updateViewPort(true, false);
+//    }
 }
 
 void HistoryDetail::onViewPortChanged()
 {
+//    qDebug() << "有没有执行到这里 ";
+    m_ChartViewer_2->setViewPortWidth(m_ChartViewer->getViewPortWidth());       // 同步缩放波形1和波形2
     // In addition to updating the chart, we may also need to update other controls that
     // changes based on the view port.
     updateControls(m_ChartViewer, m_HScrollBar);
@@ -858,9 +877,27 @@ void HistoryDetail::onViewPortChanged()
     // Update the chart if necessary
     if (m_ChartViewer->needUpdateChart())
         drawChart(m_ChartViewer, 0);
+
+    // In addition to updating the chart, we may also need to update other controls that
+    // changes based on the view port.
+    updateControls(m_ChartViewer_2, m_HScrollBar_2);
+
+    // Update the chart if necessary
+    if (m_ChartViewer_2->needUpdateChart())
+        drawChart(m_ChartViewer_2, 1);
 }
 void HistoryDetail::onViewPortChanged_2()
 {
+    m_ChartViewer->setViewPortWidth(m_ChartViewer_2->getViewPortWidth());       // 同步缩放波形1和波形2
+    // In addition to updating the chart, we may also need to update other controls that
+    // changes based on the view port.
+    updateControls(m_ChartViewer, m_HScrollBar);
+
+    // Update the chart if necessary
+    if (m_ChartViewer->needUpdateChart())
+        drawChart(m_ChartViewer, 0);
+
+
     // In addition to updating the chart, we may also need to update other controls that
     // changes based on the view port.
     updateControls(m_ChartViewer_2, m_HScrollBar_2);
@@ -882,6 +919,7 @@ void HistoryDetail::updateControls(QChartViewer *viewer, QScrollBar *bar)
     bar->setSingleStep(min(scrollBarLen / 100, bar->pageStep()));
     bar->setRange(0, scrollBarLen - bar->pageStep());
     bar->setValue((int)(0.5 + viewer->getViewPortLeft() * scrollBarLen));
+//    qDebug() << "viewer->getViewPortWidth() = " << viewer->getViewPortWidth();
 }
 
 //
@@ -1034,7 +1072,10 @@ void HistoryDetail::drawChart(QChartViewer *viewer, int index)
         if(fixCurrentValue <= 0) {                  // 自动量程
             double yMax = *std::max_element(viewPortDataSeriesC.data, viewPortDataSeriesC.data + viewPortDataSeriesC.len);
     //    qDebug() << "yMax = " << QString::number(yMax, 'f', 10);
-            if(yMax < 0.001) {
+            if(yMax <= 0.0000001) {     // 最大值等于0
+                c->yAxis()->setLabelFormat("{value|3}");
+                c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12);
+            } else if(yMax < 0.001) {
                 c->yAxis()->setLabelFormat("{={value}*1000|3}");
                 c->yAxis()->setTitle("Current ( uA )", "arialbd.ttf", 12);
             } else if(yMax < 1000) {

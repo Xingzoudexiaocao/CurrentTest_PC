@@ -1337,7 +1337,7 @@ void RealTime::drawChart_Current(void)
     {
         sprintf(buffer, " <*bgColor=ffffff*> <*color=0000ff*> <*size=14px*>");
         c->yAxis()->setMinTickInc(20);
-        c->yAxis()->setDateScale(0, 120);           // 固定坐标轴0-7.5V
+        c->yAxis()->setDateScale(0, 120);           // 固定坐标轴0-120mA
         c->yAxis()->setLabelFormat("{value|3}");
     }
     layer->addDataSet(viewPortDataSeriesC, 0x0000ff, buffer);
@@ -1372,10 +1372,14 @@ void RealTime::drawChart_Current(void)
 //    double yMax = *std::max_element(testArr.data, testArr.data + testArr.len);
     if(m_ComData->d_currentIndex > 1)
     {
+//        c->yAxis()->setDateScale(0, 0);
         if(fixCurrentValue <= 0) {                  // 自动量程
             double yMax = *std::max_element(viewPortDataSeriesC.data, viewPortDataSeriesC.data + viewPortDataSeriesC.len);
     //    qDebug() << "yMax = " << QString::number(yMax, 'f', 10);
-            if(yMax < 0.001) {
+            if(yMax <= 0.0000001) {     // 最大值等于0
+                c->yAxis()->setLabelFormat("{value|3}");
+                c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12);
+            } else if(yMax < 0.001) {
                 c->yAxis()->setLabelFormat("{={value}*1000|3}");
                 c->yAxis()->setTitle("Current ( uA )", "arialbd.ttf", 12);
             } else if(yMax < 1000) {
