@@ -875,7 +875,7 @@ void HistoryDetail::onViewPortChanged()
     updateControls(m_ChartViewer, m_HScrollBar);
 
     // Update the chart if necessary
-    if (m_ChartViewer->needUpdateChart())
+//    if (m_ChartViewer->needUpdateChart())
         drawChart(m_ChartViewer, 0);
 
     // In addition to updating the chart, we may also need to update other controls that
@@ -883,7 +883,7 @@ void HistoryDetail::onViewPortChanged()
     updateControls(m_ChartViewer_2, m_HScrollBar_2);
 
     // Update the chart if necessary
-    if (m_ChartViewer_2->needUpdateChart())
+//    if (m_ChartViewer_2->needUpdateChart())
         drawChart(m_ChartViewer_2, 1);
 }
 void HistoryDetail::onViewPortChanged_2()
@@ -894,7 +894,7 @@ void HistoryDetail::onViewPortChanged_2()
     updateControls(m_ChartViewer, m_HScrollBar);
 
     // Update the chart if necessary
-    if (m_ChartViewer->needUpdateChart())
+//    if (m_ChartViewer->needUpdateChart())
         drawChart(m_ChartViewer, 0);
 
 
@@ -903,7 +903,7 @@ void HistoryDetail::onViewPortChanged_2()
     updateControls(m_ChartViewer_2, m_HScrollBar_2);
 
     // Update the chart if necessary
-    if (m_ChartViewer_2->needUpdateChart())
+//    if (m_ChartViewer_2->needUpdateChart())
         drawChart(m_ChartViewer_2, 1);
 }
 

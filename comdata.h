@@ -16,11 +16,15 @@
 #pragma execution_character_set("utf-8")
 #endif
 
-#define isDebuf           // 是否调试模式
 #define iSCAN_STM32     1       // 产品for STM32
 #define iSCAN_ARTERY    2       // 产品for ARTERY
+#define iSCAN_INTERNAL    3       // 产品for INTERNAL 内部使用
 #define MCU_TYPE  iSCAN_ARTERY
 //#define appUpdataDebug    // APP升级部分区别，调试时用,判断是否对bin文件加密处理
+
+#if (MCU_TYPE == iSCAN_INTERNAL)
+    #define isDebuf           // 是否调试模式
+#endif
 
 #define DIFFER_COUNT_VALUE      1000
 

@@ -94,6 +94,8 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
         QPixmap pixmap(":/logo.png");
     #elif  (MCU_TYPE == iSCAN_ARTERY)
         QPixmap pixmap(":/logo-Artery.png");
+    #elif  (MCU_TYPE == iSCAN_INTERNAL)
+        QPixmap pixmap(":/logo_2.png");
     #endif
     QLabel *label = new QLabel(frame_1);
     label->setGeometry(150, 3, 100, 95);

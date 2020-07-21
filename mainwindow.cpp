@@ -29,6 +29,8 @@ MainWindow::MainWindow(QWidget *parent, ComData *comD, USB_HID *hid) :
         icon.addFile(QStringLiteral(":/logo.png"), QSize(), QIcon::Normal, QIcon::Off);
     #elif  (MCU_TYPE == iSCAN_ARTERY)
         icon.addFile(QStringLiteral(":/logo-Artery.png"), QSize(), QIcon::Normal, QIcon::Off);
+    #elif  (MCU_TYPE == iSCAN_INTERNAL)
+        icon.addFile(QStringLiteral(":/logo_2.png"), QSize(), QIcon::Normal, QIcon::Off);
     #endif
     setWindowIcon(icon);
 //    setWindowIcon(QIcon(":/logo.png"));//这个路径是右键选择上图中图片，复制到路径。
