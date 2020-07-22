@@ -12,7 +12,8 @@ QT       += sql
 QT += charts
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-RC_FILE += exe.rc
+#RC_FILE += exe_artery.rc
+RC_ICONS = exe.ico
 
 TARGET = iSCAN
 TEMPLATE = app
@@ -79,8 +80,10 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 # unix|win32: LIBS += -lQt5SerialPort
 
-DISTFILES += \
-    exe.rc
+#DISTFILES += \
+#    exe.rc \
+#    exe_2.rc \
+#    exe_artery.rc
 
 RESOURCES += \
     Resource/realtimeres.qrc

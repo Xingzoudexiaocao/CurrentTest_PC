@@ -49,7 +49,7 @@ var ICONS_GROUP
 ; ------ MUI 现代界面定义结束 ------
 
 Name "${PRODUCT_NAME} ${PRODUCT_VERSION}"
-OutFile "iSCAN_Setup_Win32.exe"
+OutFile "iSCAN_Setup_Win32_STM32_V100_000_207.exe"
 InstallDir "$PROGRAMFILES\iSCAN"
 InstallDirRegKey HKLM "${PRODUCT_UNINST_KEY}" "UninstallString"
 ShowInstDetails show

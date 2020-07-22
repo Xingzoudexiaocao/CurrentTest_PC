@@ -28,6 +28,7 @@
 #include <QApplication>
 #include <QRadioButton>
 #include <QComboBox>
+#include <QCheckBox>
 
 #include <algorithm>
 using namespace std;      //这一句也不能少
@@ -89,6 +90,7 @@ private:
     QFont    font;
     QPushButton *historyFile;
     QPushButton *historyOpen;
+    QPushButton *subFrameClose;
 
     QPushButton *ZoomMax;
     QPushButton *ZoomMin;
@@ -138,6 +140,7 @@ private slots:
 
     void slotSubButtonClick(void);
     void slotHistoryOpen(void);
+    void slotSubFrameClose(void);
 
     void slotZoomMaxClick(void);
     void slotZoomMinClick(void);

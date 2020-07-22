@@ -71,8 +71,11 @@ HistoryDetail::HistoryDetail(QWidget *parent, USB_HID *hid, ComData *comD) : QGr
 //    updateChart();      // 初始化显示表格
 
     m_EjectSubButton = new QPushButton(this);
-    m_EjectSubButton->setGeometry(2, 0, parent->width() - 10, 10);
+    m_EjectSubButton->setGeometry(parent->width() - 200, 10, 130, 30);
     m_EjectSubButton->setStyleSheet(bnt_qss2);
+    m_EjectSubButton->setFont(font);
+    m_EjectSubButton->setText("操作界面");
+    m_EjectSubButton->setToolTip("点击打开操作界面");
     connect(m_EjectSubButton, &QAbstractButton::clicked, this, &HistoryDetail::slotSubButtonClick);
 
     QLabel *volTitle = new QLabel(this);
@@ -104,7 +107,7 @@ HistoryDetail::HistoryDetail(QWidget *parent, USB_HID *hid, ComData *comD) : QGr
 
     historyFile = new QPushButton(m_SubFrame);
     historyFile->setStyleSheet("QPushButton {font-family:arial; text-align:left; padding:2px; font-size:18px; border:1px solid #000000;}");
-    historyFile->setGeometry(150, 5, parent->width() - 200, 30);
+    historyFile->setGeometry(150, 5, parent->width() - 250, 30);
 //    historyFile->setFrameShape(QFrame::NoFrame);
     historyFile->setToolTip("点击加载文件");
     historyFile->setText("");
@@ -116,6 +119,13 @@ HistoryDetail::HistoryDetail(QWidget *parent, USB_HID *hid, ComData *comD) : QGr
     historyOpen->setFont(font);
     historyOpen->setToolTip("点击加载文件");
     connect(historyOpen, &QAbstractButton::clicked, this, &HistoryDetail::slotHistoryOpen);
+
+    subFrameClose = new QPushButton("关闭", m_SubFrame);      // QIcon(":/ExitA.png"),
+    subFrameClose->setGeometry(parent->width() - 100, 5, 80, 30);
+    subFrameClose->setStyleSheet(bnt_qss2);
+    subFrameClose->setFont(font);
+    subFrameClose->setToolTip("点击关闭操作界面");
+    connect(subFrameClose, &QAbstractButton::clicked, this, &HistoryDetail::slotSubFrameClose);
 
     m_DoubleSlider = new DoubleSlider(m_SubFrame);
     m_DoubleSlider->setGeometry(10, 35, parent->width() - 50, 50);
@@ -503,10 +513,14 @@ void HistoryDetail::updateInfomationDisplay(void)
 
 void HistoryDetail::slotSubButtonClick(void)
 {
+    if(!m_SubFrame->isVisible())
+        m_SubFrame->setVisible(true);
+}
+
+void HistoryDetail::slotSubFrameClose(void)
+{
     if(m_SubFrame->isVisible())
         m_SubFrame->setVisible(false);
-    else
-        m_SubFrame->setVisible(true);
 }
 
 void HistoryDetail::slotZoomMaxClick(void)
