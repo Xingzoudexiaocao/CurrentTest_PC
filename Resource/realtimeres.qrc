@@ -26,5 +26,7 @@
         <file>logo-Artery.png</file>
         <file>../exe.ico</file>
         <file>ExitA.png</file>
+        <file>close.png</file>
+        <file>close_filled.png</file>
     </qresource>
 </RCC>

@@ -107,7 +107,7 @@ HistoryDetail::HistoryDetail(QWidget *parent, USB_HID *hid, ComData *comD) : QGr
 
     historyFile = new QPushButton(m_SubFrame);
     historyFile->setStyleSheet("QPushButton {font-family:arial; text-align:left; padding:2px; font-size:18px; border:1px solid #000000;}");
-    historyFile->setGeometry(150, 5, parent->width() - 250, 30);
+    historyFile->setGeometry(150, 5, parent->width() - 210, 30);
 //    historyFile->setFrameShape(QFrame::NoFrame);
     historyFile->setToolTip("点击加载文件");
     historyFile->setText("");
@@ -120,10 +120,10 @@ HistoryDetail::HistoryDetail(QWidget *parent, USB_HID *hid, ComData *comD) : QGr
     historyOpen->setToolTip("点击加载文件");
     connect(historyOpen, &QAbstractButton::clicked, this, &HistoryDetail::slotHistoryOpen);
 
-    subFrameClose = new QPushButton("关闭", m_SubFrame);      // QIcon(":/ExitA.png"),
-    subFrameClose->setGeometry(parent->width() - 100, 5, 80, 30);
-    subFrameClose->setStyleSheet(bnt_qss2);
-    subFrameClose->setFont(font);
+    subFrameClose = new QPushButton(m_SubFrame);      // QIcon(":/ExitA.png"),
+    subFrameClose->setGeometry(parent->width() - 60, 0, 40, 40);
+    subFrameClose->setStyleSheet("QPushButton{border-image: url(:/close_filled.png);}");
+//    subFrameClose->setFont(font);
     subFrameClose->setToolTip("点击关闭操作界面");
     connect(subFrameClose, &QAbstractButton::clicked, this, &HistoryDetail::slotSubFrameClose);
 
