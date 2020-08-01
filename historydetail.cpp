@@ -39,7 +39,7 @@ HistoryDetail::HistoryDetail(QWidget *parent, USB_HID *hid, ComData *comD) : QGr
 
     // Horizontal scroll bar
     m_HScrollBar = new QScrollBar(Qt::Horizontal, this);
-    m_HScrollBar->setGeometry(4, -16 + (m_ComData->gUiSize->height() - 78 - 10) - 16 - 12, m_ComData->gUiSize->width() - 280 - 5, 17);
+    m_HScrollBar->setGeometry(4, -16 + (m_ComData->gUiSize->height() - 78 - 10) - 16 - 12, m_ComData->gUiSize->width() - 280 - 5, 15);
     connect(m_HScrollBar, SIGNAL(valueChanged(int)),this, SLOT(onHScrollBarChanged(int)));
 
     // Chart Viewer 2
@@ -53,7 +53,7 @@ HistoryDetail::HistoryDetail(QWidget *parent, USB_HID *hid, ComData *comD) : QGr
 
     // Horizontal scroll bar
     m_HScrollBar_2 = new QScrollBar(Qt::Horizontal, this);
-    m_HScrollBar_2->setGeometry(4, -16 + (m_ComData->gUiSize->height() - 78 - 10) / 2 - 12, m_ComData->gUiSize->width() - 280 - 5, 17);
+    m_HScrollBar_2->setGeometry(4, -16 + (m_ComData->gUiSize->height() - 78 - 10) / 2 - 12, m_ComData->gUiSize->width() - 280 - 5, 15);
     connect(m_HScrollBar_2, SIGNAL(valueChanged(int)), this, SLOT(onHScrollBarChanged_2(int)));
 
 //    onHScrollBarChanged(1); // 初始化显示表格
@@ -74,24 +74,25 @@ HistoryDetail::HistoryDetail(QWidget *parent, USB_HID *hid, ComData *comD) : QGr
     m_EjectSubButton->setGeometry(parent->width() - 200, 10, 130, 30);
     m_EjectSubButton->setStyleSheet(bnt_qss2);
     m_EjectSubButton->setFont(font);
-    m_EjectSubButton->setText("操作界面");
-    m_EjectSubButton->setToolTip("点击打开操作界面");
+    m_EjectSubButton->setText("加载");
+    m_EjectSubButton->setToolTip("点击打开操作界面，加载文件！");
     connect(m_EjectSubButton, &QAbstractButton::clicked, this, &HistoryDetail::slotSubButtonClick);
 
     QLabel *volTitle = new QLabel(this);
     volTitle->setGeometry((m_ComData->gUiSize->width() - 280) / 2 - 80, 8 + (m_ComData->gUiSize->height() - 78 - 10) / 2 - 14, 300, 30);
-    volTitle->setStyleSheet("QLabel {text-align:left; padding:0px; font-size:28px; background-color:white;}");
+    volTitle->setStyleSheet("QLabel {text-align:left; padding:0px; font-size:28px;}");
     volTitle->setText("电压测量波形图");
     volTitle->setFont(font);
     QLabel *curTitle = new QLabel(this);
     curTitle->setGeometry((m_ComData->gUiSize->width() - 280) / 2 - 80, 13, 300, 30);
-    curTitle->setStyleSheet("QLabel {text-align:left; padding:0px; font-size:28px; background-color:white;}");
+    curTitle->setStyleSheet("QLabel {text-align:left; padding:0px; font-size:28px;}");
     curTitle->setText("电流测量波形图");
     curTitle->setFont(font);
 
     QComboBox *FixCurrentScale = new QComboBox(this);
     FixCurrentScale->setGeometry(280, 20, 120, 20);
     FixCurrentScale->addItems(QStringList() << "自动量程" << "3000mA" << "1000mA" << "100mA" << "10mA" << "1mA" << "100uA" << "10uA" << "1uA");
+    FixCurrentScale->setView(new QListView(this));      // 使支持QListView样式
     connect(FixCurrentScale, SIGNAL(currentIndexChanged(int)), this, SLOT(slotFixCurrentScale(int)));
     fixCurrentValue = 0;
 
@@ -307,13 +308,13 @@ HistoryDetail::HistoryDetail(QWidget *parent, USB_HID *hid, ComData *comD) : QGr
     T2_T1_Vol_Title3->setFont(font);
     T2_T1_Vol_Title3->setText("电压最小值：");
 
-    ZoomMax = new QPushButton( "时间轴定位至T1-T2", m_SubFrame);
+    ZoomMax = new QPushButton( "定位至T1-T2", m_SubFrame);
     ZoomMax->setGeometry(parent->width() / 2 - 250 - 10, 260, 250, 30);
     ZoomMax->setStyleSheet(bnt_qss2);
     ZoomMax->setFont(font);
     ZoomMax->setToolTip("点击将波形显示放大至T1-T2");
     connect(ZoomMax, &QAbstractButton::clicked, this, &HistoryDetail::slotZoomMaxClick);
-    ZoomMin = new QPushButton( "时间轴定位至全局", m_SubFrame);
+    ZoomMin = new QPushButton( "定位至全局", m_SubFrame);
     ZoomMin->setGeometry(parent->width() / 2 + 10, 260, 250, 30);
     ZoomMin->setStyleSheet(bnt_qss2);
     ZoomMin->setFont(font);
@@ -351,7 +352,7 @@ void HistoryDetail::mouseReleaseSlot(void)
     if(m_UsbHid->dev_handle != nullptr)
     {
         qDebug() << "USB正在运行，无法加载文件！";
-         QMessageBox::critical(this, "提示", "USB正在运行，无法执行该操作！");
+         myHelper::ShowMessageBoxError("USB正在运行，无法执行该操作！");
         return;
     }
 //    qDebug() << "moureRelease" << m_DoubleSlider->minValue() << m_DoubleSlider->maxValue();
@@ -362,7 +363,7 @@ void HistoryDetail::mouseReleaseSlot(void)
         if(m_UsbHid->dev_handle != nullptr)
         {
             qDebug() << "请点击暂停采集，再执行该操作！";
-             QMessageBox::critical(this, "提示", "请点击暂停采集，再执行该操作！");
+             myHelper::ShowMessageBoxError("请点击暂停采集，再执行该操作！");
             return;
         }
 //        DifferValue = m_DoubleSlider->maxValue() - m_DoubleSlider->minValue();
@@ -528,7 +529,7 @@ void HistoryDetail::slotZoomMaxClick(void)
     if(m_UsbHid->dev_handle != nullptr)
     {
         qDebug() << "USB正在运行，无法加载文件！";
-         QMessageBox::critical(this, "提示", "USB正在运行，无法执行该操作！");
+         myHelper::ShowMessageBoxError("USB正在运行，无法执行该操作！");
         return;
     }
     if(T1_DateTime <= 0 || T2_DateTime <= 0)
@@ -557,7 +558,7 @@ void HistoryDetail::slotZoomMinClick(void)
     if(m_UsbHid->dev_handle != nullptr)
     {
         qDebug() << "USB正在运行，无法加载文件！";
-         QMessageBox::critical(this, "提示", "USB正在运行，无法执行该操作！");
+         myHelper::ShowMessageBoxError("USB正在运行，无法执行该操作！");
         return;
     }
     m_DoubleSlider->setMinValue(1);
@@ -575,7 +576,7 @@ void HistoryDetail::slotHistoryOpen(void)
     if(m_UsbHid->dev_handle != nullptr)
     {
         qDebug() << "USB正在运行，无法加载文件！";
-         QMessageBox::critical(this, "提示", "USB正在运行，无法加载文件！");
+         myHelper::ShowMessageBoxError("USB正在运行，无法加载文件！");
         return;
     }
     qDebug() << qApp->applicationDirPath();
@@ -617,7 +618,7 @@ void HistoryDetail::LoadingData(QString fileName)
        if (!myDb.open())     // if (!db.open("admin","admin"))
        {
            qDebug() << "打开数据库文件失败！";
-           QMessageBox::critical(this, "提示", "打开数据库文件失败！");
+            myHelper::ShowMessageBoxError("打开数据库文件失败！");
            return;
        }
        QSqlQueryModel sqlModel;
@@ -633,7 +634,7 @@ void HistoryDetail::LoadingData(QString fileName)
    {
        CountSize = 1;
        qDebug() << "数据文件数据量太少！";
-       QMessageBox::critical(this, "提示", "无法打开当前文件，文件数据量太少！");
+       myHelper::ShowMessageBoxError("无法打开当前文件，文件数据量太少！");
        return;
    }
    qDebug() << "数据个数 = " << CountSize << QDateTime::currentDateTime();
@@ -823,11 +824,15 @@ void HistoryDetail::onMouseClick_2(QMouseEvent *)
 }
 void HistoryDetail::onMouseMovePlotArea(QMouseEvent *)
 {
+    if(d_currentIndex <= 1)
+        return;
     trackLineLabel((XYChart *)m_ChartViewer->getChart(), m_ChartViewer->getPlotAreaMouseX(), 0);
     m_ChartViewer->updateDisplay();
 }
 void HistoryDetail::onMouseMovePlotArea_2(QMouseEvent *)
 {
+    if(d_currentIndex <= 1)
+        return;
     trackLineLabel((XYChart *)m_ChartViewer_2->getChart(), m_ChartViewer_2->getPlotAreaMouseX(), 1);
     m_ChartViewer_2->updateDisplay();
 }
@@ -976,12 +981,12 @@ void HistoryDetail::drawChart(QChartViewer *viewer, int index)
 
     // Create an XYChart object of size 640 x 350 pixels
     XYChart *c = new XYChart(m_ComData->gUiSize->width() - 280, (m_ComData->gUiSize->height() - 78 - 10) / 2);     // 1345, 425        m_HScrollBar->width(), 300
-
+    c->setBackground(0x464646);
     // Set the plotarea at (55, 50) with width 80 pixels less than chart width, and height 80 pixels
     // less than chart height. Use a vertical gradient from light blue (f0f6ff) to sky blue (a0c0ff)
     // as background. Set border to transparent and grid lines to white (ffffff).
     c->setPlotArea(85, 62, c->getWidth() - 85 - 30, c->getHeight() - 100, c->linearGradientColor(0, 50, 0,
-        c->getHeight() - 35, 0xf0f6ff, 0xa0c0ff), -1, Chart::Transparent, 0xffffff, 0xffffff);
+        c->getHeight() - 35, 0x464646, 0x242424), -1, Chart::Transparent, 0x464646, 0x464646);
 
     // As the data can lie outside the plotarea in a zoomed chart, we need enable clipping.
     c->setClipping();
@@ -1001,17 +1006,17 @@ void HistoryDetail::drawChart(QChartViewer *viewer, int index)
     // Set the x and y axis stems to transparent and the label font to 10pt Arial
     c->xAxis()->setColors(Chart::Transparent);
     c->yAxis()->setColors(Chart::Transparent);
-    c->xAxis()->setLabelStyle("arial.ttf", 10);
-    c->yAxis()->setLabelStyle("arial.ttf", 10);
+    c->xAxis()->setLabelStyle("arial.ttf", 10, 0xD7E2E9);
+    c->yAxis()->setLabelStyle("arial.ttf", 10, 0xD7E2E9);
 
     // Set the y-axis tick length to 0 to disable the tick and put the labels closer to the axis.
     c->yAxis()->setTickLength(0);
 
     // Add axis title using 12pt Arial Bold Italic font
     if(index == 0)
-        c->yAxis()->setTitle("Voltage ( V )", "arialbd.ttf", 12);
+        c->yAxis()->setTitle("Voltage ( V )", "arialbd.ttf", 12, 0xD7E2E9);
     else if (index == 1)
-        c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12);
+        c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12, 0xD7E2E9);
 
 
     //================================================================================
@@ -1035,9 +1040,9 @@ void HistoryDetail::drawChart(QChartViewer *viewer, int index)
     char buffer[1024];
     if(index == 0) {
         if(d_currentIndex >= 0) {
-            sprintf(buffer, " <*bgColor=ffffff*> <*color=00cc00*> <*size=14px*>");   //  %.3f V  , d_dataSeriesV[DataSize - 1]
+            sprintf(buffer, " <*bgColor=464646*> <*color=55FF7F*> <*size=14px*>");   //  %.3f V  , d_dataSeriesV[DataSize - 1]
         }
-        layer->addDataSet(viewPortDataSeriesB, 0x00cc00, buffer);   // , buffer
+        layer->addDataSet(viewPortDataSeriesB, 0x55FF7F, buffer);   // , buffer
         c->yAxis()->setMinTickInc(0.1);
         c->yAxis()->setDateScale(0, 7.5);           // 固定坐标轴0-7.5V
     }
@@ -1045,13 +1050,13 @@ void HistoryDetail::drawChart(QChartViewer *viewer, int index)
         if(d_currentIndex >= 0) {
 //            double d = d_dataSeriesA[DataSize - 1];
 //            if(d < 1) {
-//                sprintf(buffer, " <*bgColor=ffffff*> <*color=0000ff*> <*size=14px*> %.3f uA", d * 1000);
+//                sprintf(buffer, " <*bgColor=464646*> <*color=FF5500*> <*size=14px*> %.3f uA", d * 1000);
 //            } else {
-//                sprintf(buffer, " <*bgColor=ffffff*> <*color=0000ff*> <*size=14px*> %.2f mA", d);
+//                sprintf(buffer, " <*bgColor=464646*> <*color=FF5500*> <*size=14px*> %.2f mA", d);
 //            }
-            sprintf(buffer, " <*bgColor=ffffff*> <*color=0000ff*> <*size=14px*>");
+            sprintf(buffer, " <*bgColor=464646*> <*color=FF5500*> <*size=14px*>");
         }
-        layer->addDataSet(viewPortDataSeriesC, 0x0000ff, buffer);       // , buffer
+        layer->addDataSet(viewPortDataSeriesC, 0xFF5500, buffer);       // , buffer
         c->yAxis()->setMinTickInc(0.000001);
         if(fixCurrentValue > 0)
             c->yAxis()->setDateScale(0, fixCurrentValue);
@@ -1088,26 +1093,26 @@ void HistoryDetail::drawChart(QChartViewer *viewer, int index)
     //    qDebug() << "yMax = " << QString::number(yMax, 'f', 10);
             if(yMax <= 0.0000001) {     // 最大值等于0
                 c->yAxis()->setLabelFormat("{value|3}");
-                c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12);
+                c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12, 0xD7E2E9);
             } else if(yMax < 0.001) {
                 c->yAxis()->setLabelFormat("{={value}*1000|3}");
-                c->yAxis()->setTitle("Current ( uA )", "arialbd.ttf", 12);
+                c->yAxis()->setTitle("Current ( uA )", "arialbd.ttf", 12, 0xD7E2E9);
             } else if(yMax < 1000) {
                 c->yAxis()->setLabelFormat("{value|3}");
-                c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12);
+                c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12, 0xD7E2E9);
             } else {
                 c->yAxis()->setLabelFormat("{value|2}");
-                c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12);
+                c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12, 0xD7E2E9);
             }
         } else if(fixCurrentValue < 1) {            // uA 级别
             c->yAxis()->setLabelFormat("{={value}*1000|3}");
-            c->yAxis()->setTitle("Current ( uA )", "arialbd.ttf", 12);
+            c->yAxis()->setTitle("Current ( uA )", "arialbd.ttf", 12, 0xD7E2E9);
         } else if(fixCurrentValue < 1000) {         // mA 级别 < 1000mA
             c->yAxis()->setLabelFormat("{value|3}");
-            c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12);
+            c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12, 0xD7E2E9);
         } else {                                    // // mA 级别 >= 1000mA
             c->yAxis()->setLabelFormat("{value|2}");
-            c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12);
+            c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12, 0xD7E2E9);
         }
     }
 
@@ -1135,18 +1140,18 @@ void HistoryDetail::drawChart(QChartViewer *viewer, int index)
     if(T1_Index > 0 && T1_Index <= d_currentIndex)      //
     {
         QString buf = "T1 = " + (QString)c->xAxis()->getFormattedLabel(*(d_timeStamps + T1_Index - 1), "hh:nn:ss.fff");     // yyyy-mm-dd
-        c->xAxis()->addMark(*(d_timeStamps + T1_Index - 1), 0xFF4500, buf.toLatin1().data())->setLineWidth(2);
+        c->xAxis()->addMark(*(d_timeStamps + T1_Index - 1), 0xAAD0FF, buf.toLatin1().data())->setLineWidth(2);
     }
     if(T2_Index > 0 && T2_Index <= d_currentIndex)
     {
         QString buf = "T2 = " + (QString)c->xAxis()->getFormattedLabel(*(d_timeStamps + T2_Index - 1), "hh:nn:ss.fff");     // yyyy-mm-dd
-        c->xAxis()->addMark(*(d_timeStamps + T2_Index - 1), 0xFF4500, buf.toLatin1().data())->setLineWidth(2);
+        c->xAxis()->addMark(*(d_timeStamps + T2_Index - 1), 0xAAD0FF, buf.toLatin1().data())->setLineWidth(2);
     }
 
     // We need to update the track line too. If the mouse is moving on the chart (eg. if
     // the user drags the mouse on the chart to scroll it), the track line will be updated
     // in the MouseMovePlotArea event. Otherwise, we need to update the track line here.
-    if (!viewer->isInMouseMoveEvent())
+    if (!viewer->isInMouseMoveEvent() && d_currentIndex > 1)
     {
         trackLineLabel(c, (0 == viewer->getChart()) ? c->getPlotArea()->getRightX() :
             viewer->getPlotAreaMouseX(), index);

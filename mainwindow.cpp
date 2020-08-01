@@ -18,11 +18,15 @@ MainWindow::MainWindow(QWidget *parent, ComData *comD, USB_HID *hid) :
 //    QTextCodec::setCodecForLocale(codec);
 //    QTextCodec::setCodecForCStrings(codec);
 
+    this->setWindowFlags(Qt::FramelessWindowHint | Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint);     // 设置无边框
+    mousePressed = false;
+
 //    resize(1280, 800);
 //    setMinimumSize(1000, 700);
-    setFixedSize(m_ComData->gUiSize->width(), m_ComData->gUiSize->height() - 60);            // 1100, 885        // 设定之后不能拉伸
+    setFixedSize(m_ComData->gUiSize->width(), m_ComData->gUiSize->height() - 30);            // 1100, 885        // 设定之后不能拉伸
 //    setGeometry(100, 50, 1680, 1250);      // 设定窗口显示坐标           100, 50, 1680, 950
 //    setGeometry(800, 900, 1100, 885);      // 设定窗口显示坐标
+    /*
     setWindowTitle(productName);
     QIcon icon;
     #if (MCU_TYPE == iSCAN_STM32)
@@ -34,9 +38,43 @@ MainWindow::MainWindow(QWidget *parent, ComData *comD, USB_HID *hid) :
     #endif
     setWindowIcon(icon);
 //    setWindowIcon(QIcon(":/logo.png"));//这个路径是右键选择上图中图片，复制到路径。
+*/
     this->grabKeyboard();       // 捕获键盘输入
 
-    demo = new RealTime(this, m_ComData, m_UsbHid);
+    this->setProperty("form", true);
+
+    // 设置标题窗口和主窗口
+    QWidget *widget_Title = new QWidget(this);
+    widget_Title->setGeometry(0, 0, m_ComData->gUiSize->width(), 30);
+    widget_Title->setProperty("form", "title");
+    QWidget *widget_Main = new QWidget(this);
+    widget_Main->setGeometry(0, 30, m_ComData->gUiSize->width(), m_ComData->gUiSize->height() - 30);
+    // 标题窗口UI
+    QPushButton *btnMin = new QPushButton(widget_Title);
+    btnMin->setGeometry(m_ComData->gUiSize->width() - 60, 0, 30, 30);
+    btnMin->setObjectName("btnMenu_Min");
+    QPushButton *btnClose = new QPushButton(widget_Title);
+    btnClose->setGeometry(m_ComData->gUiSize->width() - 30, 0, 30, 30);
+    btnClose->setObjectName("btnMenu_Close");
+    IconHelper::Instance()->SetIcon(btnMin, QChar(0xf068));
+    IconHelper::Instance()->SetIcon(btnClose, QChar(0xf00d));
+    connect(btnMin, &QAbstractButton::clicked, this, &MainWindow::on_btnMenu_Min_clicked);
+    connect(btnClose, &QAbstractButton::clicked, this, &MainWindow::on_btnMenu_Close_clicked);
+    #if (MCU_TYPE == iSCAN_STM32)
+        QPixmap pixmap(":/logo.png");
+    #elif  (MCU_TYPE == iSCAN_ARTERY)
+        QPixmap pixmap(":/logo-Artery.png");
+    #elif  (MCU_TYPE == iSCAN_INTERNAL)
+        QPixmap pixmap(":/logo_2.png");
+    #endif
+    QLabel *label = new QLabel(widget_Title);
+    label->setGeometry(2, 2, 26, 26);
+    label->setPixmap(pixmap.scaled(label->size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+    QLabel *label_2 = new QLabel(widget_Title);
+    label_2->setGeometry(40, 0, 100, 30);
+    label_2->setText(productName);
+    // 主窗口UI
+    demo = new RealTime(widget_Main, m_ComData, m_UsbHid);
 //    demo->setStyleSheet("* {font-family:arial;font-size:15px}");
 //    demo->setGeometry(8, 20, 990, 850);
 //    QGridLayout *MainLayout = new QGridLayout(this);
@@ -47,12 +85,6 @@ MainWindow::MainWindow(QWidget *parent, ComData *comD, USB_HID *hid) :
 //    OpenDebugWindow();  // 默认开启
 //#endif
 
-    // 初始化接收缓存
-    RecIndex = 0;
-    for (unsigned long long i = 0; i < 1024; i++) {
-        RecBuffer[i] = 0;
-    }
-
 }
 
 MainWindow::~MainWindow()
@@ -61,6 +93,47 @@ MainWindow::~MainWindow()
     delete ui;
     delete m_ComData;
     delete m_UsbHid;
+}
+
+//bool MainWindow::eventFilter(QObject *obj, QEvent *event)
+//{
+//    if (event->type() == QEvent::MouseButtonDblClick) {
+//        this->on_btnMenu_Max_clicked();
+//        return true;
+//    }
+//    return QObject::eventFilter(obj, event);
+//}
+
+void MainWindow::mouseMoveEvent(QMouseEvent *e)
+{
+    if (mousePressed && (e->buttons() && Qt::LeftButton)) {     //  && !max
+        this->move(e->globalPos() - mousePoint);
+        e->accept();
+    }
+}
+
+void MainWindow::mousePressEvent(QMouseEvent *e)
+{
+    if (e->button() == Qt::LeftButton) {
+        mousePressed = true;
+        mousePoint = e->globalPos() - this->pos();
+        e->accept();
+    }
+}
+
+void MainWindow::mouseReleaseEvent(QMouseEvent *)
+{
+    mousePressed = false;
+}
+
+void MainWindow::on_btnMenu_Close_clicked()
+{
+    qApp->exit();
+}
+
+void MainWindow::on_btnMenu_Min_clicked()
+{
+    this->showMinimized();
 }
 
 void MainWindow::resizeEvent(QResizeEvent *event)

@@ -11,6 +11,8 @@
 #include "realtime.h"
 #include "comdata.h"
 #include "debugwatch.h"
+#include <QLabel>
+#include <QPushButton>
 
 #ifdef _MSC_VER
 #pragma execution_character_set("utf-8")
@@ -30,12 +32,14 @@ public:
 public Q_SLOTS:
     void colseDebug();
 private Q_SLOTS:
+    void on_btnMenu_Close_clicked();
+    void on_btnMenu_Min_clicked();
+
 //    void on_OpenCom_clicked();
 //    void on_SearchCom_clicked();
 //    void on_SendData_clicked();
 //    void on_ClearData_clicked();
 //    void on_AutoSend_clicked();
-
 private:
     Ui::MainWindow *ui;
     QSerialPort serial;
@@ -43,11 +47,15 @@ private:
     USB_HID *m_UsbHid;
     RealTime *demo;
     DebugWatch *m_Debug;        // 调试监控窗口
-    char RecBuffer[1024];
-    unsigned long long RecIndex;
 
+    QPoint mousePoint;
+    bool mousePressed;
 
 protected:
+//    bool eventFilter(QObject *obj, QEvent *event);
+    void mouseMoveEvent(QMouseEvent *e);
+    void mousePressEvent(QMouseEvent *e);
+    void mouseReleaseEvent(QMouseEvent *);
     virtual void keyPressEvent(QKeyEvent *ev);      // 键盘事件
     virtual void keyReleaseEvent(QKeyEvent *ev);
     virtual void resizeEvent(QResizeEvent *event);

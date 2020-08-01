@@ -112,7 +112,8 @@ void DebugWatch::onLedOnOffChanged(int index)
     if(m_UsbHid->dev_handle == nullptr)
     {
         qDebug() << "USB设备未打开！";
-        QMessageBox::about(this, "提示", "USB设备未打开！");
+//        QMessageBox::about(this, "提示", "USB设备未打开！");
+        myHelper::ShowMessageBoxError("USB设备未打开！");
         return;
     }
     unsigned char sendP[32];
@@ -133,7 +134,8 @@ void DebugWatch::onBtnWriteFlash()
     if(m_UsbHid->dev_handle == nullptr)
     {
         qDebug() << "USB设备未打开！";
-        QMessageBox::about(this, "提示", "USB设备未打开！");
+//        QMessageBox::about(this, "提示", "USB设备未打开！");
+        myHelper::ShowMessageBoxError("USB设备未打开！");
         return;
     }
     unsigned char sendP[32];
@@ -148,7 +150,8 @@ void DebugWatch::onBtnOFC()
     if(m_UsbHid->dev_handle == nullptr)
     {
         qDebug() << "USB设备未打开！";
-        QMessageBox::about(this, "提示", "USB设备未打开！");
+//        QMessageBox::about(this, "提示", "USB设备未打开！");
+        myHelper::ShowMessageBoxError("USB设备未打开！");
         return;
     }
     unsigned char sendP[32];
@@ -162,7 +165,8 @@ void DebugWatch::onBtnFSC()
     if(m_UsbHid->dev_handle == nullptr)
     {
         qDebug() << "USB设备未打开！";
-        QMessageBox::about(this, "提示", "USB设备未打开！");
+//        QMessageBox::about(this, "提示", "USB设备未打开！");
+        myHelper::ShowMessageBoxError("USB设备未打开！");
         return;
     }
     unsigned char sendP[32];
@@ -190,7 +194,8 @@ void DebugWatch::buttonGroupSlot(int level)
     if(m_UsbHid->dev_handle == nullptr)
     {
         qDebug() << "USB设备未打开！";
-        QMessageBox::about(this, "提示", "USB设备未打开！");
+//        QMessageBox::about(this, "提示", "USB设备未打开！");
+        myHelper::ShowMessageBoxError("USB设备未打开！");
         return;
     }
     unsigned char sendP[32];

@@ -56,6 +56,22 @@ int main(int argc, char *argv[])
     }
     qDebug() << "UI界面大小：" << comD->gUiSize->width() << comD->gUiSize->height();
 
+    myHelper::SetUTF8Code();
+    myHelper::SetStyle("black_style");//黑色风格
+//    QFile file(":/black_style.css");
+//    if (file.open(QFile::ReadOnly)) {
+//        qDebug() << "文件打开成功。";
+////        QString qss = QLatin1String(file.readAll());
+//        QString qss = file.readAll();
+//        qDebug() << "qss = " << qss;
+//        QString paletteColor = qss.mid(20, 7);
+//        qDebug() << "paletteColor = " << paletteColor;
+//        qApp->setPalette(QPalette(QColor(paletteColor)));
+//        qApp->setStyleSheet(qss);
+//        file.close();
+//    }
+    myHelper::SetChinese();
+
     MainWindow w(nullptr, comD, hid);
 //    w.setWindowFlags( Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint); // 置顶，最小化，关闭   | Qt::WindowMaximizeButtonHint     Qt::WindowStaysOnTopHint |
 //    w.setWindowFlags(Qt::FramelessWindowHint);    // 无边框
@@ -76,8 +92,5 @@ int main(int argc, char *argv[])
 
 //    qDebug() << "int型数据大小：" << sizeof (int) ;
 //    qDebug() << "double型数据大小：" << sizeof (double) ;
-
-
-
     return a.exec();
 }

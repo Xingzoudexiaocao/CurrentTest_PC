@@ -29,6 +29,7 @@
 #include <QRadioButton>
 #include <QComboBox>
 #include <QCheckBox>
+#include <QListView>
 
 #include <algorithm>
 using namespace std;      //这一句也不能少

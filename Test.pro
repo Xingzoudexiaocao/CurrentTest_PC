@@ -40,8 +40,10 @@ SOURCES += \
         comdata.cpp \
         debugwatch.cpp \
         doubleslider.cpp \
+        frmmessagebox.cpp \
         historydetail.cpp \
         historyview.cpp \
+        iconhelper.cpp \
         main.cpp \
         mainwindow.cpp \
         qchartviewer.cpp \
@@ -58,9 +60,12 @@ HEADERS += \
         comdata.h \
         debugwatch.h \
         doubleslider.h \
+        frmmessagebox.h \
         historydetail.h \
         historyview.h \
+        iconhelper.h \
         mainwindow.h \
+        myhelper.h \
         qchartviewer.h \
         realtime.h \
         sqlite_write_thread.h \
@@ -108,3 +113,6 @@ else:unix: LIBS += -L$$PWD/lib32/ -llibusb-1.0
 
 INCLUDEPATH += $$PWD/lib32
 DEPENDPATH += $$PWD/lib32
+
+FORMS += \
+    frmmessagebox.ui
