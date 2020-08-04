@@ -1,4 +1,4 @@
-﻿QPalette{background:#464646;}*{outline:0px;color:#D7E2E9;}
+﻿QPalette{background:#464646;}*{outline:0px;color:#F0F0F0;}      /*D7E2E9*/
 
 QWidget[form="true"],QLabel[frameShape="1"]{
 border:1px solid #353535;
@@ -7,7 +7,7 @@ border-radius:0px;
 /*标题栏*/
 QWidget[form="title"] QLabel{
 border-radius:0px;
-color:#D7E2E9;
+color:#F0F0F0;
 font-size:26px;
 background:none;
 border-style:none;
@@ -17,19 +17,19 @@ QWidget[form="title"] {
 border-style:none;
 border-radius:0px;
 padding:5px;
-color:#D7E2E9;
+color:#F0F0F0;
 background:qlineargradient(spread:pad,x1:0,y1:0,x2:0,y2:1,stop:0 #4D4D4D,stop:1 #383838);
 }
 
 /*弹出框样式*/
 QWidget#widget_title{
     border:2px solid #323232;
-    color:#D7E2E9;
+    color:#F0F0F0;
     background:qlineargradient(spread:pad,x1:0,y1:0,x2:0,y2:1,stop:0 #4D4D4D,stop:1 #383838);
 }
 QWidget#widget_main{
     border:2px solid #323232;
-    color:#D7E2E9;
+    color:#F0F0F0;
     background:#464646;
 }
 .QGroupBox{
@@ -40,20 +40,20 @@ QWidget#widget_main{
 /*默认按键*/
 .QPushButton,.QToolButton{
 border-style:none;
-border:1px solid #111214;
-color:#D7E2E9;
+border:1px solid #353535;
+color:#F0F0F0;
 padding:5px;
 min-height:15px;
 border-radius:5px;
-background:qlineargradient(spread:pad,x1:0,y1:0,x2:0,y2:1,stop:0 #242629,stop:1 #141518);
+background:qlineargradient(spread:pad,x1:0,y1:0,x2:0,y2:1,stop:0 #4D4D4D,stop:1 #383838);
 }
 
 .QPushButton:hover,.QToolButton:hover{
-background:qlineargradient(spread:pad,x1:0,y1:0,x2:0,y2:1,stop:0 #007DC4,stop:1 #0074BF);
+background:qlineargradient(spread:pad,x1:0,y1:0,x2:0,y2:1,stop:0 #00BB9E,stop:1 #00BB9E);
 }
 
 .QPushButton:pressed,.QToolButton:pressed{
-background:qlineargradient(spread:pad,x1:0,y1:0,x2:0,y2:1,stop:0 #242629,stop:1 #141518);
+background:qlineargradient(spread:pad,x1:0,y1:0,x2:0,y2:1,stop:0 #4D4D4D,stop:1 #383838);
 }
 
 .QToolButton::menu-indicator{
@@ -62,7 +62,7 @@ image:None;
 
 QToolButton#btnMenu,QPushButton#btnMenu_Min,QPushButton#btnMenu_Max,QPushButton#btnMenu_Close{
 border-radius:3px;
-color:#D7E2E9;
+color:#F0F0F0;
 padding:3px;
 margin:0px;
 background:none;
@@ -82,6 +82,7 @@ background-color:rgba(238,0,0,128);
 }
 
 /*按键大字体*/
+/*
 QPushButton#btn_Main_BigFont{
     border-image: url(:/ButtonNormal.png);color:white; border:1px solid black;text-align:left; padding:2px; font-size:22px;
     border-top-left-radius:8px;
@@ -92,6 +93,19 @@ QPushButton#btn_Main_BigFont{
 QPushButton#btn_Main_BigFont:hover{border-image: url(:/ButtonHover.png);color:#f0f0f0 ;}
 QPushButton#btn_Main_BigFont:pressed{border-image: url(:/ButtonPressed.png);color:#e0e0e0 ;}
 QPushButton#btn_Main_BigFont:disabled{ color:#585858 ;}
+*/
+QPushButton#btn_Main_BigFont{
+    border-style:none;
+    border:1px solid #353535;
+    color:#F0F0F0;
+    padding:0px;
+    font-size:22px;
+    border-radius:8px;
+    background:qlineargradient(spread:pad,x1:0,y1:0,x2:0,y2:1,stop:0 #4D4D4D,stop:1 #383838);
+}
+QPushButton#btn_Main_BigFont:hover{background:qlineargradient(spread:pad,x1:0,y1:0,x2:0,y2:1,stop:0 #00BB9E,stop:1 #00BB9E);}
+QPushButton#btn_Main_BigFont:pressed{background:qlineargradient(spread:pad,x1:0,y1:0,x2:0,y2:1,stop:0 #4D4D4D,stop:1 #383838);}
+QPushButton#btn_Main_BigFont:disabled{color:#C0C0C0; background:qlineargradient(spread:pad,x1:0,y1:0,x2:0,y2:1,stop:0 #242424,stop:1 #1D1D1D);}
 
 /*左侧Frame样式*/
 QFrame#FrameQss {
@@ -379,4 +393,12 @@ background-color:#00BB9E;
 QGraphicsView {
     border-style:none;
     background-color:#464646;
+}
+
+/*QToolTip提示框样式*/
+QToolTip{
+border:0px solid #383838;
+padding:1px;
+color:#F0F0F0;
+background:qlineargradient(spread:pad,x1:0,y1:0,x2:0,y2:1,stop:0 #4D4D4D,stop:1 #383838);
 }

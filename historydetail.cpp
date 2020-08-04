@@ -72,7 +72,8 @@ HistoryDetail::HistoryDetail(QWidget *parent, USB_HID *hid, ComData *comD) : QGr
 
     m_EjectSubButton = new QPushButton(this);
     m_EjectSubButton->setGeometry(parent->width() - 200, 10, 130, 30);
-    m_EjectSubButton->setStyleSheet(bnt_qss2);
+//    m_EjectSubButton->setStyleSheet(bnt_qss2);
+    m_EjectSubButton->setObjectName("btn_Main_BigFont");
     m_EjectSubButton->setFont(font);
     m_EjectSubButton->setText("加载");
     m_EjectSubButton->setToolTip("点击打开操作界面，加载文件！");
@@ -99,7 +100,7 @@ HistoryDetail::HistoryDetail(QWidget *parent, USB_HID *hid, ComData *comD) : QGr
     m_SubFrame = new QFrame(this);
     m_SubFrame->setGeometry(2, 10, parent->width() - 10, 300);
     m_SubFrame->setObjectName("FrameQss");
-    m_SubFrame->setStyleSheet("QFrame#FrameQss {border:1px solid black; background-color: rgb(240, 248, 255, 200);\
+    m_SubFrame->setStyleSheet("QFrame#FrameQss {border:1px solid black; background-color: rgb(70, 70, 70, 200);\
                             border-top-left-radius:4px;         \
                             border-top-right-radius:4px;        \
                             border-bottom-left-radius:4px;      \
@@ -116,14 +117,17 @@ HistoryDetail::HistoryDetail(QWidget *parent, USB_HID *hid, ComData *comD) : QGr
     connect(historyFile, &QAbstractButton::clicked, this, &HistoryDetail::slotHistoryOpen);
     historyOpen = new QPushButton( " 加载文件", m_SubFrame);
     historyOpen->setGeometry(10, 5, 130, 30);
-    historyOpen->setStyleSheet(bnt_qss2);
+//    historyOpen->setStyleSheet(bnt_qss2);
+    historyOpen->setObjectName("btn_Main_BigFont");
     historyOpen->setFont(font);
     historyOpen->setToolTip("点击加载文件");
     connect(historyOpen, &QAbstractButton::clicked, this, &HistoryDetail::slotHistoryOpen);
 
     subFrameClose = new QPushButton(m_SubFrame);      // QIcon(":/ExitA.png"),
     subFrameClose->setGeometry(parent->width() - 60, 0, 40, 40);
-    subFrameClose->setStyleSheet("QPushButton{border-image: url(:/close_filled.png);}");
+//    subFrameClose->setStyleSheet("QPushButton{border-image: url(:/close_filled.png);}");
+    subFrameClose->setObjectName("btnMenu_Close");
+    IconHelper::Instance()->SetIcon(subFrameClose, QChar(0xf00d), 20);
 //    subFrameClose->setFont(font);
     subFrameClose->setToolTip("点击关闭操作界面");
     connect(subFrameClose, &QAbstractButton::clicked, this, &HistoryDetail::slotSubFrameClose);
@@ -235,8 +239,9 @@ HistoryDetail::HistoryDetail(QWidget *parent, USB_HID *hid, ComData *comD) : QGr
 
     // 显示T1---------T2
     QString qssRadio = "QRadioButton {font-family:arial; border-radius: 2px; color:#DC143C; text-align:left; font-size:20px;font-weight:bold;} \
-            QRadioButton::indicator:checked { background-color: red; } \
-            QRadioButton::indicator:unchecked { background-color: #808080; }";
+            QRadioButton::indicator:checked {  image: url(:/checkbox_checked.png); } \
+            QRadioButton::indicator:unchecked {  image: url(:/checkbox_unchecked.png);}\
+            QRadioButton::indicator { width: 30px; height: 30px;}";
     QString qssLabel_1 = "QLabel {font-family:arial; color:#DC143C; text-align:left; font-size:20px;font-weight:bold;}";
     QString qssLabel_2 = "QLabel { color:#DC143C; text-align:left; font-size:20px;font-weight:bold;}";
 
@@ -310,13 +315,15 @@ HistoryDetail::HistoryDetail(QWidget *parent, USB_HID *hid, ComData *comD) : QGr
 
     ZoomMax = new QPushButton( "定位至T1-T2", m_SubFrame);
     ZoomMax->setGeometry(parent->width() / 2 - 250 - 10, 260, 250, 30);
-    ZoomMax->setStyleSheet(bnt_qss2);
+//    ZoomMax->setStyleSheet(bnt_qss2);
+    ZoomMax->setObjectName("btn_Main_BigFont");
     ZoomMax->setFont(font);
     ZoomMax->setToolTip("点击将波形显示放大至T1-T2");
     connect(ZoomMax, &QAbstractButton::clicked, this, &HistoryDetail::slotZoomMaxClick);
     ZoomMin = new QPushButton( "定位至全局", m_SubFrame);
     ZoomMin->setGeometry(parent->width() / 2 + 10, 260, 250, 30);
-    ZoomMin->setStyleSheet(bnt_qss2);
+//    ZoomMin->setStyleSheet(bnt_qss2);
+    ZoomMin->setObjectName("btn_Main_BigFont");
     ZoomMin->setFont(font);
     ZoomMin->setToolTip("点击将波形显示缩小至整个时间轴");
     connect(ZoomMin, &QAbstractButton::clicked, this, &HistoryDetail::slotZoomMinClick);
@@ -1006,17 +1013,17 @@ void HistoryDetail::drawChart(QChartViewer *viewer, int index)
     // Set the x and y axis stems to transparent and the label font to 10pt Arial
     c->xAxis()->setColors(Chart::Transparent);
     c->yAxis()->setColors(Chart::Transparent);
-    c->xAxis()->setLabelStyle("arial.ttf", 10, 0xD7E2E9);
-    c->yAxis()->setLabelStyle("arial.ttf", 10, 0xD7E2E9);
+    c->xAxis()->setLabelStyle("arial.ttf", 10, 0xF0F0F0);
+    c->yAxis()->setLabelStyle("arial.ttf", 10, 0xF0F0F0);
 
     // Set the y-axis tick length to 0 to disable the tick and put the labels closer to the axis.
     c->yAxis()->setTickLength(0);
 
     // Add axis title using 12pt Arial Bold Italic font
     if(index == 0)
-        c->yAxis()->setTitle("Voltage ( V )", "arialbd.ttf", 12, 0xD7E2E9);
+        c->yAxis()->setTitle("Voltage ( V )", "arialbd.ttf", 12, 0xF0F0F0);
     else if (index == 1)
-        c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12, 0xD7E2E9);
+        c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12, 0xF0F0F0);
 
 
     //================================================================================
@@ -1093,26 +1100,26 @@ void HistoryDetail::drawChart(QChartViewer *viewer, int index)
     //    qDebug() << "yMax = " << QString::number(yMax, 'f', 10);
             if(yMax <= 0.0000001) {     // 最大值等于0
                 c->yAxis()->setLabelFormat("{value|3}");
-                c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12, 0xD7E2E9);
+                c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12, 0xF0F0F0);
             } else if(yMax < 0.001) {
                 c->yAxis()->setLabelFormat("{={value}*1000|3}");
-                c->yAxis()->setTitle("Current ( uA )", "arialbd.ttf", 12, 0xD7E2E9);
+                c->yAxis()->setTitle("Current ( uA )", "arialbd.ttf", 12, 0xF0F0F0);
             } else if(yMax < 1000) {
                 c->yAxis()->setLabelFormat("{value|3}");
-                c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12, 0xD7E2E9);
+                c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12, 0xF0F0F0);
             } else {
                 c->yAxis()->setLabelFormat("{value|2}");
-                c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12, 0xD7E2E9);
+                c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12, 0xF0F0F0);
             }
         } else if(fixCurrentValue < 1) {            // uA 级别
             c->yAxis()->setLabelFormat("{={value}*1000|3}");
-            c->yAxis()->setTitle("Current ( uA )", "arialbd.ttf", 12, 0xD7E2E9);
+            c->yAxis()->setTitle("Current ( uA )", "arialbd.ttf", 12, 0xF0F0F0);
         } else if(fixCurrentValue < 1000) {         // mA 级别 < 1000mA
             c->yAxis()->setLabelFormat("{value|3}");
-            c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12, 0xD7E2E9);
+            c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12, 0xF0F0F0);
         } else {                                    // // mA 级别 >= 1000mA
             c->yAxis()->setLabelFormat("{value|2}");
-            c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12, 0xD7E2E9);
+            c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12, 0xF0F0F0);
         }
     }
 

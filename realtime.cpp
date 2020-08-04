@@ -46,7 +46,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
         QPushButton:hover{border-image: url(:/ButtonHover.png);color:#f0f0f0 ;}  \
         QPushButton:pressed{border-image: url(:/ButtonPressed.png);color:#e0e0e0 ;}\
         QPushButton:disabled{ color:#585858 ;}";
-    QString frame_qss = "QFrame#FrameQss {border:1px solid #D7E2E9;\
+    QString frame_qss = "QFrame#FrameQss {border:1px solid #F0F0F0;\
             border-top-left-radius:4px;         \
             border-top-right-radius:4px;        \
             border-bottom-left-radius:4px;      \
@@ -69,7 +69,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
 //    frame_1->setFrameShape(QFrame::Panel);
     frame_1->setObjectName("FrameQss");
     // Run push button
-    connectUSB = new QPushButton(QIcon(":/play_red.png"), "启动采集", frame_1);
+    connectUSB = new QPushButton(QIcon(":/play.png"), "启动采集", frame_1);
     connectUSB->setGeometry(2, 3, 130, 30);
     connectUSB->setObjectName("btn_Main_BigFont");
     connectUSB->setFont(font);
@@ -531,16 +531,18 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     frameTop->setGeometry(800, 4, 275, 30);
 //    frame->setStyleSheet("background-color:white");
     frameTop->setFrameShape(QFrame::NoFrame);
-    play = new QPushButton(QIcon(":/play_red.png"), "继续", frame_2);
+    play = new QPushButton(QIcon(":/play.png"), "继续", frame_2);
     play->setGeometry(m_ComData->gUiSize->width() - 360 - 175, 12, 80, 30);
-    play->setStyleSheet(bnt_qss1);
+//    play->setStyleSheet(bnt_qss1);
+    play->setObjectName("btn_Main_BigFont");
     play->setFont(font);
     play->setToolTip("点击继续波形数据更新");
     play->setVisible(false);
     connect(play, &QAbstractButton::clicked, this, &RealTime::onBtnPlay);
     pause = new QPushButton(QIcon(":/pause.png"), "暂停", frame_2);
     pause->setGeometry(m_ComData->gUiSize->width() - 360 - 95, 12, 80, 30);
-    pause->setStyleSheet(bnt_qss1);
+//    pause->setStyleSheet(bnt_qss1);
+    pause->setObjectName("btn_Main_BigFont");
     pause->setFont(font);
     pause->setToolTip("点击暂停波形数据更新");
     pause->setEnabled(true);
@@ -1291,14 +1293,14 @@ void RealTime::drawChart_Current(void)
     // Set the x and y axis stems to transparent and the label font to 10pt Arial
     c->xAxis()->setColors(Chart::Transparent);
     c->yAxis()->setColors(Chart::Transparent);
-    c->xAxis()->setLabelStyle("arial.ttf", 10, 0xD7E2E9);
-    c->yAxis()->setLabelStyle("arial.ttf", 10, 0xD7E2E9);
+    c->xAxis()->setLabelStyle("arial.ttf", 10, 0xF0F0F0);
+    c->yAxis()->setLabelStyle("arial.ttf", 10, 0xF0F0F0);
 
     // Set the y-axis tick length to 0 to disable the tick and put the labels closer to the axis.
     c->yAxis()->setTickLength(0);
 
     // Add axis title using 12pt Arial Bold Italic font
-    c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12, 0xD7E2E9);
+    c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12, 0xF0F0F0);
 
 
     //================================================================================
@@ -1380,26 +1382,26 @@ void RealTime::drawChart_Current(void)
     //    qDebug() << "yMax = " << QString::number(yMax, 'f', 10);
             if(yMax <= 0.0000001) {     // 最大值等于0
                 c->yAxis()->setLabelFormat("{value|3}");
-                c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12, 0xD7E2E9);
+                c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12, 0xF0F0F0);
             } else if(yMax < 0.001) {
                 c->yAxis()->setLabelFormat("{={value}*1000|3}");
-                c->yAxis()->setTitle("Current ( uA )", "arialbd.ttf", 12, 0xD7E2E9);
+                c->yAxis()->setTitle("Current ( uA )", "arialbd.ttf", 12, 0xF0F0F0);
             } else if(yMax < 1000) {
                 c->yAxis()->setLabelFormat("{value|3}");
-                c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12, 0xD7E2E9);
+                c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12, 0xF0F0F0);
             } else {
                 c->yAxis()->setLabelFormat("{value|2}");
-                c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12, 0xD7E2E9);
+                c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12, 0xF0F0F0);
             }
         } else if(fixCurrentValue < 1) {            // uA 级别
             c->yAxis()->setLabelFormat("{={value}*1000|3}");
-            c->yAxis()->setTitle("Current ( uA )", "arialbd.ttf", 12, 0xD7E2E9);
+            c->yAxis()->setTitle("Current ( uA )", "arialbd.ttf", 12, 0xF0F0F0);
         } else if(fixCurrentValue < 1000) {         // mA 级别 < 1000mA
             c->yAxis()->setLabelFormat("{value|3}");
-            c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12, 0xD7E2E9);
+            c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12, 0xF0F0F0);
         } else {                                    // // mA 级别 >= 1000mA
             c->yAxis()->setLabelFormat("{value|2}");
-            c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12, 0xD7E2E9);
+            c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12, 0xF0F0F0);
         }
     }
 
@@ -1540,14 +1542,14 @@ void RealTime::drawChart_Voltage(void)
     // Set the x and y axis stems to transparent and the label font to 10pt Arial
     d->xAxis()->setColors(Chart::Transparent);
     d->yAxis()->setColors(Chart::Transparent);
-    d->xAxis()->setLabelStyle("arial.ttf", 10, 0xD7E2E9);
-    d->yAxis()->setLabelStyle("arial.ttf", 10, 0xD7E2E9);
+    d->xAxis()->setLabelStyle("arial.ttf", 10, 0xF0F0F0);
+    d->yAxis()->setLabelStyle("arial.ttf", 10, 0xF0F0F0);
 
     // Set the y-axis tick length to 0 to disable the tick and put the labels closer to the axis.
     d->yAxis()->setTickLength(0);
 
     // Add axis title using 12pt Arial Bold Italic font
-    d->yAxis()->setTitle("Voltage ( V )", "arialbd.ttf", 12, 0xD7E2E9);
+    d->yAxis()->setTitle("Voltage ( V )", "arialbd.ttf", 12, 0xF0F0F0);
 
 
     //================================================================================

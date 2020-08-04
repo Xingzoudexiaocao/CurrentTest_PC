@@ -37,5 +37,7 @@
         <file>black_style.css</file>
         <file>add_bottom.png</file>
         <file>add_top.png</file>
+        <file>checkbox_checked.png</file>
+        <file>checkbox_unchecked.png</file>
     </qresource>
 </RCC>

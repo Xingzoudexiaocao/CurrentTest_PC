@@ -22,7 +22,7 @@
 #define iSCAN_STM32     1       // 产品for STM32
 #define iSCAN_ARTERY    2       // 产品for ARTERY
 #define iSCAN_INTERNAL    3       // 产品for INTERNAL 内部使用
-#define MCU_TYPE  iSCAN_STM32
+#define MCU_TYPE  iSCAN_ARTERY
 //#define appUpdataDebug    // APP升级部分区别，调试时用,判断是否对bin文件加密处理
 
 #if (MCU_TYPE == iSCAN_INTERNAL)
@@ -42,6 +42,10 @@
 #define YMODEM_VALID_VALUE_2 (0x59)
 //#define YMODEM_CAN (0x18)
 //#define YMODEM_C (0x43)
+
+static QString compangyName = "一起努力";
+static QString productName = "iSCAN";            // 精密电流测量仪
+static QString appVersionName = "100.000.208";
 
 typedef struct HISTORY_DATAINFO_STRUCT
 {
@@ -114,10 +118,6 @@ typedef enum{
     DIFFER_V_END,
     ALL_DATA
 } SETTINGDATA;
-
-static QString compangyName = "一起努力";
-static QString productName = "iSCAN";            // 精密电流测量仪
-static QString appVersionName = "100.000.207";
 
 class ComData
 {
