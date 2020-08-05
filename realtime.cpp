@@ -555,6 +555,10 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
 //    drawChart(m_ChartViewer, 0);
 //    drawChart(m_ChartViewer_2, 1);
     updateChart();      // 初始化显示表格
+    m_ChartViewer->setViewPortWidth(1);
+    m_ChartViewer_2->setViewPortWidth(1);
+    onViewPortChanged();
+    onViewPortChanged_2();
     qDebug() << "RealTime 到了完成updateChart";
 
     m_UsbReceiveThread = new USB_Receive_Thread(this, m_UsbHid, m_ComData);    // 新建线程
@@ -820,32 +824,26 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     batteryVoltageEnd->setValue(m_ComData->SettingDifferVEnd);
     connect(batteryVoltageEnd, SIGNAL(valueChanged(double)), SLOT(slotDifferVEnd(double)));
 
-    m_SubButton_Cur = new QPushButton(frame_2);
-    m_SubButton_Cur->setGeometry(m_ComData->gUiSize->width() - 360, 15, 50, 30);
-    m_SubButton_Cur->setStyleSheet( "QPushButton{border-image: url(:/Triangle_Down.png);color:white; border:1px solid black;text-align:left; padding:2px; font-size:16px;}QPushButton:disabled{ border-image: url(:/Triangle_Disable.png);}");
+    m_SubButton_Cur = new QPushButton("测量", frame_2);
+//    m_SubButton_Cur->setGeometry(m_ComData->gUiSize->width() - 360, 15, 50, 30);
+    m_SubButton_Cur->setGeometry(m_ComData->gUiSize->width() - 360 - 15, 12, 80, 30);
+//    m_SubButton_Cur->setStyleSheet(bnt_qss1);
+    m_SubButton_Cur->setObjectName("btn_Main_BigFont");
+    m_SubButton_Cur->setFont(font);
+//    m_SubButton_Cur->setStyleSheet( "QPushButton{border-image: url(:/Triangle_Down.png);color:white; border:1px solid black;text-align:left; padding:2px; font-size:16px;}QPushButton:disabled{ border-image: url(:/Triangle_Disable.png);}");
     connect(m_SubButton_Cur, &QAbstractButton::clicked, this, &RealTime::slotSubButtonCurrent);
-    m_SubButton_Cur->setToolTip("点击弹出平均值界面");
+    m_SubButton_Cur->setToolTip("点击弹出测量界面");
     m_SubButton_Cur->setEnabled(false);
-    m_SubButton_Vol = new QPushButton(frame_2);
-    m_SubButton_Vol->setGeometry(m_ComData->gUiSize->width() - 360, 13 + (m_ComData->gUiSize->height() - 78 - 10) / 2 - 14, 50, 30);
-    m_SubButton_Vol->setStyleSheet( "QPushButton{border-image: url(:/Triangle_Down.png);color:white; border:1px solid black;text-align:left; padding:2px; font-size:16px;}QPushButton:disabled{ border-image: url(:/Triangle_Disable.png);}");
-    connect(m_SubButton_Vol, &QAbstractButton::clicked, this, &RealTime::slotSubButtonVoltage);
-    m_SubButton_Vol->setToolTip("点击弹出平均值界面");
-    m_SubButton_Vol->setEnabled(false);
+
     m_SubFrame_Cur = new AverageSubFrame(frame_2);
-    m_SubFrame_Cur->setGeometry(m_ComData->gUiSize->width() - 510 - 100, 45, 300, 170);
-    m_SubFrame_Cur->setCurVolFlag(1);
+    m_SubFrame_Cur->setGeometry(m_ComData->gUiSize->width() - 510 - 100 - 400, 45, 700, 90);
+//    m_SubFrame_Cur->setCurVolFlag(1);
     connect(this, SIGNAL(singalCurUpdateT1AndT2(qint8, qint64)), m_SubFrame_Cur, SLOT(slotUpdateT1AndT2(qint8, qint64)));
     m_SubFrame_Cur->setVisible(false);
-    m_SubFrame_Vol = new AverageSubFrame(frame_2);
-    m_SubFrame_Vol->setGeometry(m_ComData->gUiSize->width() - 510 - 100, 13 + (m_ComData->gUiSize->height() - 78 - 10) / 2 - 14 + 30, 300, 170);
-    m_SubFrame_Vol->setCurVolFlag(2);
-    connect(this, SIGNAL(singalVolUpdateT1AndT2(qint8, qint64)), m_SubFrame_Vol, SLOT(slotUpdateT1AndT2(qint8, qint64)));
-    m_SubFrame_Vol->setVisible(false);
 
     m_CalculateThread = new Calculate_Tread(this, m_UsbHid, m_ComData);
-    connect(m_CalculateThread, SIGNAL(signalUpdateCurAverage(qint64, double, double, double)), m_SubFrame_Cur, SLOT(slotUpdateAverage(qint64, double, double, double)));
-    connect(m_CalculateThread, SIGNAL(signalUpdateVolAverage(qint64, double, double, double)), m_SubFrame_Vol, SLOT(slotUpdateAverage(qint64, double, double, double)));
+    connect(m_CalculateThread, SIGNAL(signalUpdateCurAverage(qint64, double, double, double)), m_SubFrame_Cur, SLOT(slotUpdateCurAverage(qint64, double, double, double)));
+    connect(m_CalculateThread, SIGNAL(signalUpdateVolAverage(qint64, double, double, double)), m_SubFrame_Cur, SLOT(slotUpdateVolAverage(qint64, double, double, double)));
     m_CalculateThread->start(QThread ::LowestPriority);
 
     FixCurrentScale = new QComboBox(frame_2);
@@ -1035,19 +1033,22 @@ void RealTime::onMouseClick(QMouseEvent *)
         qDebug() << "电压波形图选中非法区域";
         return;
     }
-    if(m_SubFrame_Vol->getKeyValue() == 1)
+    if(m_SubFrame_Cur->getKeyValue() == 1)
     {
         m_ComData->T1_Vol_Index = seclectIndex;
-        emit singalVolUpdateT1AndT2(1, QDateTime::fromMSecsSinceEpoch(m_ComData->layer_BeginTime + seclectIndex).toMSecsSinceEpoch());
+        m_ComData->T1_Cur_Index = seclectIndex;
+        emit singalCurUpdateT1AndT2(1, QDateTime::fromMSecsSinceEpoch(m_ComData->layer_BeginTime + seclectIndex).toMSecsSinceEpoch());
     }
-    else if(m_SubFrame_Vol->getKeyValue() == 2)
+    else if(m_SubFrame_Cur->getKeyValue() == 2)
     {
         m_ComData->T2_Vol_Index = seclectIndex;
-        emit singalVolUpdateT1AndT2(2, QDateTime::fromMSecsSinceEpoch(m_ComData->layer_BeginTime + seclectIndex).toMSecsSinceEpoch());
+        m_ComData->T2_Cur_Index = seclectIndex;
+        emit singalCurUpdateT1AndT2(2, QDateTime::fromMSecsSinceEpoch(m_ComData->layer_BeginTime + seclectIndex).toMSecsSinceEpoch());
     }
 
 //    drawChart(m_ChartViewer, 0);
     drawChart_Voltage();
+    drawChart_Current();
 //    onChartUpdateTimer(m_ChartViewer);
 
 //    qDebug("xValue: %f", xValue);
@@ -1081,16 +1082,19 @@ void RealTime::onMouseClick_2(QMouseEvent *)
     if(m_SubFrame_Cur->getKeyValue() == 1)
     {
         m_ComData->T1_Cur_Index = seclectIndex;
+        m_ComData->T1_Vol_Index = seclectIndex;
         emit singalCurUpdateT1AndT2(1, QDateTime::fromMSecsSinceEpoch(m_ComData->layer_BeginTime + seclectIndex).toMSecsSinceEpoch());
     }
     else if(m_SubFrame_Cur->getKeyValue() == 2)
     {
         m_ComData->T2_Cur_Index = seclectIndex;
+        m_ComData->T2_Vol_Index = seclectIndex;
         emit singalCurUpdateT1AndT2(2, QDateTime::fromMSecsSinceEpoch(m_ComData->layer_BeginTime + seclectIndex).toMSecsSinceEpoch());
     }
 
 //    drawChart(m_ChartViewer_2, 1);
     drawChart_Current();
+    drawChart_Voltage();
 //    onChartUpdateTimer(m_ChartViewer_2);
 //    trackLineLabel_T1Or2((XYChart *)m_ChartViewer_2->getChart(), m_ChartViewer_2->getPlotAreaMouseX(), 1, 0);
 //    m_ChartViewer_2->updateDisplay();
@@ -1143,31 +1147,46 @@ void RealTime::onSave(bool)
 //
 void RealTime::onHScrollBarChanged(int value)
 {
-    if (!m_ChartViewer->isInViewPortChangedEvent())
-    {
+//    if (!m_ChartViewer->isInViewPortChangedEvent())
+//    {
         // Set the view port based on the scroll bar
         int scrollBarLen = m_HScrollBar->maximum() + m_HScrollBar->pageStep();
         m_ChartViewer->setViewPortLeft(value / (double)scrollBarLen);
 
         // Update the chart display without updating the image maps. (We can delay updating
         // the image map until scrolling is completed and the chart display is stable.)
-//        m_ChartViewer->updateViewPort(true, false);
-        onChartUpdateTimer(m_ChartViewer);
-    }
-}
-void RealTime::onHScrollBarChanged_2(int value)
-{
-    if (!m_ChartViewer_2->isInViewPortChangedEvent())
-    {
-        // Set the view port based on the scroll bar
-        int scrollBarLen = m_HScrollBar_2->maximum() + m_HScrollBar_2->pageStep();
+        m_ChartViewer->updateViewPort(true, false);
+//        onChartUpdateTimer(m_ChartViewer);
+
         m_ChartViewer_2->setViewPortLeft(value / (double)scrollBarLen);
 
         // Update the chart display without updating the image maps. (We can delay updating
         // the image map until scrolling is completed and the chart display is stable.)
-//        m_ChartViewer_2->updateViewPort(true, false);
-        onChartUpdateTimer(m_ChartViewer_2);
-    }
+        m_ChartViewer_2->updateViewPort(true, false);
+//        onChartUpdateTimer(m_ChartViewer_2);
+//    }
+}
+void RealTime::onHScrollBarChanged_2(int value)
+{
+//    if (!m_ChartViewer_2->isInViewPortChangedEvent())
+//    {
+        // Set the view port based on the scroll bar
+        int scrollBarLen = m_HScrollBar_2->maximum() + m_HScrollBar_2->pageStep();
+
+        m_ChartViewer->setViewPortLeft(value / (double)scrollBarLen);
+
+        // Update the chart display without updating the image maps. (We can delay updating
+        // the image map until scrolling is completed and the chart display is stable.)
+        m_ChartViewer->updateViewPort(true, false);
+//        onChartUpdateTimer(m_ChartViewer);
+
+        m_ChartViewer_2->setViewPortLeft(value / (double)scrollBarLen);
+
+        // Update the chart display without updating the image maps. (We can delay updating
+        // the image map until scrolling is completed and the chart display is stable.)
+        m_ChartViewer_2->updateViewPort(true, false);
+//        onChartUpdateTimer(m_ChartViewer_2);
+//    }
 }
 
 //
@@ -1175,25 +1194,43 @@ void RealTime::onHScrollBarChanged_2(int value)
 //
 void RealTime::onViewPortChanged()
 {
+    m_ChartViewer_2->setViewPortWidth(m_ChartViewer->getViewPortWidth());       // 同步缩放波形1和波形2
     // In addition to updating the chart, we may also need to update other controls that
     // changes based on the view port.
     updateControls(m_ChartViewer, m_HScrollBar);
 
     // Update the chart if necessary
-    if (m_ChartViewer->needUpdateChart())
+//    if (m_ChartViewer->needUpdateChart())
         drawChart_Voltage();
-//        drawChart(m_ChartViewer, 0);
-}
-void RealTime::onViewPortChanged_2()
-{
+
     // In addition to updating the chart, we may also need to update other controls that
     // changes based on the view port.
     updateControls(m_ChartViewer_2, m_HScrollBar_2);
 
     // Update the chart if necessary
-    if (m_ChartViewer_2->needUpdateChart())
+//    if (m_ChartViewer_2->needUpdateChart())
         drawChart_Current();
-//        drawChart(m_ChartViewer_2, 1);
+
+}
+void RealTime::onViewPortChanged_2()
+{
+    m_ChartViewer->setViewPortWidth(m_ChartViewer_2->getViewPortWidth());       // 同步缩放波形1和波形2
+    // In addition to updating the chart, we may also need to update other controls that
+    // changes based on the view port.
+    updateControls(m_ChartViewer, m_HScrollBar);
+
+    // Update the chart if necessary
+//    if (m_ChartViewer->needUpdateChart())
+        drawChart_Voltage();
+
+    // In addition to updating the chart, we may also need to update other controls that
+    // changes based on the view port.
+    updateControls(m_ChartViewer_2, m_HScrollBar_2);
+
+    // Update the chart if necessary
+//    if (m_ChartViewer_2->needUpdateChart())
+        drawChart_Current();
+
 }
 
 //
@@ -2125,13 +2162,8 @@ void RealTime::onConnectUSB()
         m_SqliteThread->start(QThread ::LowPriority);
 
         m_SubFrame_Cur->initFrameDisplay();
-        m_SubFrame_Vol->initFrameDisplay();
         m_SubFrame_Cur->setVisible(false);
-        m_SubFrame_Vol->setVisible(false);
-//        slotSubButtonCurrent();
-//        slotSubButtonVoltage();
         m_SubButton_Cur->setEnabled(false);
-        m_SubButton_Vol->setEnabled(false);
 
 
             m_UsbReceiveThread->isStop = false;
@@ -2214,7 +2246,6 @@ void RealTime::onDisConnectUSB()
     historyDetail->ClearData();
 
     m_SubButton_Cur->setEnabled(true);
-    m_SubButton_Vol->setEnabled(true);
 }
 
 void RealTime::thread_receive_finished()
@@ -2510,13 +2541,8 @@ void RealTime::onBtnPlay()
     m_ComData->T1_Vol_Index = 0;
     m_ComData->T2_Vol_Index = 0;
     m_SubFrame_Cur->initFrameDisplay();
-    m_SubFrame_Vol->initFrameDisplay();
     m_SubFrame_Cur->setVisible(false);
-    m_SubFrame_Vol->setVisible(false);
-//    slotSubButtonCurrent();
-//    slotSubButtonVoltage();
     m_SubButton_Cur->setEnabled(false);
-    m_SubButton_Vol->setEnabled(false);
 
     play->setEnabled(false);
     pause->setEnabled(true);
@@ -2538,7 +2564,6 @@ void RealTime::onBtnPause()
     }
 
     m_SubButton_Cur->setEnabled(true);
-    m_SubButton_Vol->setEnabled(true);
 
     play->setEnabled(true);
     pause->setEnabled(false);
@@ -2970,25 +2995,12 @@ void RealTime::slotSubButtonCurrent(void)
     if(m_SubFrame_Cur->isVisible())
     {
         m_SubFrame_Cur->setVisible(false);
-        m_SubButton_Cur->setStyleSheet( "QPushButton{border-image: url(:/Triangle_Down.png);color:white; border:1px solid black;text-align:left; padding:2px; font-size:16px;}QPushButton:disabled{ border-image: url(:/Triangle_Disable.png);}");
+//        m_SubButton_Cur->setStyleSheet( "QPushButton{border-image: url(:/Triangle_Down.png);color:white; border:1px solid black;text-align:left; padding:2px; font-size:16px;}QPushButton:disabled{ border-image: url(:/Triangle_Disable.png);}");
     }
     else
     {
         m_SubFrame_Cur->setVisible(true);
-        m_SubButton_Cur->setStyleSheet( "QPushButton{border-image: url(:/Triangle_Up.png);color:white; border:1px solid black;text-align:left; padding:2px; font-size:16px;}QPushButton:disabled{ border-image: url(:/Triangle_Disable.png);}");
+//        m_SubButton_Cur->setStyleSheet( "QPushButton{border-image: url(:/Triangle_Up.png);color:white; border:1px solid black;text-align:left; padding:2px; font-size:16px;}QPushButton:disabled{ border-image: url(:/Triangle_Disable.png);}");
     }
 }
 
-void RealTime::slotSubButtonVoltage(void)
-{
-    if(m_SubFrame_Vol->isVisible())
-    {
-        m_SubFrame_Vol->setVisible(false);
-        m_SubButton_Vol->setStyleSheet( "QPushButton{border-image: url(:/Triangle_Down.png);color:white; border:1px solid black;text-align:left; padding:2px; font-size:16px;}QPushButton:disabled{ border-image: url(:/Triangle_Disable.png);}");
-    }
-    else
-    {
-        m_SubFrame_Vol->setVisible(true);
-        m_SubButton_Vol->setStyleSheet( "QPushButton{border-image: url(:/Triangle_Up.png);color:white; border:1px solid black;text-align:left; padding:2px; font-size:16px;}QPushButton:disabled{ border-image: url(:/Triangle_Disable.png);}");
-    }
-}

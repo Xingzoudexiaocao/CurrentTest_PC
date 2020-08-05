@@ -51,7 +51,6 @@ signals:
     void SignalsTest(void);
 
     void singalCurUpdateT1AndT2(qint8, qint64);
-    void singalVolUpdateT1AndT2(qint8, qint64);
 private:
     // The initial full range is set to 60 seconds of data.
     static const int initialFullRange = 60;
@@ -138,9 +137,7 @@ private:
     double fixCurrentValue;
 
     QPushButton *m_SubButton_Cur;
-    QPushButton *m_SubButton_Vol;
     AverageSubFrame *m_SubFrame_Cur;
-    AverageSubFrame *m_SubFrame_Vol;
 
     void drawChart_Current(void);
     void drawChart_Voltage(void);
@@ -192,7 +189,6 @@ private slots:
     void slotFixCurrentScale(int);
 
     void slotSubButtonCurrent(void);
-    void slotSubButtonVoltage(void);
 
 public slots:
     void m_get_USB_Data(QDateTime, double, unsigned char, unsigned char);

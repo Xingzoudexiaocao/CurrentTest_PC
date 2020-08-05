@@ -8,6 +8,8 @@
 #include <QDebug>
 #include <QDateTime>
 #include <QFontDatabase>
+#include <QPushButton>
+#include "comdata.h"
 
 class AverageSubFrame : public QFrame
 {
@@ -33,6 +35,10 @@ private:
     QLabel *AverageLabel;
     QLabel *MaxLabel;
     QLabel *MinLabel;
+    QLabel *AverageLabel_2;
+    QLabel *MaxLabel_2;
+    QLabel *MinLabel_2;
+    QPushButton *subFrameClose;
 
 signals:
 
@@ -41,9 +47,12 @@ private slots:
     void slotButtonT1Check(bool);
     void slotButtonT2Check(bool);
 
+    void slotSubFrameClose(void);
+
 public slots:
     void slotUpdateT1AndT2(qint8, qint64);
-    void slotUpdateAverage(qint64, double, double, double);
+    void slotUpdateCurAverage(qint64, double, double, double);
+    void slotUpdateVolAverage(qint64, double, double, double);
 };
 
 #endif // AVERAGESUBFRAME_H

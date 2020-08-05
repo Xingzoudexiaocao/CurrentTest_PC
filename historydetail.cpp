@@ -246,19 +246,19 @@ HistoryDetail::HistoryDetail(QWidget *parent, USB_HID *hid, ComData *comD) : QGr
     QString qssLabel_2 = "QLabel { color:#DC143C; text-align:left; font-size:20px;font-weight:bold;}";
 
     T1_Text = new QRadioButton(m_SubFrame);
-    T1_Text->setGeometry(parent->width() / 2 - 300 - 120, 180 - 2, 200, 30);
+    T1_Text->setGeometry(parent->width() / 2 - 300 - 120, 180 - 2, 250, 30);
     T1_Text->setStyleSheet(qssRadio);      // QRadioButton {color:red;}
     T1_Text->setFont(font);
     T1_Text->setChecked(true);
     connect(T1_Text, SIGNAL(clicked(bool)), this, SLOT(slotButtonT1Check(bool)));
 //    connect(T1_Text, &QAbstractButton::clicked, this, &AverageSubFrame::slotButtonCheck());
     T2_Text = new QRadioButton(m_SubFrame);
-    T2_Text->setGeometry(parent->width() / 2 - 120, 180 - 2, 200, 30);
+    T2_Text->setGeometry(parent->width() / 2 - 120, 180 - 2, 250, 30);
     T2_Text->setStyleSheet(qssRadio);      // QRadioButton {color:red;}
     T2_Text->setFont(font);
     connect(T2_Text, SIGNAL(clicked(bool)), this, SLOT(slotButtonT2Check(bool)));
     T2_T1_Label = new QLabel(m_SubFrame);
-    T2_T1_Label->setGeometry(parent->width() / 2 + 300 - 120, 180 - 2, 200, 30);
+    T2_T1_Label->setGeometry(parent->width() / 2 + 300 - 120, 180 - 2, 250, 30);
     T2_T1_Label->setStyleSheet(qssLabel_1);      // QRadioButton {color:red;}
     T2_T1_Label->setFont(font);
 
