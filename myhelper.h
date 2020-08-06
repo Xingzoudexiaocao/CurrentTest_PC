@@ -39,7 +39,7 @@ public:
     //设置皮肤样式
     static void SetStyle(const QString &styleName)
     {
-        QFile file(QString(":/%1.css").arg(styleName));
+        QFile file(QString(":/QssStyle/%1.css").arg(styleName));
 //        if (file.open(QFile::ReadOnly)) {
 //            QString qss = QLatin1String(file.readAll());
 //            qApp->setStyleSheet(qss);

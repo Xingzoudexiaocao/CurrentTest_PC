@@ -57,7 +57,14 @@ int main(int argc, char *argv[])
     qDebug() << "UI界面大小：" << comD->gUiSize->width() << comD->gUiSize->height();
 
     myHelper::SetUTF8Code();
-    myHelper::SetStyle("black_style");//黑色风格
+    #if (MCU_TYPE == iSCAN_STM32)
+        myHelper::SetStyle("white_style");//白色风格
+    #elif  (MCU_TYPE == iSCAN_ARTERY)
+        myHelper::SetStyle("black_style");//黑色风格
+    #elif  (MCU_TYPE == iSCAN_INTERNAL)
+        myHelper::SetStyle("white_style");//白色风格
+    #endif
+
 //    QFile file(":/black_style.css");
 //    if (file.open(QFile::ReadOnly)) {
 //        qDebug() << "文件打开成功。";

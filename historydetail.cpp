@@ -97,14 +97,22 @@ HistoryDetail::HistoryDetail(QWidget *parent, USB_HID *hid, ComData *comD) : QGr
     connect(FixCurrentScale, SIGNAL(currentIndexChanged(int)), this, SLOT(slotFixCurrentScale(int)));
     fixCurrentValue = 0;
 
+    QString qssFrame = "QFrame#FrameQss {border:1px solid black; \
+            border-top-left-radius:4px;         \
+            border-top-right-radius:4px;        \
+            border-bottom-left-radius:4px;      \
+            border-bottom-right-radius:4px}";
+    #if (MCU_TYPE == iSCAN_STM32)
+        qssFrame.append("QFrame#FrameQss{background-color: rgb(240, 240, 240, 200);}");
+    #elif  (MCU_TYPE == iSCAN_ARTERY)
+        qssFrame.append("QFrame#FrameQss{background-color: rgb(70, 70, 70, 200);}");
+    #elif  (MCU_TYPE == iSCAN_INTERNAL)
+        qssFrame.append("QFrame#FrameQss{background-color: rgb(240, 240, 240, 200);}");
+    #endif
     m_SubFrame = new QFrame(this);
     m_SubFrame->setGeometry(2, 10, parent->width() - 10, 300);
     m_SubFrame->setObjectName("FrameQss");
-    m_SubFrame->setStyleSheet("QFrame#FrameQss {border:1px solid black; background-color: rgb(70, 70, 70, 200);\
-                            border-top-left-radius:4px;         \
-                            border-top-right-radius:4px;        \
-                            border-bottom-left-radius:4px;      \
-                            border-bottom-right-radius:4px}");
+    m_SubFrame->setStyleSheet(qssFrame);
     m_SubFrame->setVisible(false);
 
     historyFile = new QPushButton(m_SubFrame);
@@ -988,12 +996,31 @@ void HistoryDetail::drawChart(QChartViewer *viewer, int index)
 
     // Create an XYChart object of size 640 x 350 pixels
     XYChart *c = new XYChart(m_ComData->gUiSize->width() - 280, (m_ComData->gUiSize->height() - 78 - 10) / 2);     // 1345, 425        m_HScrollBar->width(), 300
-    c->setBackground(0x464646);
+
     // Set the plotarea at (55, 50) with width 80 pixels less than chart width, and height 80 pixels
     // less than chart height. Use a vertical gradient from light blue (f0f6ff) to sky blue (a0c0ff)
     // as background. Set border to transparent and grid lines to white (ffffff).
-    c->setPlotArea(85, 62, c->getWidth() - 85 - 30, c->getHeight() - 100, c->linearGradientColor(0, 50, 0,
-        c->getHeight() - 35, 0x464646, 0x242424), -1, Chart::Transparent, 0x464646, 0x464646);
+    int fontColor = 0;
+    int lineColor = 0;
+    #if (MCU_TYPE == iSCAN_STM32)
+        fontColor = 0;
+        lineColor = 0x0000FF;
+        c->setBackground(0xF0F0F0);
+        c->setPlotArea(85, 62, c->getWidth() - 85 - 30, c->getHeight() - 100, c->linearGradientColor(0, 50, 0,
+            c->getHeight() - 35, 0xF0F0F0, 0xCECECE), -1, Chart::Transparent, 0xF0F0F0, 0xF0F0F0);
+    #elif  (MCU_TYPE == iSCAN_ARTERY)
+        fontColor = 0xF0F0F0;
+        lineColor = 0xAAD0FF;
+        c->setBackground(0x464646);
+        c->setPlotArea(85, 62, c->getWidth() - 85 - 30, c->getHeight() - 100, c->linearGradientColor(0, 50, 0,
+            c->getHeight() - 35, 0x464646, 0x242424), -1, Chart::Transparent, 0x464646, 0x464646);
+    #elif  (MCU_TYPE == iSCAN_INTERNAL)
+        fontColor = 0;
+        lineColor = 0x0000FF;
+        c->setBackground(0xF0F0F0);
+        c->setPlotArea(85, 62, c->getWidth() - 85 - 30, c->getHeight() - 100, c->linearGradientColor(0, 50, 0,
+            c->getHeight() - 35, 0xF0F0F0, 0xCECECE), -1, Chart::Transparent, 0xF0F0F0, 0xF0F0F0);
+    #endif
 
     // As the data can lie outside the plotarea in a zoomed chart, we need enable clipping.
     c->setClipping();
@@ -1013,17 +1040,17 @@ void HistoryDetail::drawChart(QChartViewer *viewer, int index)
     // Set the x and y axis stems to transparent and the label font to 10pt Arial
     c->xAxis()->setColors(Chart::Transparent);
     c->yAxis()->setColors(Chart::Transparent);
-    c->xAxis()->setLabelStyle("arial.ttf", 10, 0xF0F0F0);
-    c->yAxis()->setLabelStyle("arial.ttf", 10, 0xF0F0F0);
+    c->xAxis()->setLabelStyle("arial.ttf", 10, fontColor);
+    c->yAxis()->setLabelStyle("arial.ttf", 10, fontColor);
 
     // Set the y-axis tick length to 0 to disable the tick and put the labels closer to the axis.
     c->yAxis()->setTickLength(0);
 
     // Add axis title using 12pt Arial Bold Italic font
     if(index == 0)
-        c->yAxis()->setTitle("Voltage ( V )", "arialbd.ttf", 12, 0xF0F0F0);
+        c->yAxis()->setTitle("Voltage ( V )", "arialbd.ttf", 12, fontColor);
     else if (index == 1)
-        c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12, 0xF0F0F0);
+        c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12, fontColor);
 
 
     //================================================================================
@@ -1038,7 +1065,7 @@ void HistoryDetail::drawChart(QChartViewer *viewer, int index)
 
     // Add a line layer for the lines, using a line width of 2 pixels
     LineLayer *layer = c->addLineLayer();
-    layer->setLineWidth(2);
+    layer->setLineWidth(1);
     layer->setFastLineMode();
 
     // Now we add the 3 data series to a line layer, using the color red (ff0000), green (00cc00)
@@ -1047,7 +1074,7 @@ void HistoryDetail::drawChart(QChartViewer *viewer, int index)
     char buffer[1024];
     if(index == 0) {
         if(d_currentIndex >= 0) {
-            sprintf(buffer, " <*bgColor=464646*> <*color=55FF7F*> <*size=14px*>");   //  %.3f V  , d_dataSeriesV[DataSize - 1]
+            sprintf(buffer, " <*color=55FF7F*> <*size=14px*>");   //  %.3f V  , d_dataSeriesV[DataSize - 1]
         }
         layer->addDataSet(viewPortDataSeriesB, 0x55FF7F, buffer);   // , buffer
         c->yAxis()->setMinTickInc(0.1);
@@ -1061,7 +1088,7 @@ void HistoryDetail::drawChart(QChartViewer *viewer, int index)
 //            } else {
 //                sprintf(buffer, " <*bgColor=464646*> <*color=FF5500*> <*size=14px*> %.2f mA", d);
 //            }
-            sprintf(buffer, " <*bgColor=464646*> <*color=FF5500*> <*size=14px*>");
+            sprintf(buffer, " <*color=FF5500*> <*size=14px*>");
         }
         layer->addDataSet(viewPortDataSeriesC, 0xFF5500, buffer);       // , buffer
         c->yAxis()->setMinTickInc(0.000001);
@@ -1100,26 +1127,26 @@ void HistoryDetail::drawChart(QChartViewer *viewer, int index)
     //    qDebug() << "yMax = " << QString::number(yMax, 'f', 10);
             if(yMax <= 0.0000001) {     // 最大值等于0
                 c->yAxis()->setLabelFormat("{value|3}");
-                c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12, 0xF0F0F0);
+                c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12, fontColor);
             } else if(yMax < 0.001) {
                 c->yAxis()->setLabelFormat("{={value}*1000|3}");
-                c->yAxis()->setTitle("Current ( uA )", "arialbd.ttf", 12, 0xF0F0F0);
+                c->yAxis()->setTitle("Current ( uA )", "arialbd.ttf", 12, fontColor);
             } else if(yMax < 1000) {
                 c->yAxis()->setLabelFormat("{value|3}");
-                c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12, 0xF0F0F0);
+                c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12, fontColor);
             } else {
                 c->yAxis()->setLabelFormat("{value|2}");
-                c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12, 0xF0F0F0);
+                c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12, fontColor);
             }
         } else if(fixCurrentValue < 1) {            // uA 级别
             c->yAxis()->setLabelFormat("{={value}*1000|3}");
-            c->yAxis()->setTitle("Current ( uA )", "arialbd.ttf", 12, 0xF0F0F0);
+            c->yAxis()->setTitle("Current ( uA )", "arialbd.ttf", 12, fontColor);
         } else if(fixCurrentValue < 1000) {         // mA 级别 < 1000mA
             c->yAxis()->setLabelFormat("{value|3}");
-            c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12, 0xF0F0F0);
+            c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12, fontColor);
         } else {                                    // // mA 级别 >= 1000mA
             c->yAxis()->setLabelFormat("{value|2}");
-            c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12, 0xF0F0F0);
+            c->yAxis()->setTitle("Current ( mA )", "arialbd.ttf", 12, fontColor);
         }
     }
 
@@ -1147,12 +1174,12 @@ void HistoryDetail::drawChart(QChartViewer *viewer, int index)
     if(T1_Index > 0 && T1_Index <= d_currentIndex)      //
     {
         QString buf = "T1 = " + (QString)c->xAxis()->getFormattedLabel(*(d_timeStamps + T1_Index - 1), "hh:nn:ss.fff");     // yyyy-mm-dd
-        c->xAxis()->addMark(*(d_timeStamps + T1_Index - 1), 0xAAD0FF, buf.toLatin1().data())->setLineWidth(2);
+        c->xAxis()->addMark(*(d_timeStamps + T1_Index - 1), lineColor, buf.toLatin1().data())->setLineWidth(2);
     }
     if(T2_Index > 0 && T2_Index <= d_currentIndex)
     {
         QString buf = "T2 = " + (QString)c->xAxis()->getFormattedLabel(*(d_timeStamps + T2_Index - 1), "hh:nn:ss.fff");     // yyyy-mm-dd
-        c->xAxis()->addMark(*(d_timeStamps + T2_Index - 1), 0xAAD0FF, buf.toLatin1().data())->setLineWidth(2);
+        c->xAxis()->addMark(*(d_timeStamps + T2_Index - 1), lineColor, buf.toLatin1().data())->setLineWidth(2);
     }
 
     // We need to update the track line too. If the mouse is moving on the chart (eg. if

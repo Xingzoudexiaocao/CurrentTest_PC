@@ -3,23 +3,45 @@
 AverageSubFrame::AverageSubFrame(QFrame *parent) : QFrame(parent)
 {
     // size(200, 100)
-    this->setObjectName("FrameQss");
-    this->setStyleSheet("QFrame#FrameQss {border:1px solid black; background-color: rgb(70, 70, 70, 200);\
-                            border-top-left-radius:4px;         \
-                            border-top-right-radius:4px;        \
-                            border-bottom-left-radius:4px;      \
-                            border-bottom-right-radius:4px}");
+
     keyValue = 1;
 
     int fontId = QFontDatabase::addApplicationFont(":/ZhuoJianGanLanJianTi.ttf");
     QStringList fontFamilies = QFontDatabase::applicationFontFamilies(fontId);
     font.setFamily(fontFamilies.at(0));
-    QString qssRadio = "QRadioButton {font-family:arial; border-radius: 2px; color:#AAD0FF; text-align:left; font-size:20px;font-weight:bold;} \
+    QString qssRadio = "QRadioButton {font-family:arial; border-radius: 2px; text-align:left; font-size:20px;font-weight:bold;} \
             QRadioButton::indicator:checked {  image: url(:/checkbox_checked.png); } \
             QRadioButton::indicator:unchecked {  image: url(:/checkbox_unchecked.png);}\
             QRadioButton::indicator { width: 30px; height: 30px;}";
-    QString qssLabel_1 = "QLabel {font-family:arial; color:#AAD0FF; text-align:left; padding:2px; font-size:20px;font-weight:bold;}";
-    QString qssLabel_2 = "QLabel { color:#AAD0FF; text-align:left; padding:2px; font-size:16px;font-weight:bold;}";         // color:#DC143C;
+    QString qssLabel_1 = "QLabel {font-family:arial;  text-align:left; padding:2px; font-size:20px;font-weight:bold;}";
+    QString qssLabel_2 = "QLabel {  text-align:left; padding:2px; font-size:16px;font-weight:bold;}";         // color:#DC143C;
+
+    QString qssThis = "QFrame#FrameQss {border:1px solid black; \
+            border-top-left-radius:4px;         \
+            border-top-right-radius:4px;        \
+            border-bottom-left-radius:4px;      \
+            border-bottom-right-radius:4px}";
+
+    #if (MCU_TYPE == iSCAN_STM32)
+        qssThis.append("QFrame#FrameQss{background-color: rgb(240, 240, 240, 200);}");
+        qssRadio.append("QRadioButton{color:#0000FF;}");
+        qssLabel_1.append("QLabel{color:#0000FF;}");
+        qssLabel_2.append("QLabel{color:#0000FF;}");
+    #elif  (MCU_TYPE == iSCAN_ARTERY)
+        qssThis.append("QFrame#FrameQss{background-color: rgb(70, 70, 70, 200);}");
+        qssRadio.append("QRadioButton{color:#AAD0FF;}");
+        qssLabel_1.append("QLabel{color:#AAD0FF;}");
+        qssLabel_2.append("QLabel{color:#AAD0FF;}");
+    #elif  (MCU_TYPE == iSCAN_INTERNAL)
+        qssThis.append("QFrame#FrameQss{background-color: rgb(240, 240, 240, 200);}");
+        qssRadio.append("QRadioButton{color:#0000FF;}");
+        qssLabel_1.append("QLabel{color:#0000FF;}");
+        qssLabel_2.append("QLabel{color:#0000FF;}");
+    #endif
+
+
+    this->setObjectName("FrameQss");
+    this->setStyleSheet(qssThis);
 
     T1_Text = new QRadioButton(this);
     T1_Text->setText("T1 = 00:00:00.000");

@@ -28,16 +28,16 @@
         <file>ExitA.png</file>
         <file>close.png</file>
         <file>close_filled.png</file>
-        <file>black.css</file>
         <file>qt_zh_CN.qm</file>
         <file>Information/error.png</file>
         <file>Information/info.png</file>
         <file>Information/question.png</file>
         <file>Information/fontawesome-webfont.ttf</file>
-        <file>black_style.css</file>
         <file>add_bottom.png</file>
         <file>add_top.png</file>
         <file>checkbox_checked.png</file>
         <file>checkbox_unchecked.png</file>
+        <file>QssStyle/black_style.css</file>
+        <file>QssStyle/white_style.css</file>
     </qresource>
 </RCC>
