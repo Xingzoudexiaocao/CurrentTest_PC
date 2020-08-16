@@ -160,4 +160,5 @@ int USB_Send_Thread::getAck(void)
 void USB_Send_Thread::setAckState(int getAck)			// slot function
 {
     this->AckState = getAck;
+    qDebug() << "getACKSTATE" << getAck;
 }

@@ -1,4 +1,5 @@
 ﻿#include "usb_receive_thread.h"
+#include "usb_send_thread.h"
 
 USB_Receive_Thread::USB_Receive_Thread(QObject *parent, USB_HID *hid, ComData *comD) : QThread ()
 {
@@ -24,6 +25,7 @@ void USB_Receive_Thread::run()
     memset(buffer, 0, 32);
 
     m_ComData->ClearData();         // 清之前的数据
+    CreateRandomKey();          // 生成随机密钥
 
     while (!isStop) {
 //        if(isStop)
@@ -64,12 +66,31 @@ void USB_Receive_Thread::run()
                       memcpy(&m_ComData->d_verifyValue.Lelve_3_max,  buffer + 16, 4);
                       memcpy(&m_ComData->d_verifyValue.Lelve_4_min,  buffer + 20, 4);
                       memcpy(&m_ComData->d_verifyValue.Lelve_4_max,  buffer + 24, 4);
+                      m_ComData->isGetVarify = true;
                       emit get_Verify_Value();
+                  }
+                  else if(buffer[0] == YMODEM_RANDOM_KEY && buffer[1] == YMODEM_RANDOM_KEY && buffer[2] == YMODEM_RANDOM_KEY && buffer[3] == YMODEM_RANDOM_KEY)
+                  {
+//                      quint8 getBuf[8];
+                      quint16 getShort = (quint16)buffer[4] << 8 | buffer[5];
+//                      memcpy(getBuf, buffer + 16, sizeof (getBuf));
+//                      if(0 == memcmp(getBuf, m_ComData->key,sizeof (getBuf)))
+                      if(getShort == USB_Send_Thread::YModemCRC(m_ComData->key, 8))
+                      {
+                          m_ComData->isKey = true;
+                          emit get_RandomKey_Value();
+                      }
                   }
                   else
                   {
-                      ST_REC_STRUCT *tmp = new ST_REC_STRUCT();
-                      memcpy(tmp, buffer, 32);
+                      if(m_ComData->isGetVarify && m_ComData->isKey)
+                      {
+                          ST_REC_STRUCT *tmp = new ST_REC_STRUCT();
+                          for(int k = 0; k < 24; k ++)
+                          {
+                              buffer[4 + k] = buffer[4 + k] ^ m_ComData->key[k % 8];
+                          }
+                          memcpy(tmp, buffer, 32);
 //                      qDebug("Received %d bytes, 成功.", numBytes);
 //                      qDebug() << QDateTime::currentDateTime();
 //                       m_ComData->RunningCount++;       // 时间加1ms
@@ -93,8 +114,10 @@ void USB_Receive_Thread::run()
                        }
                        testCnt_S = testCnt;
 */
-                       HandleData(tmp);  // 处理数据
-                       delete tmp;
+                           HandleData(tmp);  // 处理数据
+                           delete tmp;
+                      }
+
                   }
               }
               else
@@ -327,4 +350,29 @@ void USB_Receive_Thread::HandleData(ST_REC_STRUCT *bufData)
     }
 
     delete []getHeader;
+}
+
+void USB_Receive_Thread::CreateRandomKey(void)
+{
+    qint16 random1 = qrand();
+    qint16 random2 = qrand();
+    qint16 random3 = qrand();
+    qint16 random4 = qrand();
+    m_ComData->key[0] = random1 & 0xFF;  m_ComData->key[1] = (random1 >> 8) & 0xFF;
+    m_ComData->key[2] = random2 & 0xFF;  m_ComData->key[3] = (random2 >> 8) & 0xFF;
+    m_ComData->key[4] = random3 & 0xFF;  m_ComData->key[5] = (random3 >> 8) & 0xFF;
+    m_ComData->key[6] = random4 & 0xFF;  m_ComData->key[7] = (random4 >> 8) & 0xFF;
+
+//    qDebug() << "当前时间" << QTime::currentTime();
+//    quint8 m_text[8];
+//    quint8 e_text[8];
+//    memset(m_text, 0x88, sizeof (m_text));
+//    memset(e_text, 0x00, sizeof (e_text));
+//    endes(m_text, m_ComData->key, e_text);
+//    memset(m_text, 0x00, sizeof (m_text));
+//    undes(e_text, m_ComData->key, m_text);
+//    qDebug() << "当前时间" << QTime::currentTime();
+//    qDebug() << "e_text" << e_text[0] << e_text[1] << e_text[2] << e_text[3] << e_text[4] << e_text[5] << e_text[6] << e_text[7];
+//    qDebug() << "m_text" << m_text[0] << m_text[1] << m_text[2] << m_text[3] << m_text[4] << m_text[5] << m_text[6] << m_text[7];
+
 }

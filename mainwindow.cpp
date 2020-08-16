@@ -26,9 +26,9 @@ MainWindow::MainWindow(QWidget *parent, ComData *comD, USB_HID *hid) :
     setFixedSize(m_ComData->gUiSize->width(), m_ComData->gUiSize->height() - 30);            // 1100, 885        // 设定之后不能拉伸
 //    setGeometry(100, 50, 1680, 1250);      // 设定窗口显示坐标           100, 50, 1680, 950
 //    setGeometry(800, 900, 1100, 885);      // 设定窗口显示坐标
-    /*
+
     setWindowTitle(productName);
-    QIcon icon;
+/*    QIcon icon;
     #if (MCU_TYPE == iSCAN_STM32)
         icon.addFile(QStringLiteral(":/logo.png"), QSize(), QIcon::Normal, QIcon::Off);
     #elif  (MCU_TYPE == iSCAN_ARTERY)

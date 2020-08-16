@@ -22,12 +22,12 @@ AverageSubFrame::AverageSubFrame(QFrame *parent) : QFrame(parent)
             border-bottom-left-radius:4px;      \
             border-bottom-right-radius:4px}";
 
-    #if (MCU_TYPE == iSCAN_STM32)
+    #if (MCU_TYPE == iSCAN_ARTERY)
         qssThis.append("QFrame#FrameQss{background-color: rgb(240, 240, 240, 200);}");
         qssRadio.append("QRadioButton{color:#0000FF;}");
         qssLabel_1.append("QLabel{color:#0000FF;}");
         qssLabel_2.append("QLabel{color:#0000FF;}");
-    #elif  (MCU_TYPE == iSCAN_ARTERY)
+    #elif  (MCU_TYPE == iSCAN_STM32)
         qssThis.append("QFrame#FrameQss{background-color: rgb(70, 70, 70, 200);}");
         qssRadio.append("QRadioButton{color:#AAD0FF;}");
         qssLabel_1.append("QLabel{color:#AAD0FF;}");

@@ -24,6 +24,7 @@ signals:
     void setAckOrNak(int);
     void get_Version_Length(unsigned long long, unsigned long long);
     void get_Verify_Value(void);
+    void get_RandomKey_Value(void);
 
 protected:
     void run();
@@ -36,6 +37,7 @@ private:
 
 private:
     void HandleData(ST_REC_STRUCT *);
+    void CreateRandomKey(void);
 
 };
 

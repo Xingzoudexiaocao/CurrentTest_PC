@@ -102,9 +102,9 @@ HistoryDetail::HistoryDetail(QWidget *parent, USB_HID *hid, ComData *comD) : QGr
             border-top-right-radius:4px;        \
             border-bottom-left-radius:4px;      \
             border-bottom-right-radius:4px}";
-    #if (MCU_TYPE == iSCAN_STM32)
+    #if (MCU_TYPE == iSCAN_ARTERY)
         qssFrame.append("QFrame#FrameQss{background-color: rgb(240, 240, 240, 200);}");
-    #elif  (MCU_TYPE == iSCAN_ARTERY)
+    #elif  (MCU_TYPE == iSCAN_STM32)
         qssFrame.append("QFrame#FrameQss{background-color: rgb(70, 70, 70, 200);}");
     #elif  (MCU_TYPE == iSCAN_INTERNAL)
         qssFrame.append("QFrame#FrameQss{background-color: rgb(240, 240, 240, 200);}");
@@ -1002,13 +1002,13 @@ void HistoryDetail::drawChart(QChartViewer *viewer, int index)
     // as background. Set border to transparent and grid lines to white (ffffff).
     int fontColor = 0;
     int lineColor = 0;
-    #if (MCU_TYPE == iSCAN_STM32)
+    #if (MCU_TYPE == iSCAN_ARTERY)
         fontColor = 0;
         lineColor = 0x0000FF;
         c->setBackground(0xF0F0F0);
         c->setPlotArea(85, 62, c->getWidth() - 85 - 30, c->getHeight() - 100, c->linearGradientColor(0, 50, 0,
             c->getHeight() - 35, 0xF0F0F0, 0xCECECE), -1, Chart::Transparent, 0xF0F0F0, 0xF0F0F0);
-    #elif  (MCU_TYPE == iSCAN_ARTERY)
+    #elif  (MCU_TYPE == iSCAN_STM32)
         fontColor = 0xF0F0F0;
         lineColor = 0xAAD0FF;
         c->setBackground(0x464646);

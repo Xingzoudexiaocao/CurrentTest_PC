@@ -15,6 +15,8 @@
 #include "iconhelper.h"
 #include "myhelper.h"
 
+#include "des.h"
+
 #ifdef _MSC_VER
 #pragma execution_character_set("utf-8")
 #endif
@@ -22,7 +24,7 @@
 #define iSCAN_STM32     1       // 产品for STM32
 #define iSCAN_ARTERY    2       // 产品for ARTERY
 #define iSCAN_INTERNAL    3       // 产品for INTERNAL 内部使用
-#define MCU_TYPE  iSCAN_STM32
+#define MCU_TYPE  iSCAN_INTERNAL
 //#define appUpdataDebug    // APP升级部分区别，调试时用,判断是否对bin文件加密处理
 
 #if (MCU_TYPE == iSCAN_INTERNAL)
@@ -40,12 +42,13 @@
 #define YMODEM_TIMEOUT (0x7B)
 #define YMODEM_VALID_VALUE_1 (0x56)
 #define YMODEM_VALID_VALUE_2 (0x59)
+#define YMODEM_RANDOM_KEY (0xDB)
 //#define YMODEM_CAN (0x18)
 //#define YMODEM_C (0x43)
 
 static QString compangyName = "一起努力";
 static QString productName = "iSCAN";            // 精密电流测量仪
-static QString appVersionName = "100.000.209";
+static QString appVersionName = "100.000.210";
 
 typedef struct HISTORY_DATAINFO_STRUCT
 {
@@ -190,6 +193,10 @@ public:
     DB_VERIFY_STRUCT d_verifyValue;
     DB_STANDARD_STRUCT d_standardValue;
     DB_CALCULATE_STRUCT d_calculateValue;
+
+    bool isGetVarify;
+    quint8 key[8];
+    bool isKey;
 private:
 
 

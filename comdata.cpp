@@ -108,6 +108,10 @@ void ComData::ClearData(void)
     T2_Cur_Index = 0;
     T1_Vol_Index = 0;
     T2_Vol_Index = 0;
+
+    isGetVarify = false;
+    memset(&key, 0x00, sizeof (key));
+    isKey = false;
 }
 
 bool ComData::WriteData(int dataI)

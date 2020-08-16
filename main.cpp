@@ -58,9 +58,9 @@ int main(int argc, char *argv[])
 
     myHelper::SetUTF8Code();
     #if (MCU_TYPE == iSCAN_STM32)
-        myHelper::SetStyle("white_style");//白色风格
-    #elif  (MCU_TYPE == iSCAN_ARTERY)
         myHelper::SetStyle("black_style");//黑色风格
+    #elif  (MCU_TYPE == iSCAN_ARTERY)
+        myHelper::SetStyle("white_style");//白色风格
     #elif  (MCU_TYPE == iSCAN_INTERNAL)
         myHelper::SetStyle("white_style");//白色风格
     #endif

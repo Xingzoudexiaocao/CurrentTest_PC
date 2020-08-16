@@ -567,6 +567,8 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     connect(m_UsbReceiveThread,SIGNAL(get_USB_Data(QDateTime, double, unsigned char, unsigned char)),this, SLOT(m_get_USB_Data(QDateTime, double, unsigned char, unsigned char)));
     connect(m_UsbReceiveThread,SIGNAL(get_Version_Length(unsigned long long, unsigned long long)),this, SLOT(m_get_Version_Length(unsigned long long, unsigned long long)));
     connect(m_UsbReceiveThread,SIGNAL(end_Thread()),this, SLOT(thread_receive_finished()));
+    connect(m_UsbReceiveThread,SIGNAL(get_Verify_Value()),this, SLOT(slotVerifySuccess()));
+    connect(m_UsbReceiveThread,SIGNAL(get_RandomKey_Value()),this, SLOT(slotRandomKeySuccess()));
 
     m_UsbSendThread = new USB_Send_Thread(this, m_UsbHid, m_ComData);    // 新建线程
 //    m_UsbSendThread->setPriority(QThread::IdlePriority);
@@ -881,7 +883,13 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
 
     SendVerifyCmd = new QTimer(this);
     connect(SendVerifyCmd, SIGNAL(timeout()), this, SLOT(slotSendVerifyCmd()));
-    SendVerifyCount = 0;
+    SendRandomKeyCmd = new QTimer(this);
+    connect(SendRandomKeyCmd, SIGNAL(timeout()), this, SLOT(slotSendRandomKeyCmd()));
+    SendKeyCount = 0;
+
+    //初始化随机数种子
+    QDateTime t = QDateTime::currentDateTime();
+    qsrand(t.toMSecsSinceEpoch());
 }
 
 RealTime::~RealTime()
@@ -1311,13 +1319,13 @@ void RealTime::drawChart_Current(void)
     // as background. Set border to transparent and grid lines to white (ffffff).
     int fontColor = 0;
     int lineColor = 0;
-    #if (MCU_TYPE == iSCAN_STM32)
+    #if (MCU_TYPE == iSCAN_ARTERY)
         fontColor = 0;
         lineColor = 0x0000FF;
         c->setBackground(0xF0F0F0);
         c->setPlotArea(85, 62, c->getWidth() - 85 - 30, c->getHeight() - 100, c->linearGradientColor(0, 50, 0,
             c->getHeight() - 35, 0xF0F0F0, 0xCECECE), -1, Chart::Transparent, 0xF0F0F0, 0xF0F0F0);
-    #elif  (MCU_TYPE == iSCAN_ARTERY)
+    #elif  (MCU_TYPE == iSCAN_STM32)
         fontColor = 0xF0F0F0;
         lineColor = 0xAAD0FF;
         c->setBackground(0x464646);
@@ -1579,13 +1587,13 @@ void RealTime::drawChart_Voltage(void)
     // as background. Set border to transparent and grid lines to white (ffffff).
     int fontColor = 0;
     int lineColor = 0;
-    #if (MCU_TYPE == iSCAN_STM32)
+    #if (MCU_TYPE == iSCAN_ARTERY)
         fontColor = 0;
         lineColor = 0x0000FF;
         d->setBackground(0xF0F0F0);
         d->setPlotArea(85, 62, d->getWidth() - 85 - 30, d->getHeight() - 100, d->linearGradientColor(0, 50, 0,
             d->getHeight() - 35, 0xF0F0F0, 0xCECECE), -1, Chart::Transparent, 0xF0F0F0, 0xF0F0F0);
-    #elif  (MCU_TYPE == iSCAN_ARTERY)
+    #elif  (MCU_TYPE == iSCAN_STM32)
         fontColor = 0xF0F0F0;
         lineColor = 0xAAD0FF;
         d->setBackground(0x464646);
@@ -2208,6 +2216,7 @@ void RealTime::onConnectUSB()
             m_UsbReceiveThread->start(QThread :: HighestPriority);   // 启动线程
             m_ChartUpdateTimer->start(200);    // 启动更新表格
 //            m_ComData->ClearData();         // 清之前的数据
+
             play->setVisible(true);
             play->setEnabled(false);
             pause->setVisible(true);
@@ -2239,7 +2248,8 @@ void RealTime::onConnectUSB()
             historyDetail->ClearData();
 
             SendVerifyCmd->start(100);
-            SendVerifyCount = 0;
+            SendRandomKeyCmd->start(100);
+            SendKeyCount = 0;
 //            send_CMD(0x20);     // 读取各个档位的校验值
             averageValue->setEnabled(false);
             batteryCapacity->setEnabled(false);
@@ -2826,10 +2836,15 @@ void RealTime::send_CMD(unsigned char cmd)
         qDebug() << "USB设备未打开！";
         return;
     }
+//    qDebug() << "发送数据：" << cmd;
     unsigned char sendP[32];
     memset(sendP, 0, sizeof (sendP));
     sendP[0] = 0xa5; sendP[1] = 0xb7; sendP[2] = 0xa5; sendP[3] = 0xb7;
     sendP[4] = cmd;
+    if(sendP[4] == 0x30)
+    {
+        memcpy(sendP + 16,  &m_ComData->key, sizeof(m_ComData->key));
+    }
     m_UsbHid->SendUSB(sendP, 32);   // 使用USB发送数据
 }
 
@@ -2997,16 +3012,27 @@ void RealTime::onSettingBtn(void)
 
 void RealTime::slotSendVerifyCmd(void)
 {
-//     qDebug() << "SendVerifyCount = " << SendVerifyCount << QTime::currentTime();
     send_CMD(0x20);     // 读取各个档位的校验值
-    SendVerifyCount++;
-    if(SendVerifyCount >= 10)
-    {
-        SendVerifyCount = 0;
+}
+void RealTime::slotSendRandomKeyCmd(void)
+{
+     send_CMD(0x30);     // 发送密钥值给下位机
+     SendKeyCount++;
+     if(SendKeyCount >= 30)          // 保证用户3s后能升级
+     {
+         SendKeyCount = 0;
+         slotRandomKeySuccess();
+     }
+}
+void RealTime::slotVerifySuccess(void)
+{
+    if(SendVerifyCmd->isActive())
         SendVerifyCmd->stop();
-    }
-
-
+}
+void RealTime::slotRandomKeySuccess(void)
+{
+    if(SendRandomKeyCmd->isActive())
+        SendRandomKeyCmd->stop();
 }
 
 void RealTime::slotFixCurrentScale(int val)

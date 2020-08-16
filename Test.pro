@@ -35,10 +35,12 @@ CONFIG += qt thread
 
 SOURCES += \
         about.cpp \
+        aes.c \
         averagesubframe.cpp \
         calculate_tread.cpp \
         comdata.cpp \
         debugwatch.cpp \
+        des.cpp \
         doubleslider.cpp \
         frmmessagebox.cpp \
         historydetail.cpp \
@@ -55,10 +57,12 @@ SOURCES += \
 
 HEADERS += \
         about.h \
+        aes.h \
         averagesubframe.h \
         calculate_tread.h \
         comdata.h \
         debugwatch.h \
+        des.h \
         doubleslider.h \
         frmmessagebox.h \
         historydetail.h \

@@ -128,7 +128,8 @@ private:
     QLabel *bDifferCap;          // 总容量
 
     QTimer *SendVerifyCmd;       // 发送校验字节
-    qint16 SendVerifyCount;     // 发送校验字节计数
+    QTimer *SendRandomKeyCmd;       // 发送密钥字节
+    qint16 SendKeyCount;     // 发送密钥字节计数
 
     QLabel *sDeviceStates;  // 设备状态
     QLabel *sRemainTime;    // 运行时间
@@ -185,6 +186,7 @@ private slots:
     void onSettingBtn(void);
 
     void slotSendVerifyCmd(void);
+    void slotSendRandomKeyCmd(void);
 
     void slotFixCurrentScale(int);
 
@@ -214,6 +216,9 @@ public slots:
     void slotShowTime(qint64 runningT, qint64 remainT);
 
     void slotUpdateWorkingTime(qint64, qint64, qint64);
+
+    void slotVerifySuccess(void);
+    void slotRandomKeySuccess(void);
 
 protected:
 //    virtual void resizeEvent(QResizeEvent *event);
