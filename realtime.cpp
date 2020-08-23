@@ -2521,7 +2521,7 @@ void RealTime::slotShowTime(qint64 runningT, qint64 remainT)
     else if(remainT / 60 < 10)
         bRemainTimeHour->setGeometry(120 + 30, 120 + 8 - 8 - 10 - 27, 80, 40);
     else
-        bRemainTimeHour->setGeometry(120 + 15, 160 + 8 - 8 - 10 - 27, 80, 40);
+        bRemainTimeHour->setGeometry(120 + 15, 120 + 8 - 8 - 10 - 27, 80, 40);
 }
 
 void RealTime::slotUpdateWorkingTime(qint64 hour, qint64 minter, qint64 second)
