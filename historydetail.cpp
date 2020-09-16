@@ -614,7 +614,7 @@ void HistoryDetail::slotHistoryOpen(void)
 
 void HistoryDetail::ReceiveTest(void)
 {
-    qDebug() << "接收到信号！";
+//    qDebug() << "接收到信号！";
 }
 
 void HistoryDetail::LoadingData(QString fileName)

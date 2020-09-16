@@ -128,7 +128,8 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *)
 
 void MainWindow::on_btnMenu_Close_clicked()
 {
-    qApp->exit();
+    qApp->closeAllWindows();
+    qApp->exit(0);
 }
 
 void MainWindow::on_btnMenu_Min_clicked()

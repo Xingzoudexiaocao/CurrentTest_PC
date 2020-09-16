@@ -189,8 +189,8 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     m_Power->setText(QString::number(0, 'f', 2));  // 初始化显示0
     QLabel *unitW = new QLabel(frame_3);
     unitW->setGeometry(200, 140 + 10 - 10 - 10, 68, 70);
-    unitW->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:28px; }");
-    unitW->setText("W");
+    unitW->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:24px; }");
+    unitW->setText("mW");
 
     m_Energy = new QLabel(frame_3);
     m_Energy->setStyleSheet("QLabel { text-align:left; padding:10px; font-size:60px; }");
@@ -251,8 +251,8 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
 //    buf3_QL->setText(QString::number(0, 'f', 2));  // 初始化显示0
     QLabel *avg_W = new QLabel(frame_4);
     avg_W->setGeometry(200, 140 + 10 - 10 - 10, 64, 70);
-    avg_W->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:28px;}");
-    avg_W->setText("W");
+    avg_W->setStyleSheet("QLabel {font-family:elephant; text-align:left; padding:0px; font-size:24px;}");
+    avg_W->setText("mW");
 
     QFrame *frame_6 = new QFrame(frame);
     frame_6->setGeometry(2, 615 - 47 - 20, 260, 152 - 10);
@@ -549,7 +549,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     pause->setVisible(false);
     connect(pause, &QAbstractButton::clicked, this, &RealTime::onBtnPause);
 
-    qDebug() << "RealTime 到了完成updateChart之前";
+//    qDebug() << "RealTime 到了完成updateChart之前";
 //    m_ChartViewer->setChart(new XYChart(1345 - 360 + 10, 425 - 40));
 //    m_ChartViewer_2->setChart(new XYChart(1345 - 360 + 10, 425 - 40));
 //    drawChart(m_ChartViewer, 0);
@@ -559,7 +559,7 @@ RealTime::RealTime(QWidget *parent, ComData *comD, USB_HID *hid) : QWidget(paren
     m_ChartViewer_2->setViewPortWidth(1);
     onViewPortChanged();
     onViewPortChanged_2();
-    qDebug() << "RealTime 到了完成updateChart";
+//    qDebug() << "RealTime 到了完成updateChart";
 
     m_UsbReceiveThread = new USB_Receive_Thread(this, m_UsbHid, m_ComData);    // 新建线程
 //    m_UsbReceiveThread->setPriority(QThread::IdlePriority);
@@ -898,9 +898,12 @@ RealTime::~RealTime()
     delete m_ChartViewer->getChart();
     delete m_ChartViewer_2->getChart();
 
-    delete m_UsbReceiveThread;
-    delete m_UsbSendThread;
-    delete m_SqliteThread;
+//    delete m_UsbReceiveThread;        // 会导致退出异常
+//    delete m_UsbSendThread;
+//    delete m_SqliteThread;
+//    delete m_CalculateThread;
+
+
 //    delete m_About;
 //    delete m_UsbHid;
 //    if(m_ComData != nullptr)
@@ -2461,7 +2464,7 @@ void RealTime::showVAW(double v, double mA)
             m_ValueC->setText(QString::number(mA, 'f', 2));
             m_unitA->setText("mA");
         }
-        double bufPower = v * mA / 1000;
+        double bufPower = v * mA;   //  / 1000
         m_Power->setText(QString::number(bufPower, 'f', 2));
     }
 }
@@ -2489,7 +2492,7 @@ void RealTime::showAverage(void)
         buf2_QL->setText(QString::number(m_ComData->d_Avg_A, 'f', 2));
         m_averageA->setText("mA");
     }
-    double bufPower_2 = m_ComData->d_Avg_V * m_ComData->d_Avg_A / 1000;
+    double bufPower_2 = m_ComData->d_Avg_V * m_ComData->d_Avg_A;        // / 1000
     buf3_QL->setText(QString::number(bufPower_2, 'f', 3));
 
 }

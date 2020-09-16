@@ -4,6 +4,11 @@
 #include <QDebug>
 #include "comdata.h"
 
+//日志文件名称
+#define LOG_FILE     qApp->applicationDirPath()+"/iSCAN_logger.txt"
+//日志收集回调函数
+void MessageOutPut(QtMsgType type, const QMessageLogContext &context, const QString &msg);
+
 using namespace std;
 // windeployqt --qmldir  C:\Users\ThinkPad\Documents\Test Test.exe
 // windeployqt iSCAN.exe
@@ -27,6 +32,7 @@ void printscreeninfo(void)
 
 int main(int argc, char *argv[])
 {
+    qInstallMessageHandler(MessageOutPut);
     QApplication a(argc, argv);
 //    a.setStyleSheet("* {font-family:arial;font-size:11px}");
     ComData *comD = new ComData();
@@ -100,4 +106,44 @@ int main(int argc, char *argv[])
 //    qDebug() << "int型数据大小：" << sizeof (int) ;
 //    qDebug() << "double型数据大小：" << sizeof (double) ;
     return a.exec();
+}
+
+
+void MessageOutPut(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+
+{
+    static QMutex mutex;
+    mutex.lock();
+    QString text;
+   switch(type)
+   {
+   case QtDebugMsg:
+       text = QString("Debug:");
+       break;
+
+   case QtWarningMsg:
+       text = QString("Warning:");
+       break;
+
+   case QtCriticalMsg:
+       text = QString("Critical:");
+       break;
+
+   case QtFatalMsg:
+       text = QString("Fatal:");
+       break;
+   default:
+       break;
+   }
+   //日志写到文件
+   QString current_date_time = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
+   QString message = QString("%1 %2%3").arg(current_date_time).arg(text).arg(msg);
+   QFile file(LOG_FILE);
+   file.open(QIODevice::WriteOnly | QIODevice::Append);
+   QTextStream text_stream(&file);
+   text_stream << message << "\r\n";
+   file.flush();
+   file.close();
+   mutex.unlock();
+
 }

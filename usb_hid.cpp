@@ -60,32 +60,32 @@ bool USB_HID::ConnectUSB()
         if(libusb_get_config_descriptor(dev_device, 0, &config) == 0)
         {
 
-            qDebug()<<"libusb_config_descriptor 设备信息：";
-            qDebug()<<"bLength = "<< config->bLength;
-            qDebug()<<"bDescriptorType = "<< config->bDescriptorType;
-            qDebug()<<"wTotalLength = "<< config->wTotalLength;
-            qDebug()<<"bNumInterfaces = "<< config->bNumInterfaces;
-            qDebug()<<"bConfigurationValue = "<< config->bConfigurationValue;
-            qDebug()<<"iConfiguration = "<< config->iConfiguration;
-            qDebug()<<"bmAttributes = "<< config->bmAttributes;
-            qDebug()<<"MaxPower = "<< config->MaxPower;
-            qDebug()<<"extra_length = "<< config->extra_length;
+//            qDebug()<<"libusb_config_descriptor 设备信息：";
+//            qDebug()<<"bLength = "<< config->bLength;
+//            qDebug()<<"bDescriptorType = "<< config->bDescriptorType;
+//            qDebug()<<"wTotalLength = "<< config->wTotalLength;
+//            qDebug()<<"bNumInterfaces = "<< config->bNumInterfaces;
+//            qDebug()<<"bConfigurationValue = "<< config->bConfigurationValue;
+//            qDebug()<<"iConfiguration = "<< config->iConfiguration;
+//            qDebug()<<"bmAttributes = "<< config->bmAttributes;
+//            qDebug()<<"MaxPower = "<< config->MaxPower;
+//            qDebug()<<"extra_length = "<< config->extra_length;
         }
         if (libusb_get_device_descriptor(dev_device, &desc) == 0)
         {
-            qDebug("Device Descriptors: ");
-            qDebug("Vendor ID : 0x%x",desc.idVendor);
-            qDebug("Product ID : 0x%x",desc.idProduct);
-            qDebug("Serial Number : %x",desc.iSerialNumber);
-            qDebug("Size of Device Descriptor : %d",desc.bLength);
-            qDebug("Type of Descriptor : %d",desc.bDescriptorType);
-            qDebug("USB Specification Release Number : 0x%x",desc.bcdUSB);
-            qDebug("Device Release Number : %d",desc.bcdDevice);
-            qDebug("Device Class : 0x%x",desc.bDeviceClass);
-            qDebug("Device Sub-Class : %d",desc.bDeviceSubClass);
-            qDebug("Device Protocol : %d",desc.bDeviceProtocol);
-            qDebug("Max. Packet Size : %d",desc.bMaxPacketSize0);
-            qDebug("No. of Configuraions : %d",desc.bNumConfigurations);
+//            qDebug("Device Descriptors: ");
+//            qDebug("Vendor ID : 0x%x",desc.idVendor);
+//            qDebug("Product ID : 0x%x",desc.idProduct);
+//            qDebug("Serial Number : %x",desc.iSerialNumber);
+//            qDebug("Size of Device Descriptor : %d",desc.bLength);
+//            qDebug("Type of Descriptor : %d",desc.bDescriptorType);
+//            qDebug("USB Specification Release Number : 0x%x",desc.bcdUSB);
+//            qDebug("Device Release Number : %d",desc.bcdDevice);
+//            qDebug("Device Class : 0x%x",desc.bDeviceClass);
+//            qDebug("Device Sub-Class : %d",desc.bDeviceSubClass);
+//            qDebug("Device Protocol : %d",desc.bDeviceProtocol);
+//            qDebug("Max. Packet Size : %d",desc.bMaxPacketSize0);
+//            qDebug("No. of Configuraions : %d",desc.bNumConfigurations);
         }
         if (libusb_get_string_descriptor_ascii(dev_handle, desc.iManufacturer, (unsigned char*) str_Manufactured, sizeof(str_Manufactured)) >= 0)
         {
