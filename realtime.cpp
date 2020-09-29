@@ -2180,7 +2180,11 @@ void RealTime::onChartUpdateTimer(QChartViewer *viewer)
         int updateType = Chart::ScrollWithMax;
         if (viewer->getViewPortLeft() + viewer->getViewPortWidth() < 0.999)
             updateType = Chart::KeepVisibleRange;
-        bool scaleHasChanged = viewer->updateFullRangeH("x", startDate, endDate, updateType);
+        bool scaleHasChanged;
+//        if (duration < initialFullRange)
+            scaleHasChanged = viewer->updateFullRangeH("x", startDate, endDate, updateType);
+//        else
+//            scaleHasChanged = viewer->updateFullRangeH("x", endDate - initialFullRange, endDate, updateType);
 
         // Set the zoom in limit as a ratio to the full range
         viewer->setZoomInWidthLimit(zoomInLimit / (viewer->getValueAtViewPort("x", 1) -
@@ -2189,7 +2193,13 @@ void RealTime::onChartUpdateTimer(QChartViewer *viewer)
         // Trigger the viewPortChanged event to update the display if the axis scale has changed
         // or if new data are added to the existing axis scale.
         if (scaleHasChanged || (duration < initialFullRange))
-            viewer->updateViewPort(true, false);
+        {
+            onViewPortChanged();
+//            onViewPortChanged_2();
+//            updateControls(m_ChartViewer, m_HScrollBar);
+//            updateControls(m_ChartViewer_2, m_HScrollBar_2);
+//            viewer->updateViewPort(true, false);
+        }
     }
 }
 
@@ -2256,6 +2266,7 @@ void RealTime::onConnectUSB()
 //            send_CMD(0x20);     // 读取各个档位的校验值
             averageValue->setEnabled(false);
             batteryCapacity->setEnabled(false);
+            batteryCapacity_2->setEnabled(false);
             batteryVoltageBegin->setEnabled(false);
             batteryVoltageEnd->setEnabled(false);
             tabWidget->setCurrentIndex(0);  // 跳到第一页
@@ -2291,6 +2302,7 @@ void RealTime::onDisConnectUSB()
 
     averageValue->setEnabled(true);
     batteryCapacity->setEnabled(true);
+    batteryCapacity_2->setEnabled(true);
     batteryVoltageBegin->setEnabled(true);
     batteryVoltageEnd->setEnabled(true);
 //    historyView->ClearData();       // 清除历史数据
@@ -2311,6 +2323,10 @@ void RealTime::thread_receive_finished()
         pause->setEnabled(false);
         pause->setVisible(false);
         m_ComData->layerIsPause = true;
+
+        QDateTime now = QDateTime::fromMSecsSinceEpoch(m_ComData->BeginTime +  m_ComData->RunningCount);
+        m_ComData->layer_currentIndex = m_ComData->d_currentIndex;
+        m_ComData->layer_BeginTime = now.toMSecsSinceEpoch() - m_ComData->d_currentIndex;
         memcpy(m_ComData->layer_timeStamps, m_ComData->d_timeStamps, sizeof(double) * m_ComData->layer_currentIndex);
         memcpy(m_ComData->layer_dataSeriesV, m_ComData->d_dataSeriesV, sizeof(double) * m_ComData->layer_currentIndex);
         memcpy(m_ComData->layer_dataSeriesA, m_ComData->d_dataSeriesA, sizeof(double) * m_ComData->layer_currentIndex);
@@ -2619,6 +2635,9 @@ void RealTime::onBtnPause()
     play->setEnabled(true);
     pause->setEnabled(false);
     m_ComData->layerIsPause = true;
+//    QDateTime now = QDateTime::fromMSecsSinceEpoch(m_ComData->BeginTime +  m_ComData->RunningCount);
+//    m_ComData->layer_currentIndex = m_ComData->d_currentIndex;
+//    m_ComData->layer_BeginTime = now.toMSecsSinceEpoch() - m_ComData->d_currentIndex;
     memcpy(m_ComData->layer_timeStamps, m_ComData->d_timeStamps, sizeof(double) * m_ComData->layer_currentIndex);
     memcpy(m_ComData->layer_dataSeriesV, m_ComData->d_dataSeriesV, sizeof(double) * m_ComData->layer_currentIndex);
     memcpy(m_ComData->layer_dataSeriesA, m_ComData->d_dataSeriesA, sizeof(double) * m_ComData->layer_currentIndex);
@@ -2678,12 +2697,12 @@ QString RealTime::doubleToTime(double dTime)
 
 void RealTime::UpdataOpen()
 {
-    if(m_UsbHid->dev_handle == nullptr)
-    {
-        qDebug() << "USB设备未打开！";
-        myHelper::ShowMessageBoxError("USB设备未打开！");
-        return;
-    }
+//    if(m_UsbHid->dev_handle == nullptr)
+//    {
+//        qDebug() << "USB设备未打开！";
+//        myHelper::ShowMessageBoxError("USB设备未打开！");
+//        return;
+//    }
     if(m_UsbSendThread->isStop == false)
     {
         qDebug() << "点击打开失败";
@@ -2783,10 +2802,11 @@ void RealTime::UpdataSend()
 {
     if(m_UsbHid->dev_handle == nullptr)
     {
-        qDebug() << "USB设备未打开！";
-        myHelper::ShowMessageBoxError("USB设备未打开！");
+        qDebug() << "USB设备未打开，请先点击启动采集！";
+        myHelper::ShowMessageBoxError("USB设备未打开，请先点击启动采集！");
         return;
     }
+
     if(m_UsbSendThread->isStop == false)
     {
         qDebug() << "点击更新失败";

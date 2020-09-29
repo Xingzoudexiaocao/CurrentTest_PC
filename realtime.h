@@ -53,7 +53,7 @@ signals:
     void singalCurUpdateT1AndT2(qint8, qint64);
 private:
     // The initial full range is set to 60 seconds of data.
-    static const int initialFullRange = 60;
+    double initialFullRange = 60;
 
     // The maximum zoom in is 10 seconds.
     static const int zoomInLimit = 1;
