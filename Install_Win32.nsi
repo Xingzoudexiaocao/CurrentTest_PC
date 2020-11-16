@@ -2,7 +2,7 @@
 
 ; 安装程序初始定义常量
 !define PRODUCT_NAME "iSCAN"
-!define PRODUCT_VERSION "V100_000_211"
+!define PRODUCT_VERSION "V100_000_212"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\iSCAN.exe"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
 !define PRODUCT_UNINST_ROOT_KEY "HKLM"
@@ -49,7 +49,7 @@ var ICONS_GROUP
 ; ------ MUI 现代界面定义结束 ------
 
 Name "${PRODUCT_NAME} ${PRODUCT_VERSION}"
-OutFile "iSCAN_Setup_Win32_STM32_V100_000_211.exe"
+OutFile "iSCAN_Setup_Win32_STM32_V100_000_212.exe"
 InstallDir "$PROGRAMFILES\iSCAN"
 InstallDirRegKey HKLM "${PRODUCT_UNINST_KEY}" "UninstallString"
 ShowInstDetails show

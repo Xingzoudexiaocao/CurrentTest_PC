@@ -48,7 +48,7 @@
 
 static QString compangyName = "一起努力";
 static QString productName = "iSCAN";            // 精密电流测量仪
-static QString appVersionName = "100.000.211";
+static QString appVersionName = "100.000.212";
 
 typedef struct HISTORY_DATAINFO_STRUCT
 {
