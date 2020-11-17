@@ -2330,6 +2330,7 @@ void RealTime::thread_receive_finished()
         memcpy(m_ComData->layer_timeStamps, m_ComData->d_timeStamps, sizeof(double) * m_ComData->layer_currentIndex);
         memcpy(m_ComData->layer_dataSeriesV, m_ComData->d_dataSeriesV, sizeof(double) * m_ComData->layer_currentIndex);
         memcpy(m_ComData->layer_dataSeriesA, m_ComData->d_dataSeriesA, sizeof(double) * m_ComData->layer_currentIndex);
+        updateChart();
 //        download->setEnabled(true);
 
         sDeviceStates->setText("设备状态：未启动");
